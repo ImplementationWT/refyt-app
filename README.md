@@ -16,6 +16,22 @@ workflows, endpoints, colecciones) está en
 > conexión. El frontend consume la API del mismo origen y no recibe ninguna
 > variable del servidor (CI lo comprueba con `pnpm check:bundle`).
 
+## Refyt
+
+La interfaz de Refyt aprobada por el cliente vive en `web/refyt/` y se ve a pantalla
+completa en `/` después de iniciar sesión. Es copia exacta de `Refyt, demo v3.20.html`:
+
+- `web/refyt/index.html`: el marcado.
+- `web/refyt/refyt.css` y `web/refyt/refyt.js`: los estilos y la lógica, sin cambios.
+- `web/refyt/fonts.js`: Sora, Manrope, Figtree y Fraunces servidas desde la app (la CSP no
+  permite Google Fonts), con los mismos nombres de familia.
+
+Vite la construye como segunda página (`web/vite.config.ts`) y la app la muestra con
+`web/src/pages/RefytPage.tsx`, en un marco del mismo origen para que los estilos de la app
+no la toquen. Solo esa página permite estilos en línea y ser enmarcada por la app
+(`src/app.ts`). La administración (Dashboards, Usuarios, Roles, Integraciones) sigue en
+`/panel`, `/usuarios`, etc.
+
 ## Estructura
 
 ```text

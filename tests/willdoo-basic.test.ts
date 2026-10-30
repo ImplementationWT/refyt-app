@@ -93,7 +93,7 @@ describe("chat de «Will Doo solo» (sin IA)", () => {
     expect(normalize("¿Qué ÚSUARIOS?")).toBe("que usuarios");
     // With nothing to follow, the open screen's queries come first.
     expect(followUps(null, ALL, 3, "/roles")[0]!.id).toBe("roles");
-    expect(followUps(null, ALL, 3, "/")[0]!.id).toBe("indicadores-semana");
+    expect(followUps(null, ALL, 3, "/panel")[0]!.id).toBe("indicadores-semana");
     // Other candidates first; what is already shown is never suggested.
     const withFirst = followUps(byId("usuarios-desactivados"), ALL, 3, undefined, { first: [byId("mis-notificaciones")], skip: [byId("usuarios-recientes")] });
     expect(withFirst.map((query) => query.id)).toEqual(["mis-notificaciones", "roles", "ingresos-fallidos-hoy"]);

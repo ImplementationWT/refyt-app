@@ -40,7 +40,7 @@ const ndjson = (events: unknown[]) =>
 describe("Will Doo", () => {
   it("no aparece si el backend no activa el feature", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(["willdoo.use"]) });
-    renderApp("/");
+    renderApp("/panel");
     await screen.findByRole("complementary", { name: "Navegación principal" });
     expect(screen.queryByRole("button", { name: "Abrir Will Doo" })).not.toBeInTheDocument();
   });
@@ -84,7 +84,7 @@ describe("Will Doo", () => {
     mockWithWillDoo(["willdoo.use"], () =>
       Response.json({ error: "willdoo_budget_exhausted", message: "Will Doo alcanzó el presupuesto de este mes." }, { status: 429 })
     );
-    renderApp("/");
+    renderApp("/panel");
     await user.click(await screen.findByRole("button", { name: "Abrir Will Doo" }));
     await user.click(screen.getByRole("button", { name: "¿Cómo cambio mi contraseña?" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Will Doo alcanzó el presupuesto de este mes.");
@@ -93,7 +93,7 @@ describe("Will Doo", () => {
   it("muestra el historial de conversaciones", async () => {
     const user = userEvent.setup();
     mockWithWillDoo(["willdoo.use"], () => ndjson([]));
-    renderApp("/");
+    renderApp("/panel");
     await user.click(await screen.findByRole("button", { name: "Abrir Will Doo" }));
     await user.click(screen.getByRole("button", { name: "Conversaciones anteriores" }));
     expect(await screen.findByText("Usuarios inactivos")).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe("Will Doo solo (sin IA)", () => {
   it("ruta de preguntas por tema; al responder sugiere 3 continuaciones", async () => {
     const user = userEvent.setup();
     const { calls } = mockBasic(() => ({}));
-    renderApp("/");
+    renderApp("/panel");
 
     await user.click(await screen.findByRole("button", { name: "Abrir Will Doo" }));
     expect(await screen.findByText("Equipo")).toBeInTheDocument();
@@ -176,13 +176,13 @@ describe("Will Doo solo (sin IA)", () => {
         suggestions: NEXT
       };
     });
-    renderApp("/");
+    renderApp("/panel");
     await user.click(await screen.findByRole("button", { name: "Abrir Will Doo" }));
     await user.type(await screen.findByLabelText("Pregunta para Will Doo"), "¿Cuántos desactivados habrá el mes que viene?{Enter}");
 
     expect(await screen.findByText(/no hago pronósticos/)).toBeInTheDocument();
     expect(screen.getByText("1 usuario")).toBeInTheDocument();
-    expect(asked[0]).toMatchObject({ text: "¿Cuántos desactivados habrá el mes que viene?", timeZone: expect.any(String), screen: { path: "/" } });
+    expect(asked[0]).toMatchObject({ text: "¿Cuántos desactivados habrá el mes que viene?", timeZone: expect.any(String), screen: { path: "/panel" } });
     expect(screen.getByRole("button", { name: "¿Tengo notificaciones sin leer?" })).toBeInTheDocument();
   });
 
@@ -195,7 +195,7 @@ describe("Will Doo solo (sin IA)", () => {
       more: [{ ...RESULT, id: "roles", label: "Roles", question: "¿Qué roles hay?", summary: "3 roles", items: [] }],
       suggestions: NEXT.slice(1)
     }));
-    renderApp("/");
+    renderApp("/panel");
     await user.click(await screen.findByRole("button", { name: "Abrir Will Doo" }));
     await user.type(await screen.findByLabelText("Pregunta para Will Doo"), "desactivados y roles{Enter}");
 
@@ -206,7 +206,7 @@ describe("Will Doo solo (sin IA)", () => {
 
   it("«Sin Will Doo»: sin el feature no aparece el botón", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(["willdoo.use"]), "GET /api/dashboard": { status: 403, body: { error: "forbidden" } } });
-    renderApp("/");
+    renderApp("/panel");
     await screen.findByRole("complementary", { name: "Navegación principal" });
     expect(screen.queryByRole("button", { name: "Abrir Will Doo" })).not.toBeInTheDocument();
   });

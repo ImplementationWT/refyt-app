@@ -85,7 +85,7 @@ export const BUILT_IN_QUICK_QUERIES: readonly QuickQuery[] = [
     group: "Actividad",
     keywords: ["indicadores", "actividad", "semana", "ingresos", "entraron", "iniciaron sesion", "login", "usuarios activos", "resumen", "kpi", "sign in", "activity"],
     next: ["ingresos-fallidos-hoy", "usuarios-desactivados", "usuarios-recientes"],
-    screens: ["/"],
+    screens: ["/panel"],
     tool: "indicadores",
     input: () => ({ dias: 7 }),
     present: (result: { kpis: Record<string, number>; enlace: string }) => ({
@@ -134,7 +134,7 @@ export const BUILT_IN_QUICK_QUERIES: readonly QuickQuery[] = [
     group: "Seguridad",
     keywords: ["fallidos", "fallido", "intentos", "contrasena incorrecta", "errores de ingreso", "seguridad", "failed", "wrong password"],
     next: ["usuarios-desactivados", "indicadores-semana", "usuarios-recientes"],
-    screens: ["/"],
+    screens: ["/panel"],
     tool: "consultar_auditoria",
     input: (ctx) => ({ accion: "auth.login.failure", desde: formatInTimeZone(new Date(), ctx.timeZone).slice(0, 10), limite: 30 }),
     present: (result: { total: number; registros: Array<{ fecha: string; usuario: string | null; detalle: Record<string, unknown> }> }, ctx) => ({

@@ -124,7 +124,7 @@ const indicators = defineTool({
     dias: z.union([z.literal(7), z.literal(14), z.literal(30)]).optional().default(14).describe("Periodo: 7, 14 o 30 días")
   }),
   async run({ c, timeZone }, { dias }) {
-    return { ...(await dashboardData(c, dias, timeZone)), enlace: "/" };
+    return { ...(await dashboardData(c, dias, timeZone)), enlace: "/panel" };
   }
 });
 

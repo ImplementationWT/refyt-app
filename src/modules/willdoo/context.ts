@@ -9,7 +9,8 @@
  */
 export const SYSTEM_GUIDE = `
 ## Secciones de la app
-- **Dashboards** (/): indicadores de usuarios, roles e ingresos de los últimos 7, 14 o 30 días.
+- **Refyt** (/): la interfaz de Refyt (Directores, Comercial, Cuentas, Retrofit y Delivery), a pantalla completa.
+- **Dashboards** (/panel): indicadores de usuarios, roles e ingresos de los últimos 7, 14 o 30 días.
 - **Usuarios** (/usuarios): cuentas, estado (activo o desactivado), roles y permisos de cada persona. Desde el detalle de un usuario se edita, se restablece su contraseña o se ajustan sus permisos.
 - **Roles** (/roles): agrupan permisos por función; a cada usuario se le asignan uno o varios.
 - **Integraciones** (/integraciones): servicios externos conectados (Monday.com, Will Doo) y su prueba de conexión.

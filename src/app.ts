@@ -71,6 +71,34 @@ export interface AppOptions {
 
 export const DEFAULT_APP_NAME = "Aplicación";
 
+/** The Refyt page (Vite entry web/refyt/index.html). */
+const REFYT_PAGE = /^\/refyt\/(index\.html)?(\?|$)/;
+
+type CspDirectives = Record<string, string[]>;
+
+function contentSecurityPolicy(production: boolean): CspDirectives {
+  return {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'"],
+    styleSrc: ["'self'"],
+    imgSrc: ["'self'", "data:"],
+    fontSrc: ["'self'"],
+    connectSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    baseUri: ["'self'"],
+    formAction: ["'self'"],
+    frameAncestors: ["'none'"],
+    ...(production ? { upgradeInsecureRequests: [] } : {})
+  };
+}
+
+/** Same format helmet uses: kebab-case directives separated by ";". */
+function serializeCsp(directives: CspDirectives): string {
+  return Object.entries(directives)
+    .map(([name, values]) => [name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`), ...values].join(" "))
+    .join(";");
+}
+
 export function settingsFromConfig(config: Config, webRoot: string | null): AppSettings {
   return {
     production: config.NODE_ENV === "production",
@@ -114,24 +142,23 @@ export async function buildApp({
 
   installErrorHandling(app);
 
+  const csp = contentSecurityPolicy(settings.production);
   await app.register(helmet, {
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'"],
-        imgSrc: ["'self'", "data:"],
-        fontSrc: ["'self'"],
-        connectSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        baseUri: ["'self'"],
-        formAction: ["'self'"],
-        frameAncestors: ["'none'"],
-        ...(settings.production ? { upgradeInsecureRequests: [] } : {})
-      }
-    },
+    contentSecurityPolicy: { useDefaults: false, directives: csp },
     hsts: settings.production ? { maxAge: 31_536_000, includeSubDomains: false } : false
+  });
+  // Refyt (web/refyt), the client-approved interface, is shown inside the SPA in a same-origin
+  // frame and builds its markup with inline style attributes: only its page relaxes those two.
+  const refytCsp = serializeCsp({
+    ...csp,
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    frameAncestors: ["'self'"]
+  });
+  app.addHook("onSend", async (request, reply, payload) => {
+    if (REFYT_PAGE.test(request.url)) {
+      reply.header("content-security-policy", refytCsp);
+    }
+    return payload;
   });
   await app.register(cookie);
   await app.register(rateLimit, {

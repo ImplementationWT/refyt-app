@@ -11,6 +11,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MondayPage } from "./pages/MondayPage";
+import { RefytPage } from "./pages/RefytPage";
 import { RolesPage } from "./pages/RolesPage";
 import { UsersPage } from "./pages/UsersPage";
 
@@ -55,6 +56,15 @@ export function AppRoutes() {
           </RequireAuth>
         }
       />
+      {/* Refyt, the client-approved interface, full screen and without the admin layout. */}
+      <Route
+        index
+        element={
+          <RequireAuth>
+            <RefytPage />
+          </RequireAuth>
+        }
+      />
       <Route
         element={
           <RequireAuth>
@@ -62,7 +72,7 @@ export function AppRoutes() {
           </RequireAuth>
         }
       >
-        <Route index element={<DashboardPage />} />
+        <Route path="panel" element={<DashboardPage />} />
         <Route path="usuarios" element={page("users.read", <UsersPage />)} />
         <Route path="roles" element={page("roles.read", <RolesPage />)} />
         <Route path="integraciones" element={page("integrations.read", <IntegrationsPage />)} />

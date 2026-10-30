@@ -27,7 +27,7 @@ const DASHBOARD = {
 };
 
 describe("login", () => {
-  it("logs in and lands on the dashboard", async () => {
+  it("logs in and lands on Refyt", async () => {
     let loggedIn = false;
     const { calls } = mockApi({
       "GET /api/meta": META,
@@ -38,15 +38,14 @@ describe("login", () => {
       }
     });
     const user = userEvent.setup();
-    renderApp("/");
+    renderApp("/panel");
 
     expect(await screen.findByRole("heading", { name: "Aplicación de prueba" })).toBeInTheDocument();
     await user.type(screen.getByLabelText("Usuario"), "ana");
     await user.type(screen.getByLabelText("Contraseña"), "una-clave-cualquiera");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
-    expect(await screen.findByRole("heading", { name: "Dashboards" })).toBeInTheDocument();
-    expect(screen.getByText(/Hola, Ana/)).toBeInTheDocument();
+    expect(await screen.findByTitle("Refyt")).toHaveAttribute("src", "/refyt/index.html");
     const login = calls.find((call) => call.method === "POST");
     expect(login?.body).toEqual({ username: "ana", password: "una-clave-cualquiera" });
   });
@@ -179,10 +178,30 @@ describe("route guards", () => {
   });
 });
 
+describe("Refyt", () => {
+  it("shows the approved Refyt interface full screen at / after login", async () => {
+    mockApi({ "GET /api/meta": META, "GET /api/auth/me": session([]) });
+    renderApp("/");
+
+    const frame = await screen.findByTitle("Refyt");
+    expect(frame.tagName).toBe("IFRAME");
+    expect(frame).toHaveAttribute("src", "/refyt/index.html");
+    expect(screen.queryByRole("complementary", { name: "Navegación principal" })).not.toBeInTheDocument();
+  });
+
+  it("asks to log in before showing Refyt", async () => {
+    mockApi({ "GET /api/meta": META, "GET /api/auth/me": unauthorized });
+    renderApp("/");
+
+    expect(await screen.findByRole("button", { name: /entrar/i })).toBeInTheDocument();
+    expect(screen.queryByTitle("Refyt")).not.toBeInTheDocument();
+  });
+});
+
 describe("sidebar", () => {
   async function sidebarLinks(permissions: string[]) {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(permissions) });
-    renderApp("/");
+    renderApp("/panel");
     const nav = await screen.findByRole("complementary", { name: "Navegación principal" });
     return within(nav)
       .getAllByRole("link")
@@ -190,11 +209,11 @@ describe("sidebar", () => {
   }
 
   it("shows only the sections the user may access", async () => {
-    expect(await sidebarLinks([])).toEqual(["Dashboards"]);
+    expect(await sidebarLinks([])).toEqual(["Refyt", "Dashboards"]);
   });
 
   it("shows every section to an administrator, grouped", async () => {
-    expect(await sidebarLinks(ALL_PERMISSIONS)).toEqual(["Dashboards", "Usuarios", "Roles"]);
+    expect(await sidebarLinks(ALL_PERMISSIONS)).toEqual(["Refyt", "Dashboards", "Usuarios", "Roles"]);
     const nav = screen.getByRole("complementary", { name: "Navegación principal" });
     expect(within(nav).getByText("General")).toBeInTheDocument();
     expect(within(nav).getByText("Configuración")).toBeInTheDocument();
@@ -212,7 +231,7 @@ describe("sidebar", () => {
   });
 
   it("needs users.read for Usuarios (the catalog alone is not enough)", async () => {
-    expect(await sidebarLinks(["permissions.read"])).toEqual(["Dashboards"]);
+    expect(await sidebarLinks(["permissions.read"])).toEqual(["Refyt", "Dashboards"]);
   });
 
   it("collapses and expands", async () => {
@@ -227,7 +246,7 @@ describe("sidebar", () => {
 describe("header", () => {
   it("shows the app name from /api/meta and no notifications bell", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(ALL_PERMISSIONS), "GET /api/dashboard": DASHBOARD });
-    renderApp("/");
+    renderApp("/panel");
 
     await waitFor(() => expect(document.title).toBe("Aplicación de prueba"));
     expect(screen.queryByRole("button", { name: /notificaciones/i })).not.toBeInTheDocument();
@@ -244,7 +263,7 @@ describe("header", () => {
       }
     });
     const user = userEvent.setup();
-    renderApp("/");
+    renderApp("/panel");
 
     await user.click(await screen.findByRole("button", { name: "Menú de usuario" }));
     await user.click(screen.getByRole("menuitem", { name: /cerrar sesión/i }));
@@ -258,7 +277,7 @@ describe("header", () => {
     document.documentElement.dataset.theme = "light";
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session([]) });
     const user = userEvent.setup();
-    renderApp("/");
+    renderApp("/panel");
 
     await user.click(await screen.findByRole("button", { name: "Menú de usuario" }));
     const toggle = screen.getByRole("menuitemcheckbox", { name: /modo oscuro/i });
@@ -396,7 +415,7 @@ describe("dashboards", () => {
       "GET /api/dashboard": DASHBOARD
     });
     const user = userEvent.setup();
-    renderApp("/");
+    renderApp("/panel");
 
     expect(await screen.findByText("48")).toBeInTheDocument();
     expect(screen.getByText("Personas que entraron")).toBeInTheDocument();
@@ -413,7 +432,7 @@ describe("dashboards", () => {
 
   it("shows a column tooltip on keyboard focus", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(["dashboard.read"]), "GET /api/dashboard": DASHBOARD });
-    renderApp("/");
+    renderApp("/panel");
 
     const column = await screen.findByRole("graphics-symbol", { name: /15 de octubre: 9 inicios de sesión/ });
     column.focus();
@@ -425,7 +444,7 @@ describe("dashboards", () => {
 
   it("explains when the user cannot see indicators", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session([]) });
-    renderApp("/");
+    renderApp("/panel");
 
     expect(await screen.findByRole("heading", { name: "No tienes indicadores disponibles" })).toBeInTheDocument();
   });
@@ -446,16 +465,16 @@ describe("Monday integration", () => {
 
   async function sidebarText(current: ReturnType<typeof session>) {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": current });
-    renderApp("/");
+    renderApp("/panel");
     const nav = await screen.findByRole("complementary", { name: "Navegación principal" });
     return within(nav).getAllByRole("link").map((link) => link.textContent);
   }
 
   it("shows the Monday tab only with the feature", async () => {
-    expect(await sidebarText(withFeature)).toEqual(["Dashboards", "Monday"]);
+    expect(await sidebarText(withFeature)).toEqual(["Refyt", "Dashboards", "Monday"]);
     cleanup();
     // Permission alone is not enough: the backend must enable the feature.
-    expect(await sidebarText(session(["monday.read"]))).toEqual(["Dashboards"]);
+    expect(await sidebarText(session(["monday.read"]))).toEqual(["Refyt", "Dashboards"]);
   });
 
   it("protects the /monday route without the feature", async () => {

@@ -1,4 +1,4 @@
-import { KanbanSquare, LayoutDashboard, Plug, ShieldCheck, Sparkles, Users, type LucideIcon } from "lucide-react";
+import { House, KanbanSquare, LayoutDashboard, Plug, ShieldCheck, Sparkles, Users, type LucideIcon } from "lucide-react";
 import type { Tone } from "./lib/utils";
 
 /** Brand mark shown in the header and login. Each project may replace it. */
@@ -32,7 +32,10 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     id: "general",
     label: "General",
-    items: [{ to: "/", label: "Dashboards", icon: LayoutDashboard, tone: "brand", description: "Indicadores y actividad" }]
+    items: [
+      { to: "/", label: "Refyt", icon: House, tone: "brand", description: "Directores, Comercial, Cuentas, Retrofit y Delivery" },
+      { to: "/panel", label: "Dashboards", icon: LayoutDashboard, tone: "brand", description: "Indicadores y actividad" }
+    ]
   },
   // ── Project groups go here ──
   {

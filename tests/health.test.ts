@@ -139,6 +139,8 @@ describe("security headers and SPA serving", () => {
     await mkdir(join(webRoot, "assets"));
     await writeFile(join(webRoot, "index.html"), "<!doctype html><div id=root></div>");
     await writeFile(join(webRoot, "assets", "app-abc123.js"), "console.log(1)");
+    await mkdir(join(webRoot, "refyt"));
+    await writeFile(join(webRoot, "refyt", "index.html"), "<!doctype html><div class=shell></div>");
     return buildTestApp(fakeDb(), { settings: { webRoot } });
   }
 
@@ -159,6 +161,27 @@ describe("security headers and SPA serving", () => {
       expect(root.headers["content-security-policy"]).toContain("script-src 'self'");
       expect(root.headers["content-security-policy"]).toContain("frame-ancestors 'none'");
       expect(root.headers["x-content-type-options"]).toBe("nosniff");
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("lets only the Refyt page use inline styles and be framed by the app", async () => {
+    const { app } = await spaApp();
+
+    try {
+      const refyt = await app.inject({ method: "GET", url: "/refyt/index.html" });
+      const root = await app.inject({ method: "GET", url: "/" });
+
+      expect(refyt.statusCode).toBe(200);
+      expect(refyt.body).toContain("class=shell");
+      const csp = refyt.headers["content-security-policy"];
+      expect(csp).toContain("style-src 'self' 'unsafe-inline'");
+      expect(csp).toContain("frame-ancestors 'self'");
+      expect(csp).toContain("script-src 'self'");
+      expect(csp).not.toContain("script-src 'self' 'unsafe-inline'");
+      expect(root.headers["content-security-policy"]).toContain("style-src 'self';");
+      expect(root.headers["content-security-policy"]).toContain("frame-ancestors 'none'");
     } finally {
       await app.close();
     }
