@@ -14,8 +14,8 @@ import { AuthError, AuthField, AuthLayout } from "../refyt/AuthLayout";
 import { TAB_TITLE } from "../refyt/RefytHeader";
 
 const schema = z.object({
-  username: z.string().trim().min(1, { error: "Introduce tu usuario" }),
-  password: z.string().min(1, { error: "Introduce tu contraseña" })
+  username: z.string().trim().min(1, { error: "Enter your username" }),
+  password: z.string().min(1, { error: "Enter your password" })
 });
 type Values = z.infer<typeof schema>;
 
@@ -57,32 +57,32 @@ export function LoginPage() {
   const errorMessage =
     login.error instanceof ApiError
       ? login.error.status === 401
-        ? "Usuario o contraseña incorrectos"
+        ? "Incorrect username or password"
         : login.error.message
       : login.error
-        ? "No se pudo iniciar sesión"
+        ? "Could not sign in"
         : null;
 
   return (
-    <AuthLayout title={appName} subtitle="Hola de nuevo. Inicia sesión para continuar.">
+    <AuthLayout title={appName} subtitle="Welcome back. Sign in to continue.">
       <form className="rf-auth-form" noValidate onSubmit={form.handleSubmit((values) => login.mutate(values))}>
         {errorMessage ? <AuthError>{errorMessage}</AuthError> : null}
         <AuthField
-          label="Usuario"
+          label="Username"
           autoComplete="username"
           autoFocus
           error={form.formState.errors.username?.message}
           {...form.register("username")}
         />
         <AuthField
-          label="Contraseña"
+          label="Password"
           type="password"
           autoComplete="current-password"
           error={form.formState.errors.password?.message}
           {...form.register("password")}
         />
         <button type="submit" className="btn pri lg" disabled={login.isPending}>
-          <LogIn size={16} aria-hidden /> {login.isPending ? "Entrando…" : "Entrar"}
+          <LogIn size={16} aria-hidden /> {login.isPending ? "Signing in…" : "Sign in"}
         </button>
       </form>
     </AuthLayout>

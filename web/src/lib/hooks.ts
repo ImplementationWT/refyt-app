@@ -44,7 +44,7 @@ export function applyApiError<T extends FieldValues>(
   fields: readonly string[]
 ): string | null {
   if (!(error instanceof ApiError)) {
-    return "Ha ocurrido un error inesperado";
+    return "Something went wrong";
   }
   const unmatched = error.issues.filter((issue) => {
     const field = issue.path.split(".")[0] ?? "";

@@ -21,11 +21,11 @@ const CONVERSATIONS_KEY = ["willdoo", "conversations"] as const;
 /** Questions that make sense with the user's permissions (no tool → no suggestion). */
 function suggestionsFor(can: (permission: string) => boolean): string[] {
   const all: Array<[string | null, string]> = [
-    ["dashboard.read", "¿Cuántas personas entraron esta semana?"],
-    ["users.read", "¿Qué usuarios están desactivados o bloqueados?"],
-    ["audit.read", "¿Hubo ingresos fallidos hoy?"],
-    ["notifications.read", "¿Tengo notificaciones sin leer?"],
-    [null, "¿Cómo cambio mi contraseña?"]
+    ["dashboard.read", "How many people signed in this week?"],
+    ["users.read", "Which users are disabled or locked?"],
+    ["audit.read", "Were there failed sign-ins today?"],
+    ["notifications.read", "Do I have unread notifications?"],
+    [null, "How do I change my password?"]
   ];
   return all.filter(([permission]) => permission === null || can(permission)).map(([, text]) => text).slice(0, 4);
 }
@@ -92,7 +92,7 @@ export function WillDooChat() {
       setTurns(conversation.turns);
       setView("chat");
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : "No se pudo abrir la conversación.");
+      setError(caught instanceof ApiError ? caught.message : "Could not open the conversation.");
     }
   }
 
@@ -130,7 +130,7 @@ export function WillDooChat() {
       );
     } catch (caught) {
       if (!controller.signal.aborted) {
-        setError(caught instanceof ApiError ? caught.message : "Will Doo no pudo responder. Inténtalo de nuevo.");
+        setError(caught instanceof ApiError ? caught.message : "Will Doo could not answer. Try again.");
       }
     } finally {
       setLive(null);
@@ -155,18 +155,18 @@ export function WillDooChat() {
 
   return (
     <WillDooPanel
-      subtitle="Tu co-pilot · consulta con tus permisos"
+      subtitle="Your co-pilot · asks with your permissions"
       actions={
         <>
-        <IconButton size="sm" aria-label={view === "history" ? "Volver al chat" : "Conversaciones anteriores"} onClick={() => setView(view === "history" ? "chat" : "history")}>
+        <IconButton size="sm" aria-label={view === "history" ? "Back to chat" : "Previous conversations"} onClick={() => setView(view === "history" ? "chat" : "history")}>
           <History />
         </IconButton>
-        <IconButton size="sm" aria-label="Nueva conversación" onClick={newConversation}>
+        <IconButton size="sm" aria-label="New conversation" onClick={newConversation}>
           <Plus />
         </IconButton>
         <IconButton
           size="sm"
-          aria-label="Cerrar Will Doo"
+          aria-label="Close Will Doo"
           onClick={() => {
             abortRef.current?.abort();
             setOpen(false);
@@ -182,7 +182,7 @@ export function WillDooChat() {
         <div className="flex-1 overflow-y-auto p-3">
           {history.isPending ? (
             <p role="status" className="p-3 text-sm text-muted">
-              Cargando…
+              Loading…
             </p>
           ) : history.data?.items.length ? (
             <ul className="space-y-1">
@@ -192,14 +192,14 @@ export function WillDooChat() {
                     <span className="block truncate text-sm font-semibold">{item.title}</span>
                     <span className="block text-xs text-muted">{formatDateTime(item.updatedAt)}</span>
                   </button>
-                  <IconButton size="sm" aria-label={`Borrar «${item.title}»`} onClick={() => void removeConversation(item.id)}>
+                  <IconButton size="sm" aria-label={`Delete “${item.title}”`} onClick={() => void removeConversation(item.id)}>
                     <Trash2 />
                   </IconButton>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="p-3 text-sm text-muted">Aún no tienes conversaciones. Se guardan 90 días.</p>
+            <p className="p-3 text-sm text-muted">No conversations yet. They are kept for 90 days.</p>
           )}
         </div>
       ) : (
@@ -209,8 +209,8 @@ export function WillDooChat() {
               <div className="flex gap-2.5">
                 <Avatar className="size-7" />
                 <p className="rounded-btn rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
-                  Hola{firstName ? `, ${firstName}` : ""}. Soy Will Doo: pregúntame por los datos del sistema o cómo hacer algo. Solo veo lo
-                  que tú puedes ver.
+                  Hi{firstName ? `, ${firstName}` : ""}. I am Will Doo: ask me about the system's data or how to do something. I only see
+                  what you can see.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 pl-9">
@@ -240,7 +240,7 @@ export function WillDooChat() {
                   <div className="rounded-btn rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
                     <Markdown text={turn.text || "…"} />
                   </div>
-                  {turn.tools.length ? <p className="text-xs text-faint">Consultó: {turn.tools.map((tool) => tool.replace(/^Consultando\s+/i, "")).join(", ")}</p> : null}
+                  {turn.tools.length ? <p className="text-xs text-faint">Looked up: {turn.tools.map((tool) => tool.replace(/^Looking up\s+/i, "")).join(", ")}</p> : null}
                 </div>
               </div>
             )
@@ -253,7 +253,7 @@ export function WillDooChat() {
                 {live.text ? <Markdown text={live.text} /> : null}
                 <p role="status" className={cn("flex items-center gap-2 text-sm text-muted", live.text && "mt-2")}>
                   <Loader2 className="size-4 animate-spin text-brand-500" aria-hidden />
-                  {live.tool ? `${live.tool}…` : live.text ? "Escribiendo…" : "Pensando…"}
+                  {live.tool ? `${live.tool}…` : live.text ? "Writing…" : "Thinking…"}
                 </p>
               </div>
             </div>
@@ -277,18 +277,18 @@ export function WillDooChat() {
               onKeyDown={onKeyDown}
               rows={1}
               maxLength={4000}
-              placeholder="Pregúntale a Will…"
-              aria-label="Pregunta para Will Doo"
+              placeholder="Ask Will…"
+              aria-label="Question for Will Doo"
               className="max-h-32 min-h-6 flex-1 resize-none bg-transparent text-[14.5px] outline-none placeholder:text-faint"
             />
             {busy ? (
-              <IconButton size="sm" aria-label="Detener respuesta" onClick={() => abortRef.current?.abort()}>
+              <IconButton size="sm" aria-label="Stop answer" onClick={() => abortRef.current?.abort()}>
                 <Square />
               </IconButton>
             ) : (
               <button
                 type="submit"
-                aria-label="Enviar pregunta"
+                aria-label="Send question"
                 disabled={!draft.trim()}
                 className="grid size-8 shrink-0 place-items-center rounded-tile bg-brand-600 text-on-brand transition-colors hover:bg-brand-700 disabled:opacity-40 [&_svg]:size-4"
               >
@@ -296,7 +296,7 @@ export function WillDooChat() {
               </button>
             )}
           </div>
-          <p className="mt-1.5 text-center text-[11.5px] text-faint">Will solo consulta, no cambia nada. Puede equivocarse: revisa los enlaces.</p>
+          <p className="mt-1.5 text-center text-[11.5px] text-faint">Will only reads, it never changes anything. It can be wrong: check the links.</p>
         </form>
       ) : null}
     </WillDooPanel>

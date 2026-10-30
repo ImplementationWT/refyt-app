@@ -26,10 +26,10 @@ function StatusPills({ user, wrap = false }: { user: User; wrap?: boolean }) {
   return (
     <div className={wrap ? "flex flex-wrap gap-1.5" : "flex gap-1.5"}>
       <Pill tone={user.status === "active" ? "green" : "neutral"}>
-        {user.status === "active" ? "Activo" : "Desactivado"}
+        {user.status === "active" ? "Active" : "Disabled"}
       </Pill>
-      {user.locked ? <Pill tone="red">Bloqueado</Pill> : null}
-      {user.mustChangePassword ? <Pill tone="amber" title="Debe cambiar la contraseña en su próximo acceso">Clave pendiente</Pill> : null}
+      {user.locked ? <Pill tone="red">Locked</Pill> : null}
+      {user.mustChangePassword ? <Pill tone="amber" title="Must change the password on next sign-in">Password pending</Pill> : null}
     </div>
   );
 }
@@ -46,10 +46,10 @@ function RolePills({ user }: { user: User }) {
           </Pill>
         ))
       ) : (
-        <span className="text-faint">Sin roles</span>
+        <span className="text-faint">No roles</span>
       )}
       {added || removed ? (
-        <Pill tone="teal" title="Permisos ajustados solo para este usuario">
+        <Pill tone="teal" title="Permissions adjusted for this user only">
           {[added ? `+${added}` : null, removed ? `−${removed}` : null].filter(Boolean).join(" ")} permisos
         </Pill>
       ) : null}
@@ -109,10 +109,10 @@ export function UsersPage() {
         tone: "success",
         message:
           action === "delete"
-            ? `Se eliminó a ${user.displayName}`
+            ? `${user.displayName} was deleted`
             : user.status === "active"
-              ? `${user.displayName} quedó desactivado`
-              : `${user.displayName} quedó activo`
+              ? `${user.displayName} is now disabled`
+              : `${user.displayName} is now active`
       });
       return queryClient.invalidateQueries({ queryKey: USERS_KEY });
     }
@@ -125,27 +125,27 @@ export function UsersPage() {
       <IconButton
         size="sm"
         className="hover:bg-brand-50 hover:text-brand-600"
-        aria-label={`Permisos de ${user.username}`}
-        title="Ver y ajustar permisos"
+        aria-label={`Permissions of ${user.username}`}
+        title="See and adjust permissions"
         onClick={() => setPermissionsOf(user)}
       >
         <ListChecks />
       </IconButton>
       {can("users.update") ? (
         <>
-          <IconButton size="sm" aria-label={`Editar ${user.username}`} onClick={() => setEditing(user)}>
+          <IconButton size="sm" aria-label={`Edit ${user.username}`} onClick={() => setEditing(user)}>
             <Pencil />
           </IconButton>
           {!isSelf(user) ? (
             <>
               <IconButton
                 size="sm"
-                aria-label={`${user.status === "active" ? "Desactivar" : "Activar"} ${user.username}`}
+                aria-label={`${user.status === "active" ? "Disable" : "Enable"} ${user.username}`}
                 onClick={() => setConfirm({ user, action: "toggle" })}
               >
                 <Power />
               </IconButton>
-              <IconButton size="sm" aria-label={`Restablecer contraseña de ${user.username}`} onClick={() => setResetting(user)}>
+              <IconButton size="sm" aria-label={`Reset password of ${user.username}`} onClick={() => setResetting(user)}>
                 <KeyRound />
               </IconButton>
             </>
@@ -156,7 +156,7 @@ export function UsersPage() {
         <IconButton
           size="sm"
           className="hover:bg-danger-25 hover:text-danger-500"
-          aria-label={`Eliminar ${user.username}`}
+          aria-label={`Delete ${user.username}`}
           onClick={() => setConfirm({ user, action: "delete" })}
         >
           <Trash2 />
@@ -168,7 +168,7 @@ export function UsersPage() {
   const columns: Column<User>[] = [
     {
       key: "username",
-      header: "Usuario",
+      header: "User",
       sortField: "displayName",
       cell: (user) => (
         <div className="flex items-center gap-3">
@@ -182,21 +182,21 @@ export function UsersPage() {
     },
     {
       key: "email",
-      header: "Correo",
+      header: "Email",
       sortField: "email",
       className: "hidden lg:table-cell",
       cell: (user) => user.email ?? <span className="text-faint">—</span>
     },
     { key: "roles", header: "Roles", className: "hidden md:table-cell", cell: (user) => <RolePills user={user} /> },
-    { key: "status", header: "Estado", sortField: "status", cell: (user) => <StatusPills user={user} /> },
+    { key: "status", header: "Status", sortField: "status", cell: (user) => <StatusPills user={user} /> },
     {
       key: "lastLoginAt",
-      header: "Último acceso",
+      header: "Last sign-in",
       sortField: "lastLoginAt",
       className: "hidden xl:table-cell whitespace-nowrap text-muted",
       cell: (user) => formatDateTime(user.lastLoginAt)
     },
-    { key: "actions", header: "Acciones", className: "text-right", cell: rowActions }
+    { key: "actions", header: "Actions", className: "text-right", cell: rowActions }
   ];
 
   return (
@@ -204,12 +204,12 @@ export function UsersPage() {
       <PageHeader
         icon={Users}
         tone="blue"
-        title="Usuarios"
-        description="Gestiona las cuentas de acceso y sus roles."
+        title="Users"
+        description="Manage sign-in accounts and their roles."
         actions={
           can("users.create") ? (
             <Button onClick={() => setEditing("new")}>
-              <Plus /> Nuevo usuario
+              <Plus /> New user
             </Button>
           ) : null
         }
@@ -218,24 +218,24 @@ export function UsersPage() {
         <div className="relative w-full max-w-sm">
           <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-faint" aria-hidden />
           <Input
-            aria-label="Buscar usuarios"
-            placeholder="Buscar por nombre, usuario o correo"
+            aria-label="Search users"
+            placeholder="Search by name, username or email"
             className="pl-10"
             value={list.search}
             onChange={(event) => list.setSearch(event.target.value)}
           />
         </div>
         <FilterChips<StatusFilter>
-          label="Filtrar por estado"
+          label="Filter by status"
           value={status}
           onChange={(next) => {
             setStatus(next);
             list.setPage(1);
           }}
           options={[
-            { value: "all", label: "Todos", count: counts.data?.all },
-            { value: "active", label: "Activos", count: counts.data?.active },
-            { value: "disabled", label: "Desactivados", count: counts.data?.disabled }
+            { value: "all", label: "All", count: counts.data?.all },
+            { value: "active", label: "Active", count: counts.data?.active },
+            { value: "disabled", label: "Disabled", count: counts.data?.disabled }
           ]}
         />
       </div>
@@ -248,11 +248,11 @@ export function UsersPage() {
         error={query.error}
         onRetry={() => query.refetch()}
         emptyIcon={Users}
-        emptyMessage={list.q || status !== "all" ? "Ningún usuario coincide con la búsqueda" : "Todavía no hay usuarios"}
+        emptyMessage={list.q || status !== "all" ? "No user matches the search" : "No users yet"}
         sort={list.sort}
         onSortChange={list.setSort}
         onRowClick={setDetail}
-        rowLabel={(user) => `Ver detalle de ${user.displayName}`}
+        rowLabel={(user) => `See details of ${user.displayName}`}
         pagination={
           query.data && {
             page: query.data.page,
@@ -273,7 +273,7 @@ export function UsersPage() {
           detail ? (
             <>
               <Button variant="secondary" onClick={() => setPermissionsOf(detail)}>
-                <ListChecks /> Permisos
+                <ListChecks /> Permissions
               </Button>
               {can("users.update") ? (
               <>
@@ -283,15 +283,15 @@ export function UsersPage() {
                   setEditing(detail);
                 }}
               >
-                <Pencil /> Editar
+                <Pencil /> Edit
               </Button>
               {!isSelf(detail) ? (
                 <>
                   <Button variant="secondary" onClick={() => setResetting(detail)}>
-                    <KeyRound /> Restablecer contraseña
+                    <KeyRound /> Reset password
                   </Button>
                   <Button variant="secondary" onClick={() => setConfirm({ user: detail, action: "toggle" })}>
-                    <Power /> {detail.status === "active" ? "Desactivar" : "Activar"}
+                    <Power /> {detail.status === "active" ? "Disable" : "Enable"}
                   </Button>
                 </>
               ) : null}
@@ -305,14 +305,14 @@ export function UsersPage() {
           <div className="space-y-6">
             <StatusPills user={detail} wrap />
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 rounded-btn border border-line bg-n-25 p-4 text-sm">
-              <DetailRow label="Usuario">@{detail.username}</DetailRow>
-              <DetailRow label="Correo">{detail.email ?? "—"}</DetailRow>
-              <DetailRow label="Último acceso">{formatDateTime(detail.lastLoginAt)}</DetailRow>
-              <DetailRow label="Creado">{formatDateTime(detail.createdAt)}</DetailRow>
-              <DetailRow label="Actualizado">{formatDateTime(detail.updatedAt)}</DetailRow>
+              <DetailRow label="Username">@{detail.username}</DetailRow>
+              <DetailRow label="Email">{detail.email ?? "—"}</DetailRow>
+              <DetailRow label="Last sign-in">{formatDateTime(detail.lastLoginAt)}</DetailRow>
+              <DetailRow label="Created">{formatDateTime(detail.createdAt)}</DetailRow>
+              <DetailRow label="Updated">{formatDateTime(detail.updatedAt)}</DetailRow>
             </dl>
             <div>
-              <h3 className="mb-2 text-sm font-bold">Roles asignados</h3>
+              <h3 className="mb-2 text-sm font-bold">Assigned roles</h3>
               <RolePills user={detail} />
             </div>
           </div>
@@ -327,7 +327,7 @@ export function UsersPage() {
           onSaved={(saved, created) => {
             setEditing(null);
             setDetail((current) => (current && current.id === saved.id ? saved : current));
-            toast({ tone: "success", message: created ? `Se creó a ${saved.displayName}` : "Cambios guardados" });
+            toast({ tone: "success", message: created ? `${saved.displayName} was created` : "Changes saved" });
           }}
         />
       ) : null}
@@ -338,7 +338,7 @@ export function UsersPage() {
           onClose={() => setResetting(null)}
           onDone={() => {
             setResetting(null);
-            toast({ tone: "success", message: `Contraseña de ${resetting.displayName} restablecida` });
+            toast({ tone: "success", message: `Password of ${resetting.displayName} reset` });
           }}
         />
       ) : null}
@@ -346,19 +346,19 @@ export function UsersPage() {
         open={confirm !== null}
         title={
           confirm?.action === "delete"
-            ? "Eliminar usuario"
+            ? "Delete user"
             : confirm?.user.status === "active"
-              ? "Desactivar usuario"
-              : "Activar usuario"
+              ? "Disable user"
+              : "Enable user"
         }
         description={
           confirm?.action === "delete"
-            ? `Se eliminará «${confirm.user.username}» de forma permanente.`
+            ? `“${confirm.user.username}” will be deleted permanently.`
             : confirm?.user.status === "active"
-              ? `«${confirm?.user.username}» no podrá iniciar sesión y sus sesiones se cerrarán.`
-              : `«${confirm?.user.username}» podrá volver a iniciar sesión.`
+              ? `“${confirm?.user.username}” will not be able to sign in and their sessions will be closed.`
+              : `“${confirm?.user.username}” will be able to sign in again.`
         }
-        confirmLabel={confirm?.action === "delete" ? "Eliminar" : "Confirmar"}
+        confirmLabel={confirm?.action === "delete" ? "Delete" : "Confirm"}
         destructive={confirm?.action === "delete"}
         pending={confirmMutation.isPending}
         error={confirmMutation.error instanceof ApiError ? confirmMutation.error.message : null}
@@ -405,8 +405,8 @@ function UserFormDialog({
   const schema = z
     .object({
       username: z.string().trim(),
-      displayName: z.string().trim().min(1, { error: "Introduce el nombre" }).max(100),
-      email: z.union([z.literal(""), z.email({ error: "Correo electrónico no válido" })]),
+      displayName: z.string().trim().min(1, { error: "Enter the name" }).max(100),
+      email: z.union([z.literal(""), z.email({ error: "Invalid email" })]),
       password: z.string(),
       roleIds: z.array(z.string()),
       status: z.enum(["active", "disabled"])
@@ -417,7 +417,7 @@ function UserFormDialog({
         ctx.addIssue({
           code: "custom",
           path: ["username"],
-          message: "Usa de 3 a 50 caracteres: letras, números, punto, guion o guion bajo"
+          message: "Use 3 to 50 characters: letters, numbers, dot, hyphen or underscore"
         });
       }
       const result = passwordSchema(() => values.username).safeParse(values.password);
@@ -475,8 +475,8 @@ function UserFormDialog({
     <Dialog
       open
       onClose={onClose}
-      title={creating ? "Nuevo usuario" : `Editar a ${user.displayName}`}
-      description={creating ? "Deberá cambiar la contraseña en su primer acceso." : `@${user.username}`}
+      title={creating ? "New user" : `Edit ${user.displayName}`}
+      description={creating ? "They must change the password on first sign-in." : `@${user.username}`}
     >
       <form
         className="grid gap-4"
@@ -489,21 +489,21 @@ function UserFormDialog({
         {formError ? <Alert>{formError}</Alert> : null}
         <div className="grid gap-4 sm:grid-cols-2">
           {creating ? (
-            <Field label="Usuario" error={errors.username?.message}>
+            <Field label="Username" error={errors.username?.message}>
               {(props) => <Input {...props} autoComplete="off" {...form.register("username")} />}
             </Field>
           ) : null}
-          <Field label="Nombre" error={errors.displayName?.message}>
+          <Field label="Name" error={errors.displayName?.message}>
             {(props) => <Input {...props} {...form.register("displayName")} />}
           </Field>
           <div className={creating ? "sm:col-span-2" : undefined}>
-            <Field label="Correo electrónico (opcional)" error={errors.email?.message}>
+            <Field label="Email (optional)" error={errors.email?.message}>
               {(props) => <Input {...props} type="email" {...form.register("email")} />}
             </Field>
           </div>
         </div>
         {creating ? (
-          <Field label="Contraseña temporal" hint="Mínimo 10 caracteres." error={errors.password?.message}>
+          <Field label="Temporary password" hint="At least 10 characters." error={errors.password?.message}>
             {(props) => <Input {...props} type="password" autoComplete="new-password" {...form.register("password")} />}
           </Field>
         ) : null}
@@ -513,7 +513,7 @@ function UserFormDialog({
             {roles.isPending ? (
               <Spinner />
             ) : roles.isError ? (
-              <Alert>No se pudieron cargar los roles.</Alert>
+              <Alert>Could not load the roles.</Alert>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2">
                 {roles.data.items.map((role) => (
@@ -534,10 +534,10 @@ function UserFormDialog({
         ) : null}
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
-            Cancelar
+            Cancel
           </Button>
           <Button type="submit" disabled={save.isPending}>
-            {save.isPending ? "Guardando…" : creating ? "Crear usuario" : "Guardar cambios"}
+            {save.isPending ? "Saving…" : creating ? "Create user" : "Save changes"}
           </Button>
         </DialogFooter>
       </form>
@@ -565,8 +565,8 @@ function ResetPasswordDialog({ user, onClose, onDone }: { user: User; onClose: (
     <Dialog
       open
       onClose={onClose}
-      title="Restablecer contraseña"
-      description={`Se cerrarán las sesiones de «${user.username}» y deberá cambiarla al entrar.`}
+      title="Reset password"
+      description={`The sessions of “${user.username}” will be closed and they must change it on sign-in.`}
     >
       <form
         className="grid gap-4"
@@ -577,12 +577,12 @@ function ResetPasswordDialog({ user, onClose, onDone }: { user: User; onClose: (
         })}
       >
         {formError ? <Alert>{formError}</Alert> : null}
-        <Field label="Contraseña temporal" error={form.formState.errors.password?.message}>
+        <Field label="Temporary password" error={form.formState.errors.password?.message}>
           {(props) => <Input {...props} type="password" autoComplete="new-password" {...form.register("password")} />}
         </Field>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
-            Cancelar
+            Cancel
           </Button>
           <Button type="submit" disabled={reset.isPending}>
             Restablecer

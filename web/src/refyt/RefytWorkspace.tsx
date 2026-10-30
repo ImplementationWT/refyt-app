@@ -77,10 +77,10 @@ function NoAccess() {
           <span className="rf-ai">
             <Lock size={20} aria-hidden />
           </span>
-          <h1>Todavía no tienes acceso a Refyt</h1>
+          <h1>You do not have access to Refyt yet</h1>
           <p>
-            Tu usuario no tiene ningún rol de Refyt. Pide a un administrador que te asigne uno en Usuarios (por ejemplo
-            Assessor, Install coordinator o Director).
+            Your user has no Refyt role. Ask an administrator to assign you one in Users (for example Assessor,
+            Install coordinator or Director).
           </p>
         </div>
       </div>

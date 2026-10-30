@@ -86,7 +86,7 @@ function ResultCard({ result, onRefresh }: { result: QuickResult; onRefresh: () 
             {result.label} · datos de {formatDateTime(result.at)}
           </p>
         </div>
-        <IconButton size="sm" aria-label="Actualizar consulta" onClick={onRefresh}>
+        <IconButton size="sm" aria-label="Refresh query" onClick={onRefresh}>
           <RefreshCw />
         </IconButton>
       </div>
@@ -108,7 +108,7 @@ function ResultCard({ result, onRefresh }: { result: QuickResult; onRefresh: () 
       ) : null}
       {result.link ? (
         <SafeLink href={result.link} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:underline [&_svg]:size-4">
-          Ver en la app <ExternalLink aria-hidden />
+          Open in the app <ExternalLink aria-hidden />
         </SafeLink>
       ) : null}
     </div>
@@ -180,7 +180,7 @@ export function WillDooBasic() {
       const answer = await request();
       setMessages((previous) => [...previous, { role: "will", answer }]);
     } catch (error) {
-      setMessages((previous) => [...previous, { role: "error", text: error instanceof ApiError ? error.message : "No se pudo responder. Inténtalo de nuevo." }]);
+      setMessages((previous) => [...previous, { role: "error", text: error instanceof ApiError ? error.message : "Could not answer. Try again." }]);
     } finally {
       setBusy(false);
     }
@@ -227,13 +227,13 @@ export function WillDooBasic() {
 
   return (
     <WillDooPanel
-      subtitle="Respuestas con tus datos · sin IA"
+      subtitle="Answers with your data · no AI"
       actions={
         <>
-          <IconButton size="sm" aria-label="Empezar de nuevo" onClick={() => setMessages([])} disabled={busy}>
+          <IconButton size="sm" aria-label="Start over" onClick={() => setMessages([])} disabled={busy}>
             <Plus />
           </IconButton>
-          <IconButton size="sm" aria-label="Cerrar Will Doo" onClick={() => setOpen(false)}>
+          <IconButton size="sm" aria-label="Close Will Doo" onClick={() => setOpen(false)}>
             <X />
           </IconButton>
         </>
@@ -242,8 +242,8 @@ export function WillDooBasic() {
       <div role="tablist" aria-label="Will Doo" className="flex gap-1 border-b border-line px-3 pt-2">
         {(
           [
-            ["chat", "Preguntas", MessagesSquare],
-            ["guide", "Cómo se usa", BookOpen]
+            ["chat", "Questions", MessagesSquare],
+            ["guide", "How to use it", BookOpen]
           ] as const
         ).map(([id, label, Icon]) => (
           <button
@@ -267,13 +267,13 @@ export function WillDooBasic() {
         <div className="flex-1 overflow-y-auto px-4 py-4 text-[14.5px]">
           {guide.isPending ? (
             <p role="status" className="text-sm text-muted">
-              Cargando…
+              Loading…
             </p>
           ) : guide.data ? (
             <Markdown text={guide.data.guide} />
           ) : (
             <p role="alert" className="text-sm text-danger-700">
-              No se pudo cargar la guía.
+              Could not load the guide.
             </p>
           )}
         </div>
@@ -283,14 +283,14 @@ export function WillDooBasic() {
             <div className="flex gap-2.5">
               <WillDooAvatar className="size-7" />
               <p className="rounded-btn rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
-                Hola{firstName ? `, ${firstName}` : ""}. Soy Will Doo: elige una pregunta o escríbela, y te respondo con los datos del sistema que tú puedes ver.
+                Hi{firstName ? `, ${firstName}` : ""}. I am Will Doo: pick a question or type it, and I answer with the system data you can see.
               </p>
             </div>
 
             {messages.length === 0 ? (
               list.isPending ? (
                 <p role="status" className="pl-9 text-sm text-muted">
-                  Cargando…
+                  Loading…
                 </p>
               ) : groups.size ? (
                 [...groups].map(([group, items]) => <Chips key={group} title={group} items={items} disabled={busy} onPick={runQuery} />)
@@ -322,7 +322,7 @@ export function WillDooBasic() {
                   </div>
                   {/* Follow-ups only under the latest answer. */}
                   {message === lastWill ? (
-                    <Chips title="Sigue con" items={message.answer.suggestions} disabled={busy} onPick={runQuery} />
+                    <Chips title="Continue with" items={message.answer.suggestions} disabled={busy} onPick={runQuery} />
                   ) : null}
                 </div>
               )
@@ -330,7 +330,7 @@ export function WillDooBasic() {
 
             {busy ? (
               <p role="status" className="flex items-center gap-2 pl-9 text-sm text-muted">
-                <Loader2 className="size-4 animate-spin text-brand-500" aria-hidden /> Buscando en los datos…
+                <Loader2 className="size-4 animate-spin text-brand-500" aria-hidden /> Searching the data…
               </p>
             ) : null}
           </div>
@@ -343,20 +343,20 @@ export function WillDooBasic() {
                 onKeyDown={onKeyDown}
                 rows={1}
                 maxLength={500}
-                placeholder="Escribe tu pregunta…"
-                aria-label="Pregunta para Will Doo"
+                placeholder="Type your question…"
+                aria-label="Question for Will Doo"
                 className="max-h-32 min-h-6 flex-1 resize-none bg-transparent text-[14.5px] outline-none placeholder:text-faint"
               />
               <button
                 type="submit"
-                aria-label="Enviar pregunta"
+                aria-label="Send question"
                 disabled={!draft.trim() || busy}
                 className="grid size-8 shrink-0 place-items-center rounded-tile bg-brand-600 text-on-brand transition-colors hover:bg-brand-700 disabled:opacity-40 [&_svg]:size-4"
               >
                 <ArrowUp />
               </button>
             </div>
-            <p className="mt-1.5 text-center text-[11.5px] text-faint">Solo responde con los datos que existen; sin pronósticos ni análisis.</p>
+            <p className="mt-1.5 text-center text-[11.5px] text-faint">It only answers with the data that exists; no forecasts or analysis.</p>
           </form>
         </>
       )}

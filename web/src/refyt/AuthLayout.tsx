@@ -13,7 +13,6 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
         <p>{subtitle}</p>
         {children}
       </main>
-      <p className="rf-auth-note">Retrofit, Delivery, Comercial y Cuentas en un solo lugar.</p>
     </div>
   );
 }

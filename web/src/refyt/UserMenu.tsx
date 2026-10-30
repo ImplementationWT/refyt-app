@@ -31,7 +31,7 @@ export function UserMenu() {
 
   const user = session?.user;
   if (!user) return null;
-  const roleLabel = user.roles.map((role) => role.name).join(", ") || "Sin rol";
+  const roleLabel = user.roles.map((role) => role.name).join(", ") || "No role";
   // Usuarios, Roles e Integraciones, only those the user may open.
   const items = visibleNavGroups(can, hasFeature).find((group) => group.id === ADMIN_GROUP_ID)?.items ?? [];
   const close = () => setOpen(false);
@@ -43,7 +43,7 @@ export function UserMenu() {
         className="rf-umb"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Menú de usuario"
+        aria-label="User menu"
         onClick={() => setOpen((value) => !value)}
       >
         <span className="rf-uav" aria-hidden>
@@ -56,7 +56,7 @@ export function UserMenu() {
         <ChevronDown size={14} aria-hidden />
       </button>
       {open ? (
-        <div className="rf-pop rf-ump" role="menu" aria-label="Menú de usuario">
+        <div className="rf-pop rf-ump" role="menu" aria-label="User menu">
           <div className="rf-umh">
             <span className="rf-uav" aria-hidden>
               {initials(user.displayName)}
@@ -68,14 +68,14 @@ export function UserMenu() {
           </div>
           {items.length ? (
             <>
-              <small className="rf-ph">Administración</small>
+              <small className="rf-ph">Administration</small>
               {items.map((item) => (
                 <MenuLink key={item.to} to={item.to} icon={item.icon} label={item.label} note={item.description} onSelect={close} />
               ))}
               <div className="rf-psep" />
             </>
           ) : null}
-          <MenuLink to={CHANGE_PASSWORD_PATH} icon={KeyRound} label="Cambiar contraseña" onSelect={close} />
+          <MenuLink to={CHANGE_PASSWORD_PATH} icon={KeyRound} label="Change password" onSelect={close} />
           <button
             type="button"
             role="menuitem"
@@ -89,7 +89,7 @@ export function UserMenu() {
             <span className="rf-ai">
               <LogOut size={15} aria-hidden />
             </span>
-            <b>Cerrar sesión</b>
+            <b>Sign out</b>
           </button>
         </div>
       ) : null}

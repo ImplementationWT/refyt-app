@@ -72,19 +72,19 @@ export function AppRoutes() {
           </RequireAuth>
         }
       >
-        <Route path="panel" element={<DashboardPage />} />
-        <Route path="usuarios" element={page("users.read", <UsersPage />)} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="users" element={page("users.read", <UsersPage />)} />
         <Route path="roles" element={page("roles.read", <RolesPage />)} />
-        <Route path="integraciones" element={page("integrations.read", <IntegrationsPage />)} />
+        <Route path="integrations" element={page("integrations.read", <IntegrationsPage />)} />
         <Route
           path="monday"
           element={
             <RequireFeature feature="monday">{page("monday.read", <MondayPage />)}</RequireFeature>
           }
         />
-        {/* Permissions are managed per user from the Usuarios table. */}
-        <Route path="usuarios/permisos" element={<Navigate to="/usuarios" replace />} />
-        <Route path="permisos" element={<Navigate to="/usuarios" replace />} />
+        {/* Permissions are managed per user from the Users table. */}
+        <Route path="users/permissions" element={<Navigate to="/users" replace />} />
+        <Route path="permissions" element={<Navigate to="/users" replace />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

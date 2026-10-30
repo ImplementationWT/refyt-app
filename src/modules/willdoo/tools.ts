@@ -44,17 +44,17 @@ export function defineTool<Input>(tool: WillDooTool<Input>): WillDooTool<unknown
 }
 
 const limit = (max: number, fallback: number) =>
-  z.number().int().min(1).max(max).optional().default(fallback).describe(`Máximo de resultados (1–${max}, ${fallback} por defecto)`);
+  z.number().int().min(1).max(max).optional().default(fallback).describe(`Maximum results (1–${max}, ${fallback} by default)`);
 
 const searchUsers = defineTool({
   name: "buscar_usuarios",
-  label: "Consultando usuarios",
+  label: "Looking up users",
   description:
-    "Busca usuarios de la app por nombre, usuario o correo y devuelve su estado, roles y último ingreso. Sin texto, lista los más recientes. Úsala para preguntas sobre personas o cuentas.",
+    "Searches the app's users by name, username or email and returns their status, roles and last sign-in. Without text, lists the most recent. Use it for questions about people or accounts.",
   permission: "users.read",
   input: z.strictObject({
-    texto: z.string().trim().max(100).optional().describe("Parte del nombre, usuario o correo"),
-    estado: z.enum(["active", "disabled"]).optional().describe("Filtra por activo o desactivado"),
+    texto: z.string().trim().max(100).optional().describe("Part of the name, username or email"),
+    estado: z.enum(["active", "disabled"]).optional().describe("Filters by active or disabled"),
     limite: limit(25, 10)
   }),
   async run({ c }, { texto, estado, limite }) {
@@ -77,21 +77,21 @@ const searchUsers = defineTool({
         usuario: user.username,
         nombre: user.displayName,
         correo: user.email ?? null,
-        estado: user.status === "active" ? "activo" : "desactivado",
+        estado: user.status === "active" ? "active" : "disabled",
         bloqueado: user.lockedUntil !== null && user.lockedUntil > new Date(),
         roles: user.roleIds.map((id) => byId.get(String(id))?.name).filter(Boolean),
         ultimoIngreso: user.lastLoginAt,
         creado: user.createdAt
       })),
-      enlace: "/usuarios"
+      enlace: "/users"
     };
   }
 });
 
 const listRoles = defineTool({
   name: "listar_roles",
-  label: "Consultando roles",
-  description: "Lista los roles de la app con su descripción, cuántos permisos tienen y cuántos usuarios los usan.",
+  label: "Looking up roles",
+  description: "Lists the app's roles with their description, how many permissions they have and how many users use them.",
   permission: "roles.read",
   input: z.strictObject({}),
   async run({ c }) {
@@ -116,28 +116,28 @@ const listRoles = defineTool({
 
 const indicators = defineTool({
   name: "indicadores",
-  label: "Consultando indicadores",
+  label: "Looking up indicators",
   description:
-    "Indicadores del dashboard: usuarios activos y desactivados, roles, ingresos correctos y fallidos y usuarios únicos en los últimos 7, 14 o 30 días, con la serie por día.",
+    "Dashboard indicators: active and disabled users, roles, successful and failed sign-ins and unique users in the last 7, 14 or 30 days, with the daily series.",
   permission: "dashboard.read",
   input: z.strictObject({
-    dias: z.union([z.literal(7), z.literal(14), z.literal(30)]).optional().default(14).describe("Periodo: 7, 14 o 30 días")
+    dias: z.union([z.literal(7), z.literal(14), z.literal(30)]).optional().default(14).describe("Period: 7, 14 or 30 days")
   }),
   async run({ c, timeZone }, { dias }) {
-    return { ...(await dashboardData(c, dias, timeZone)), enlace: "/panel" };
+    return { ...(await dashboardData(c, dias, timeZone)), enlace: "/dashboard" };
   }
 });
 
 const auditLog = defineTool({
   name: "consultar_auditoria",
-  label: "Consultando la auditoría",
+  label: "Looking up the audit log",
   description:
-    "Busca en el registro de auditoría quién hizo qué y cuándo (ingresos, cambios de usuarios y roles, notificaciones…). Filtra por acción y rango de fechas.",
+    "Searches the audit log for who did what and when (sign-ins, user and role changes, notifications…). Filters by action and date range.",
   permission: "audit.read",
   input: z.strictObject({
-    accion: z.string().trim().max(100).optional().describe("Acción exacta, p. ej. auth.login.failure o user.update"),
-    desde: z.iso.date().optional().describe("Fecha inicial AAAA-MM-DD"),
-    hasta: z.iso.date().optional().describe("Fecha final AAAA-MM-DD (incluida)"),
+    accion: z.string().trim().max(100).optional().describe("Exact action, e.g. auth.login.failure or user.update"),
+    desde: z.iso.date().optional().describe("Start date YYYY-MM-DD"),
+    hasta: z.iso.date().optional().describe("End date YYYY-MM-DD (included)"),
     limite: limit(50, 20)
   }),
   async run({ c }, { accion, desde, hasta, limite }) {
@@ -177,11 +177,11 @@ const auditLog = defineTool({
 
 const myNotifications = defineTool({
   name: "mis_notificaciones",
-  label: "Consultando tus notificaciones",
-  description: "Notificaciones del usuario que pregunta (solo las suyas), con su estado de lectura.",
+  label: "Looking up your notifications",
+  description: "Notifications of the user asking (only theirs), with their read status.",
   permission: "notifications.read",
   input: z.strictObject({
-    soloNoLeidas: z.boolean().optional().default(false).describe("Solo las no leídas"),
+    soloNoLeidas: z.boolean().optional().default(false).describe("Unread only"),
     limite: limit(30, 10)
   }),
   async run({ auth, c }, { soloNoLeidas, limite }) {
@@ -205,11 +205,11 @@ const myNotifications = defineTool({
 
 const mondayBoards = defineTool({
   name: "tableros_monday",
-  label: "Consultando Monday",
-  description: "Tableros de la cuenta de Monday.com conectada, con su espacio de trabajo y enlace.",
+  label: "Looking up Monday",
+  description: "Boards of the connected Monday.com account, with their workspace and link.",
   permission: "monday.read",
   input: z.strictObject({
-    texto: z.string().trim().max(100).optional().describe("Parte del nombre del tablero")
+    texto: z.string().trim().max(100).optional().describe("Part of the board name")
   }),
   available: ({ integrations }) => integrations.monday() !== null,
   async run({ integrations }, { texto }) {
@@ -269,14 +269,14 @@ export async function runTool(ctx: ToolContext, offered: readonly WillDooTool[],
   const parsed = tool.input.safeParse(input ?? {});
   if (!parsed.success) {
     return {
-      content: JSON.stringify({ error: "entrada_invalida", detalle: parsed.error.issues.map((issue) => `${issue.path.join(".") || "(raíz)"}: ${issue.message}`) }),
+      content: JSON.stringify({ error: "entrada_invalida", detalle: parsed.error.issues.map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`) }),
       isError: true
     };
   }
   try {
     const content = JSON.stringify(await tool.run(ctx, parsed.data));
     if (content.length > MAX_RESULT_CHARS) {
-      return { content: JSON.stringify({ error: "resultado_demasiado_grande", sugerencia: "Acota la consulta (menos resultados o filtros)." }), isError: true };
+      return { content: JSON.stringify({ error: "resultado_demasiado_grande", sugerencia: "Narrow the query (fewer results or filters)." }), isError: true };
     }
     return { content, isError: false };
   } catch (error) {

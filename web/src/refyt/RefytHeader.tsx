@@ -26,7 +26,7 @@ export function RefytHeader({ children, homeLink = false }: { children: ReactNod
     <header className="top rfx">
       <div className="brand">
         {homeLink ? (
-          <Link to="/" aria-label="Ir a Refyt">
+          <Link to="/" aria-label="Go to Refyt">
             {brand}
           </Link>
         ) : (

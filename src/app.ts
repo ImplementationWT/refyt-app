@@ -69,7 +69,7 @@ export interface AppOptions {
   willdoo?: { model?: WillDooModel; tools?: readonly WillDooTool[]; quickQueries?: readonly QuickQuery[] };
 }
 
-export const DEFAULT_APP_NAME = "Aplicación";
+export const DEFAULT_APP_NAME = "Refyt";
 
 type CspDirectives = Record<string, string[]>;
 
@@ -143,7 +143,7 @@ export async function buildApp({
   await app.register(rateLimit, {
     global: false,
     errorResponseBuilder: () =>
-      new AppError(429, "too_many_requests", "Demasiados intentos. Inténtalo de nuevo más tarde.")
+      new AppError(429, "too_many_requests", "Too many attempts. Try again later.")
   });
 
   // Order matters: readiness, then CSRF, then session resolution.

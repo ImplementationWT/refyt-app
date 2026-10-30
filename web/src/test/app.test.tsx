@@ -39,12 +39,12 @@ describe("login", () => {
       }
     });
     const user = userEvent.setup();
-    renderApp("/panel");
+    renderApp("/dashboard");
 
-    expect(await screen.findByRole("heading", { name: "Aplicación de prueba" })).toBeInTheDocument();
-    await user.type(screen.getByLabelText("Usuario"), "ana");
-    await user.type(screen.getByLabelText("Contraseña"), "una-clave-cualquiera");
-    await user.click(screen.getByRole("button", { name: /entrar/i }));
+    expect(await screen.findByRole("heading", { name: "Test app" })).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Username"), "ana");
+    await user.type(screen.getByLabelText("Password"), "una-clave-cualquiera");
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     expect(await screen.findByTestId("refyt-workspace")).toBeInTheDocument();
     const login = calls.find((call) => call.method === "POST");
@@ -57,18 +57,18 @@ describe("login", () => {
       "GET /api/auth/me": unauthorized,
       "POST /api/auth/login": () => ({
         status: 401,
-        body: { error: "invalid_credentials", message: "Usuario o contraseña incorrectos" }
+        body: { error: "invalid_credentials", message: "Incorrect username or password" }
       })
     });
     const user = userEvent.setup();
     renderApp("/login");
 
-    await user.type(await screen.findByLabelText("Usuario"), "ana");
-    await user.type(screen.getByLabelText("Contraseña"), "mala");
-    await user.click(screen.getByRole("button", { name: /entrar/i }));
+    await user.type(await screen.findByLabelText("Username"), "ana");
+    await user.type(screen.getByLabelText("Password"), "mala");
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Usuario o contraseña incorrectos");
-    expect(screen.getByLabelText("Contraseña")).toHaveValue("");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Incorrect username or password");
+    expect(screen.getByLabelText("Password")).toHaveValue("");
   });
 
   it("validates required fields before calling the API", async () => {
@@ -76,9 +76,9 @@ describe("login", () => {
     const user = userEvent.setup();
     renderApp("/login");
 
-    await user.click(await screen.findByRole("button", { name: /entrar/i }));
+    await user.click(await screen.findByRole("button", { name: /sign in/i }));
 
-    expect(await screen.findByText("Introduce tu usuario")).toBeInTheDocument();
+    expect(await screen.findByText("Enter your username")).toBeInTheDocument();
     expect(calls.some((call) => call.method === "POST")).toBe(false);
   });
 
@@ -96,11 +96,11 @@ describe("login", () => {
     const user = userEvent.setup();
     renderApp("/login");
 
-    await user.type(await screen.findByLabelText("Usuario"), "admin");
-    await user.type(screen.getByLabelText("Contraseña"), "admin123");
-    await user.click(screen.getByRole("button", { name: /entrar/i }));
+    await user.type(await screen.findByLabelText("Username"), "admin");
+    await user.type(screen.getByLabelText("Password"), "admin123");
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
 
-    expect(await screen.findByRole("heading", { name: "Cambiar contraseña" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Change password" })).toBeInTheDocument();
   });
 });
 
@@ -111,13 +111,13 @@ describe("forced password change", () => {
       "GET /api/auth/me": session([], { username: "ana", mustChangePassword: true })
     });
     const user = userEvent.setup();
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    await user.type(await screen.findByLabelText("Contraseña actual"), "admin123");
-    await user.type(screen.getByLabelText("Nueva contraseña"), "admin123");
-    await user.type(screen.getByLabelText("Repite la nueva contraseña"), "admin123");
-    await user.click(screen.getByRole("button", { name: /guardar contraseña/i }));
-    expect(await screen.findByText("La contraseña no puede ser la contraseña inicial")).toBeInTheDocument();
+    await user.type(await screen.findByLabelText("Current password"), "admin123");
+    await user.type(screen.getByLabelText("New password"), "admin123");
+    await user.type(screen.getByLabelText("Repeat the new password"), "admin123");
+    await user.click(screen.getByRole("button", { name: /save password/i }));
+    expect(await screen.findByText("The password cannot be the initial password")).toBeInTheDocument();
 
     expect(calls.some((call) => call.url === "/api/auth/change-password")).toBe(false);
   });
@@ -127,26 +127,26 @@ describe("forced password change", () => {
       "GET /api/meta": META,
       "GET /api/auth/me": session(ALL_PERMISSIONS, { mustChangePassword: true })
     });
-    renderApp("/auditoria");
+    renderApp("/audit");
 
-    expect(await screen.findByRole("heading", { name: "Cambiar contraseña" })).toBeInTheDocument();
-    expect(screen.queryByRole("complementary", { name: "Navegación principal" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Change password" })).toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: "Main navigation" })).not.toBeInTheDocument();
   });
 });
 
 describe("route guards", () => {
   it("redirects to login without a session", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": unauthorized });
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    expect(await screen.findByRole("button", { name: /entrar/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /sign in/i })).toBeInTheDocument();
   });
 
   it("shows access denied for a route without the permission", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(["roles.read"]) });
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    expect(await screen.findByRole("heading", { name: "Acceso denegado" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Access denied" })).toBeInTheDocument();
   });
 
   it("renders the page when the permission is present", async () => {
@@ -155,12 +155,12 @@ describe("route guards", () => {
       "GET /api/auth/me": session(["users.read"]),
       "GET /api/users": EMPTY_PAGE
     });
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    expect(await screen.findByRole("heading", { name: "Usuarios" })).toBeInTheDocument();
-    expect(await screen.findByText("Todavía no hay usuarios")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Users" })).toBeInTheDocument();
+    expect(await screen.findByText("No users yet")).toBeInTheDocument();
     // No create button without users.create.
-    expect(screen.queryByRole("button", { name: /nuevo usuario/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /new user/i })).not.toBeInTheDocument();
   });
 
   it("returns to login when the session expires (401 on a data request)", async () => {
@@ -173,9 +173,9 @@ describe("route guards", () => {
         return UNAUTHORIZED;
       }
     });
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    expect(await screen.findByRole("button", { name: /entrar/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /sign in/i })).toBeInTheDocument();
   });
 });
 
@@ -186,8 +186,8 @@ describe("Refyt", () => {
 
     expect(await screen.findByTestId("refyt-workspace")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "REFYT" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Menú de usuario" })).toHaveTextContent("Ana");
-    expect(screen.queryByRole("complementary", { name: "Navegación principal" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "User menu" })).toHaveTextContent("Ana");
+    expect(screen.queryByRole("complementary", { name: "Main navigation" })).not.toBeInTheDocument();
   });
 
   it("opens only the apps and roles of the signed-in user", async () => {
@@ -206,16 +206,16 @@ describe("Refyt", () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session([]) });
     renderApp("/");
 
-    expect(await screen.findByRole("heading", { name: "Todavía no tienes acceso a Refyt" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "You do not have access to Refyt yet" })).toBeInTheDocument();
     expect(screen.queryByTestId("refyt-workspace")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Menú de usuario" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "User menu" })).toBeInTheDocument();
   });
 
   it("asks to log in before showing Refyt", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": unauthorized });
     renderApp("/");
 
-    expect(await screen.findByRole("button", { name: /entrar/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /sign in/i })).toBeInTheDocument();
     expect(screen.queryByTestId("refyt-workspace")).not.toBeInTheDocument();
   });
 });
@@ -223,8 +223,8 @@ describe("Refyt", () => {
 describe("sidebar", () => {
   async function sidebarLinks(permissions: string[]) {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(permissions) });
-    renderApp("/panel");
-    const nav = await screen.findByRole("complementary", { name: "Navegación principal" });
+    renderApp("/dashboard");
+    const nav = await screen.findByRole("complementary", { name: "Main navigation" });
     return within(nav)
       .getAllByRole("link")
       .map((link) => link.textContent);
@@ -235,21 +235,21 @@ describe("sidebar", () => {
   });
 
   it("shows every section to an administrator, grouped", async () => {
-    expect(await sidebarLinks(ALL_PERMISSIONS)).toEqual(["Usuarios", "Roles", "Dashboards"]);
-    const nav = screen.getByRole("complementary", { name: "Navegación principal" });
-    expect(within(nav).getByText("Administración")).toBeInTheDocument();
-    expect(within(nav).getByText("Actividad")).toBeInTheDocument();
+    expect(await sidebarLinks(ALL_PERMISSIONS)).toEqual(["Users", "Roles", "Dashboards"]);
+    const nav = screen.getByRole("complementary", { name: "Main navigation" });
+    expect(within(nav).getByText("Administration")).toBeInTheDocument();
+    expect(within(nav).getByText("Activity")).toBeInTheDocument();
     expect(within(nav).queryByText("Notificaciones")).not.toBeInTheDocument();
     expect(within(nav).queryByText("Auditoría")).not.toBeInTheDocument();
-    expect(within(nav).queryByText("Permisos")).not.toBeInTheDocument();
+    expect(within(nav).queryByText("Permissions")).not.toBeInTheDocument();
   });
 
   it("hides a group when the user has none of its permissions", async () => {
     await sidebarLinks(["notifications.read"]);
-    const nav = screen.getByRole("complementary", { name: "Navegación principal" });
+    const nav = screen.getByRole("complementary", { name: "Main navigation" });
 
-    expect(within(nav).getByText("Actividad")).toBeInTheDocument();
-    expect(within(nav).queryByText("Administración")).not.toBeInTheDocument();
+    expect(within(nav).getByText("Activity")).toBeInTheDocument();
+    expect(within(nav).queryByText("Administration")).not.toBeInTheDocument();
   });
 
   it("needs users.read for Usuarios (the catalog alone is not enough)", async () => {
@@ -260,7 +260,7 @@ describe("sidebar", () => {
 describe("header", () => {
   it("shows the app name from /api/meta and no notifications bell", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(ALL_PERMISSIONS), "GET /api/dashboard": DASHBOARD });
-    renderApp("/panel");
+    renderApp("/dashboard");
 
     await waitFor(() => expect(document.title).toBe("Refyt"));
     expect(screen.queryByRole("button", { name: /notificaciones/i })).not.toBeInTheDocument();
@@ -277,16 +277,16 @@ describe("header", () => {
       }
     });
     const user = userEvent.setup();
-    renderApp("/panel");
+    renderApp("/dashboard");
 
-    await user.click(await screen.findByRole("button", { name: "Menú de usuario" }));
-    await user.click(screen.getByRole("menuitem", { name: /cerrar sesión/i }));
+    await user.click(await screen.findByRole("button", { name: "User menu" }));
+    await user.click(screen.getByRole("menuitem", { name: /sign out/i }));
 
-    expect(await screen.findByRole("button", { name: /entrar/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /sign in/i })).toBeInTheDocument();
     expect(calls.some((call) => call.url === "/api/auth/logout")).toBe(true);
   });
 
-  it("opens Usuarios, Roles and Integraciones from the user menu, by permission", async () => {
+  it("opens Users, Roles and Integrations from the user menu, by permission", async () => {
     mockApi({
       "GET /api/meta": META,
       "GET /api/auth/me": session(["users.read", "roles.read", "integrations.read"]),
@@ -295,19 +295,19 @@ describe("header", () => {
     const user = userEvent.setup();
     renderApp("/");
 
-    await user.click(await screen.findByRole("button", { name: "Menú de usuario" }));
-    const menu = screen.getByRole("menu", { name: "Menú de usuario" });
+    await user.click(await screen.findByRole("button", { name: "User menu" }));
+    const menu = screen.getByRole("menu", { name: "User menu" });
     expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
-      "UsuariosCuentas, accesos y permisos",
-      "RolesAgrupa permisos por función",
-      "IntegracionesServicios externos conectados",
-      "Cambiar contraseña",
-      "Cerrar sesión"
+      "UsersAccounts, access and permissions",
+      "RolesGroups permissions by job",
+      "IntegrationsConnected external services",
+      "Change password",
+      "Sign out"
     ]);
 
-    await user.click(within(menu).getByRole("menuitem", { name: /usuarios/i }));
-    expect(await screen.findByRole("heading", { name: "Usuarios" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /volver a refyt/i })).toHaveAttribute("href", "/");
+    await user.click(within(menu).getByRole("menuitem", { name: /users/i }));
+    expect(await screen.findByRole("heading", { name: "Users" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /back to refyt/i })).toHaveAttribute("href", "/");
   });
 
   it("shows only what the user may open in the user menu", async () => {
@@ -315,10 +315,10 @@ describe("header", () => {
     const user = userEvent.setup();
     renderApp("/");
 
-    await user.click(await screen.findByRole("button", { name: "Menú de usuario" }));
-    const menu = screen.getByRole("menu", { name: "Menú de usuario" });
-    expect(within(menu).queryByText("Administración")).not.toBeInTheDocument();
-    expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual(["Cambiar contraseña", "Cerrar sesión"]);
+    await user.click(await screen.findByRole("button", { name: "User menu" }));
+    const menu = screen.getByRole("menu", { name: "User menu" });
+    expect(within(menu).queryByText("Administration")).not.toBeInTheDocument();
+    expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual(["Change password", "Sign out"]);
   });
 });
 
@@ -335,15 +335,15 @@ describe("users", () => {
       })
     });
     const user = userEvent.setup();
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    await user.click(await screen.findByRole("button", { name: /nuevo usuario/i }));
-    await user.type(screen.getByLabelText("Usuario"), "maria");
-    await user.type(screen.getByLabelText("Nombre"), "María");
-    await user.type(screen.getByLabelText("Contraseña temporal"), "Clave-temporal-1");
-    await user.click(screen.getByRole("button", { name: "Crear usuario" }));
+    await user.click(await screen.findByRole("button", { name: /new user/i }));
+    await user.type(screen.getByLabelText("Username"), "maria");
+    await user.type(screen.getByLabelText("Name"), "María");
+    await user.type(screen.getByLabelText("Temporary password"), "Clave-temporal-1");
+    await user.click(screen.getByRole("button", { name: "Create user" }));
 
-    expect(await screen.findByText("Se creó a María")).toBeInTheDocument();
+    expect(await screen.findByText("María was created")).toBeInTheDocument();
     expect(calls.find((call) => call.method === "POST")?.body).toMatchObject({ username: "maria", displayName: "María" });
   });
 
@@ -355,9 +355,9 @@ describe("users", () => {
       "GET /api/users": { items: [row], total: 1, page: 1, pageSize: 20 }
     });
     const user = userEvent.setup();
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    await user.click(await screen.findByRole("row", { name: "Ver detalle de Luis Gómez" }));
+    await user.click(await screen.findByRole("row", { name: "See details of Luis Gómez" }));
 
     const panel = await screen.findByRole("dialog", { name: "Luis Gómez" });
     expect(within(panel).getByText("luis@example.test")).toBeInTheDocument();
@@ -365,7 +365,7 @@ describe("users", () => {
 });
 
 describe("per-user permissions", () => {
-  const ROW = { ...session([]).user, id: "u7", username: "maria", displayName: "María Pérez", roles: [{ id: "r1", key: "user", name: "Usuario" }] };
+  const ROW = { ...session([]).user, id: "u7", username: "maria", displayName: "María Pérez", roles: [{ id: "r1", key: "user", name: "User" }] };
   const PERMISSIONS = {
     user: { id: "u7", username: "maria", displayName: "María Pérez" },
     isAdmin: false,
@@ -373,7 +373,7 @@ describe("per-user permissions", () => {
     editable: true,
     permissions: [
       { key: "dashboard.read", module: "dashboard", description: "Ver los indicadores del dashboard", fromRoles: [], granted: false, revoked: false, effective: false, grantable: true },
-      { key: "notifications.read", module: "notifications", description: "Ver y marcar notificaciones propias", fromRoles: ["Usuario"], granted: false, revoked: false, effective: true, grantable: true },
+      { key: "notifications.read", module: "notifications", description: "Ver y marcar notificaciones propias", fromRoles: ["User"], granted: false, revoked: false, effective: true, grantable: true },
       { key: "users.read", module: "users", description: "Ver usuarios", fromRoles: [], granted: false, revoked: false, effective: false, grantable: false }
     ]
   };
@@ -387,24 +387,24 @@ describe("per-user permissions", () => {
       "PUT /api/users/u7/permissions": () => ({ body: { permissionKeys: ["dashboard.read"] } })
     });
     const user = userEvent.setup();
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    await user.click(await screen.findByRole("button", { name: "Permisos de maria" }));
-    const panel = await screen.findByRole("dialog", { name: "Permisos de María Pérez" });
-    expect(await within(panel).findByText("Rol: Usuario")).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "Permissions of maria" }));
+    const panel = await screen.findByRole("dialog", { name: "Permissions of María Pérez" });
+    expect(await within(panel).findByText("Role: User")).toBeInTheDocument();
 
     // A permission the current user lacks cannot be granted.
     expect(within(panel).getByRole("checkbox", { name: /Ver usuarios/ })).toBeDisabled();
 
     await user.click(within(panel).getByRole("checkbox", { name: /Ver los indicadores/ }));
     await user.click(within(panel).getByRole("checkbox", { name: /Ver y marcar notificaciones/ }));
-    expect(within(panel).getByText("Añadido")).toBeInTheDocument();
-    expect(within(panel).getByText("Quitado (rol: Usuario)")).toBeInTheDocument();
-    expect(within(panel).getByText("2 cambios sin guardar")).toBeInTheDocument();
+    expect(within(panel).getByText("Added")).toBeInTheDocument();
+    expect(within(panel).getByText("Removed (role: User)")).toBeInTheDocument();
+    expect(within(panel).getByText("2 unsaved changes")).toBeInTheDocument();
 
-    await user.click(within(panel).getByRole("button", { name: "Guardar permisos" }));
+    await user.click(within(panel).getByRole("button", { name: "Save permissions" }));
 
-    expect(await screen.findByText("Permisos de María Pérez actualizados")).toBeInTheDocument();
+    expect(await screen.findByText("Permissions of María Pérez updated")).toBeInTheDocument();
     expect(calls.find((call) => call.method === "PUT")?.body).toEqual({ permissionKeys: ["dashboard.read"] });
   });
 
@@ -416,22 +416,22 @@ describe("per-user permissions", () => {
       "GET /api/users/u7/permissions": { ...PERMISSIONS, isAdmin: true, editable: false }
     });
     const user = userEvent.setup();
-    renderApp("/usuarios");
+    renderApp("/users");
 
-    await user.click(await screen.findByRole("button", { name: "Permisos de maria" }));
-    const panel = await screen.findByRole("dialog", { name: "Permisos de María Pérez" });
+    await user.click(await screen.findByRole("button", { name: "Permissions of maria" }));
+    const panel = await screen.findByRole("dialog", { name: "Permissions of María Pérez" });
 
-    expect(await within(panel).findByText("Los administradores tienen siempre todos los permisos.")).toBeInTheDocument();
-    expect(within(panel).queryByRole("button", { name: "Guardar permisos" })).not.toBeInTheDocument();
+    expect(await within(panel).findByText("Administrators always have every permission.")).toBeInTheDocument();
+    expect(within(panel).queryByRole("button", { name: "Save permissions" })).not.toBeInTheDocument();
     for (const box of within(panel).getAllByRole("checkbox")) expect(box).toBeDisabled();
   });
 
-  it("redirects the old permissions addresses to Usuarios", async () => {
+  it("redirects the old permissions addresses to Users", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(["users.read"]), "GET /api/users": EMPTY_PAGE });
-    renderApp("/usuarios/permisos");
+    renderApp("/users/permissions");
 
-    expect(await screen.findByRole("heading", { name: "Usuarios" })).toBeInTheDocument();
-    expect(screen.queryByRole("navigation", { name: "Secciones de usuarios" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Users" })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "User sections" })).not.toBeInTheDocument();
   });
 });
 
@@ -443,38 +443,38 @@ describe("dashboards", () => {
       "GET /api/dashboard": DASHBOARD
     });
     const user = userEvent.setup();
-    renderApp("/panel");
+    renderApp("/dashboard");
 
     expect(await screen.findByText("48")).toBeInTheDocument();
-    expect(screen.getByText("Personas que entraron")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /Inicios de sesión por día/ })).toBeInTheDocument();
+    expect(screen.getByText("People who signed in")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Sign-ins per day/ })).toBeInTheDocument();
     expect(calls.find((call) => call.url.startsWith("/api/dashboard"))?.url).toContain("days=14");
 
-    await user.click(screen.getByRole("button", { name: "Ver tabla" }));
+    await user.click(screen.getByRole("button", { name: "Show table" }));
     const table = screen.getByRole("table");
     expect(within(table).getAllByRole("row")).toHaveLength(15);
 
-    await user.click(screen.getByRole("button", { name: "7 días" }));
+    await user.click(screen.getByRole("button", { name: "7 days" }));
     await waitFor(() => expect(calls.some((call) => call.url.includes("days=7"))).toBe(true));
   });
 
   it("shows a column tooltip on keyboard focus", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(["dashboard.read"]), "GET /api/dashboard": DASHBOARD });
-    renderApp("/panel");
+    renderApp("/dashboard");
 
-    const column = await screen.findByRole("graphics-symbol", { name: /15 de octubre: 9 inicios de sesión/ });
+    const column = await screen.findByRole("graphics-symbol", { name: /Thursday 15 October: 9 sign-ins/ });
     column.focus();
 
     const tooltip = await screen.findByRole("tooltip");
     expect(tooltip).toHaveTextContent("9");
-    expect(tooltip).toHaveTextContent("Intentos fallidos: 2");
+    expect(tooltip).toHaveTextContent("Failed attempts: 2");
   });
 
   it("explains when the user cannot see indicators", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session([]) });
-    renderApp("/panel");
+    renderApp("/dashboard");
 
-    expect(await screen.findByRole("heading", { name: "No tienes indicadores disponibles" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "You have no indicators available" })).toBeInTheDocument();
   });
 });
 
@@ -493,8 +493,8 @@ describe("Monday integration", () => {
 
   async function sidebarText(current: ReturnType<typeof session>) {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": current });
-    renderApp("/panel");
-    const nav = await screen.findByRole("complementary", { name: "Navegación principal" });
+    renderApp("/dashboard");
+    const nav = await screen.findByRole("complementary", { name: "Main navigation" });
     return within(nav).getAllByRole("link").map((link) => link.textContent);
   }
 
@@ -509,14 +509,14 @@ describe("Monday integration", () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(["monday.read"]) });
     renderApp("/monday");
 
-    expect(await screen.findByRole("heading", { name: "Página no encontrada" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
   });
 
   it("lists boards alphabetically with safe links in a new tab", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": withFeature, "GET /api/monday/boards": BOARDS });
     renderApp("/monday");
 
-    const links = await screen.findAllByRole("link", { name: /se abre en una pestaña nueva/ });
+    const links = await screen.findAllByRole("link", { name: /opens in a new tab/ });
     expect(links.map((link) => link.querySelector(".font-semibold")?.textContent)).toEqual(["alfa", "Zeta"]);
     for (const link of links) {
       expect(link).toHaveAttribute("target", "_blank");
@@ -524,7 +524,7 @@ describe("Monday integration", () => {
       expect(link.getAttribute("href")).toMatch(/^https:\/\/demo\.monday\.com\/boards\/\d+$/);
     }
     expect(screen.getByText("Operaciones")).toBeInTheDocument();
-    expect(screen.getAllByText("Espacio de trabajo principal").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Main workspace").length).toBeGreaterThan(0);
 
     // Disallowed URLs are shown without a link.
     expect(screen.getAllByTestId("board-without-link")).toHaveLength(3);
@@ -540,7 +540,7 @@ describe("Monday integration", () => {
     renderApp("/monday");
 
     await screen.findByText("Zeta");
-    await user.type(screen.getByRole("textbox", { name: "Buscar tableros por nombre" }), "ALF");
+    await user.type(screen.getByRole("textbox", { name: "Search boards by name" }), "ALF");
     expect(screen.getByText("alfa")).toBeInTheDocument();
     expect(screen.queryByText("Zeta")).not.toBeInTheDocument();
   });
@@ -549,14 +549,14 @@ describe("Monday integration", () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": withFeature, "GET /api/monday/boards": { items: [], total: 0 } });
     renderApp("/monday");
 
-    expect(await screen.findByRole("status", { name: "Cargando tableros…" })).toBeInTheDocument();
-    expect(await screen.findByRole("heading", { name: "No hay tableros en esta cuenta" })).toBeInTheDocument();
+    expect(await screen.findByRole("status", { name: "Loading boards…" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "There are no boards in this account" })).toBeInTheDocument();
   });
 
   it.each([
-    [502, "auth_failed", "Credencial rechazada"],
-    [503, "rate_limited", "Límite alcanzado"],
-    [503, "unavailable", "Servicio no disponible"]
+    [502, "auth_failed", "Credential rejected"],
+    [503, "rate_limited", "Limit reached"],
+    [503, "unavailable", "Service unavailable"]
   ])("shows a generic error for HTTP %s %s and retries", async (status, code, title) => {
     let calls = 0;
     mockApi({
@@ -584,12 +584,12 @@ describe("Integrations page", () => {
       "GET /api/auth/me": session(["integrations.read", "integrations.manage"]),
       "GET /api/integrations": { items: [{ id: "monday", label: "Monday.com", configured: false }] }
     });
-    renderApp("/integraciones");
+    renderApp("/integrations");
 
-    expect(await screen.findByText("No configurada")).toBeInTheDocument();
-    expect(screen.getByText(/La credencial la gestiona quien administra la plataforma/)).toBeInTheDocument();
+    expect(await screen.findByText("Not configured")).toBeInTheDocument();
+    expect(screen.getByText(/The credential is managed by whoever runs the platform/)).toBeInTheDocument();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Probar conexión/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Test connection/ })).not.toBeInTheDocument();
   });
 
   it("tests a configured connection and shows the result", async () => {
@@ -601,14 +601,14 @@ describe("Integrations page", () => {
       "POST /api/integrations/monday/test": () => ({ body: ok ? { ok: true } : { ok: false, error: "auth_failed" } })
     });
     const user = userEvent.setup();
-    renderApp("/integraciones");
+    renderApp("/integrations");
 
-    await user.click(await screen.findByRole("button", { name: /Probar conexión/ }));
-    expect(await screen.findByText("Conexión correcta.")).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: /Test connection/ }));
+    expect(await screen.findByText("Connection OK.")).toBeInTheDocument();
 
     ok = false;
-    await user.click(screen.getByRole("button", { name: /Probar conexión/ }));
-    expect(await screen.findByText("Credencial rechazada.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Test connection/ }));
+    expect(await screen.findByText("Credential rejected.")).toBeInTheDocument();
   });
 
   it("hides the test button without integrations.manage", async () => {
@@ -617,9 +617,9 @@ describe("Integrations page", () => {
       "GET /api/auth/me": session(["integrations.read"]),
       "GET /api/integrations": { items: [{ id: "monday", label: "Monday.com", configured: true }] }
     });
-    renderApp("/integraciones");
+    renderApp("/integrations");
 
-    expect(await screen.findByText("Configurada")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Probar conexión/ })).not.toBeInTheDocument();
+    expect(await screen.findByText("Configured")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Test connection/ })).not.toBeInTheDocument();
   });
 });

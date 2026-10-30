@@ -19,7 +19,7 @@ const listSchema = paginationSchema(["createdAt"], "-createdAt").extend({
 
 const createSchema = z.object({
   userIds: z
-    .array(z.string().regex(/^[a-f0-9]{24}$/i, { error: "Identificador no válido" }))
+    .array(z.string().regex(/^[a-f0-9]{24}$/i, { error: "Invalid identifier" }))
     .min(1)
     .max(100),
   type: z.enum(NOTIFICATION_TYPES).default("info"),
@@ -75,7 +75,7 @@ export async function notificationRoutes(app: FastifyInstance, deps: Deps) {
     const c = await deps.collections();
     const doc = await c.notifications.findOne({ _id: id, userId: user._id });
     if (!doc) {
-      throw notFound("Notificación no encontrada");
+      throw notFound("Notification not found");
     }
     if (!doc.readAt) {
       doc.readAt = new Date();
@@ -94,7 +94,7 @@ export async function notificationRoutes(app: FastifyInstance, deps: Deps) {
       const ids = [...new Set(input.userIds)].map((id) => new ObjectId(id));
       const found = await c.users.countDocuments({ _id: { $in: ids } });
       if (found !== ids.length) {
-        throw new AppError(400, "unknown_user", "Alguno de los usuarios no existe");
+        throw new AppError(400, "unknown_user", "One of the users does not exist");
       }
 
       const now = new Date();

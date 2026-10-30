@@ -41,7 +41,7 @@ describe.skipIf(skipDb)("per-user permissions", () => {
     const rows = body.permissions as PermissionRow[];
     expect(rows).toHaveLength(ALL_PERMISSION_KEYS.length);
     expect(rows.find((row) => row.key === "notifications.read")).toMatchObject({
-      fromRoles: ["Usuario"],
+      fromRoles: ["User"],
       effective: true,
       granted: false,
       revoked: false

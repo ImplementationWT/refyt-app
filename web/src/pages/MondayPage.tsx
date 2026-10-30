@@ -34,7 +34,7 @@ export function MondayPage() {
   let content;
   if (query.isPending) {
     content = (
-      <div role="status" aria-label="Cargando tableros…" className="space-y-2">
+      <div role="status" aria-label="Loading boards…" className="space-y-2">
         {[0, 1, 2, 3].map((index) => (
           <div key={index} className="flex items-center gap-3 rounded-btn border border-line bg-surface p-3.5">
             <span className="size-8 animate-pulse rounded-tile bg-n-100" />
@@ -57,9 +57,9 @@ export function MondayPage() {
       </div>
     );
   } else if (query.data.items.length === 0) {
-    content = <EmptyState icon={KanbanSquare} title="No hay tableros en esta cuenta" />;
+    content = <EmptyState icon={KanbanSquare} title="There are no boards in this account" />;
   } else if (boards.length === 0) {
-    content = <EmptyState icon={Search} title="Ningún tablero coincide con la búsqueda" />;
+    content = <EmptyState icon={Search} title="No board matches the search" />;
   } else {
     content = (
       <Card className="overflow-hidden p-0">
@@ -81,14 +81,14 @@ export function MondayPage() {
         tone="orange"
         title="Monday"
         description={
-          query.data ? `${query.data.total} ${query.data.total === 1 ? "tablero" : "tableros"} en la cuenta conectada` : "Tableros de la cuenta conectada"
+          query.data ? `${query.data.total} ${query.data.total === 1 ? "board" : "boards"} in the connected account` : "Boards of the connected account"
         }
       />
       <div className="relative mb-4 w-full max-w-sm">
         <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-faint" aria-hidden />
         <Input
-          aria-label="Buscar tableros por nombre"
-          placeholder="Buscar por nombre"
+          aria-label="Search boards by name"
+          placeholder="Search by name"
           className="pl-10"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
@@ -106,7 +106,7 @@ function BoardRow({ board }: { board: MondayBoard }) {
       <IconTile icon={KanbanSquare} tone="orange" size="sm" />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">{board.name}</span>
-        <span className="block truncate text-[13px] text-muted">{board.workspaceName ?? "Espacio de trabajo principal"}</span>
+        <span className="block truncate text-[13px] text-muted">{board.workspaceName ?? "Main workspace"}</span>
       </span>
     </>
   );
@@ -129,7 +129,7 @@ function BoardRow({ board }: { board: MondayBoard }) {
     >
       {body}
       <ExternalLink className="size-4 shrink-0 text-faint transition-colors group-hover:text-brand-600" aria-hidden />
-      <span className="sr-only">(se abre en una pestaña nueva)</span>
+      <span className="sr-only">(opens in a new tab)</span>
     </a>
   );
 }

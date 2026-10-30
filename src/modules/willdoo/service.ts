@@ -50,10 +50,10 @@ export interface PublicTurn {
 export const toPublicTurn = (turn: WillDooTurn): PublicTurn => ({ role: turn.role, text: turn.text, tools: turn.tools ?? [], at: turn.at });
 
 const ERROR_TEXT: Record<IntegrationError["code"], string> = {
-  auth_failed: "La clave de Anthropic de este proyecto no es válida. Avísale a un administrador.",
-  timeout: "Claude tardó demasiado en responder. Inténtalo de nuevo.",
-  rate_limited: "Claude está recibiendo demasiadas peticiones. Espera un momento.",
-  unavailable: "Will Doo no está disponible en este momento. Inténtalo de nuevo más tarde."
+  auth_failed: "This project's Anthropic key is not valid. Let an administrator know.",
+  timeout: "Claude took too long to answer. Try again.",
+  rate_limited: "Claude is receiving too many requests. Wait a moment.",
+  unavailable: "Will Doo is not available right now. Try again later."
 };
 
 const startOfMonthUtc = (now: Date) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
@@ -87,20 +87,20 @@ export interface Prepared {
  */
 export async function prepareAsk(c: Collections, settings: WillDooSettings, auth: AuthContext, input: AskInput, timeZone: string, now = new Date()): Promise<Prepared> {
   if ((await monthSpendMicros(c, now)) >= settings.monthlyBudgetUsd * 1_000_000) {
-    throw new AppError(429, "willdoo_budget_exhausted", "Will Doo alcanzó el presupuesto de este mes. Avísale a un administrador.");
+    throw new AppError(429, "willdoo_budget_exhausted", "Will Doo reached this month's budget. Let an administrator know.");
   }
   const today = await c.willdooUsage.countDocuments({ userId: auth.user._id, createdAt: { $gte: startOfDayUtc(now) } });
   if (today >= settings.userDailyMessages) {
-    throw new AppError(429, "willdoo_daily_limit", "Llegaste al límite de preguntas de hoy. Vuelve a intentarlo mañana.");
+    throw new AppError(429, "willdoo_daily_limit", "You reached today's question limit. Try again tomorrow.");
   }
   let conversation: WillDooConversationDoc | null = null;
   if (input.conversationId) {
     conversation = ObjectId.isValid(input.conversationId)
       ? await c.willdooConversations.findOne({ _id: new ObjectId(input.conversationId), userId: auth.user._id })
       : null;
-    if (!conversation) throw new AppError(404, "not_found", "Conversación no encontrada");
+    if (!conversation) throw new AppError(404, "not_found", "Conversation not found");
     if (JSON.stringify(conversation.messages).length > MAX_TRANSCRIPT_CHARS) {
-      throw new AppError(409, "conversation_too_long", "Esta conversación es muy larga. Empieza una nueva.");
+      throw new AppError(409, "conversation_too_long", "This conversation is too long. Start a new one.");
     }
   }
   return { auth, conversation, input, timeZone };
@@ -175,7 +175,7 @@ export async function runAsk(deps: RunDeps, prepared: Prepared, emit: (event: Wi
 
       if (message.stop_reason === "refusal") {
         if (!textOf(message.content)) {
-          const text = "No puedo ayudarte con eso. Prueba con otra pregunta sobre el sistema.";
+          const text = "I cannot help with that. Try another question about the system.";
           answer += text;
           emit({ type: "text", delta: text });
         }
@@ -187,7 +187,7 @@ export async function runAsk(deps: RunDeps, prepared: Prepared, emit: (event: Wi
 
       for (const use of uses) {
         const tool = offered.find((candidate) => candidate.name === use.name);
-        emit({ type: "tool", name: use.name, label: tool?.label ?? "Consultando" });
+        emit({ type: "tool", name: use.name, label: tool?.label ?? "Looking up" });
       }
       // In parallel; every result goes back in ONE user message.
       const outcomes = await Promise.all(uses.map((use) => runTool(ctx, offered, use.name, use.input)));
@@ -199,14 +199,14 @@ export async function runAsk(deps: RunDeps, prepared: Prepared, emit: (event: Wi
     }
   } catch (error) {
     if (signal.aborted) {
-      failure = { error: "aborted", message: "Se canceló la respuesta." };
+      failure = { error: "aborted", message: "The answer was cancelled." };
     } else if (error instanceof Anthropic.APIError || error instanceof IntegrationError) {
       const integrationError = toIntegrationError(error);
       request.log.warn({ code: integrationError.code, detail: integrationError.detail }, "willdoo model call failed");
       failure = { error: `willdoo_${integrationError.code}`, message: ERROR_TEXT[integrationError.code] };
     } else {
       request.log.error({ err: error }, "willdoo answer failed");
-      failure = { error: "internal_error", message: "Will Doo tuvo un problema al responder. Inténtalo de nuevo." };
+      failure = { error: "internal_error", message: "Will Doo had a problem answering. Try again." };
     }
   }
 
@@ -241,7 +241,7 @@ export async function runAsk(deps: RunDeps, prepared: Prepared, emit: (event: Wi
         { $set: { messages, updatedAt: at, expiresAt }, $push: { turns: { $each: turns } }, $inc: { costMicros: cost } }
       );
       saved = result.matchedCount === 1;
-      if (!saved) failure = { error: "conversation_busy", message: "La conversación cambió mientras respondía. Vuelve a preguntar." };
+      if (!saved) failure = { error: "conversation_busy", message: "The conversation changed while answering. Ask again." };
     } else {
       await c.willdooConversations.insertOne({
         _id: conversationId,

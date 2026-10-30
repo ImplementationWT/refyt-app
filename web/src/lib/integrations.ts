@@ -4,20 +4,20 @@ import type { IntegrationErrorCode } from "./types";
 /** Spanish text per generic code. Provider messages are never shown. */
 export const INTEGRATION_ERROR_TEXT: Record<IntegrationErrorCode, { title: string; message: string }> = {
   auth_failed: {
-    title: "Credencial rechazada",
-    message: "El servicio rechazó la credencial configurada. Revísala con quien administra la plataforma."
+    title: "Credential rejected",
+    message: "The service rejected the configured credential. Check it with whoever manages the platform."
   },
   rate_limited: {
-    title: "Límite alcanzado",
-    message: "Se alcanzó el límite de consultas del servicio. Inténtalo de nuevo en unos minutos."
+    title: "Limit reached",
+    message: "The service query limit was reached. Try again in a few minutes."
   },
   timeout: {
-    title: "Sin respuesta",
-    message: "El servicio tardó demasiado en responder. Inténtalo de nuevo."
+    title: "No response",
+    message: "The service took too long to respond. Try again."
   },
   unavailable: {
-    title: "Servicio no disponible",
-    message: "El servicio no está disponible en este momento. Inténtalo de nuevo más tarde."
+    title: "Service unavailable",
+    message: "The service is not available right now. Try again later."
   }
 };
 

@@ -8,17 +8,17 @@
  * alcance del usuario (tools.ts).
  */
 export const SYSTEM_GUIDE = `
-## Secciones de la app
-- **Refyt** (/): la interfaz de Refyt (Directores, Comercial, Cuentas, Retrofit y Delivery), a pantalla completa.
-- **Dashboards** (/panel): indicadores de usuarios, roles e ingresos de los últimos 7, 14 o 30 días.
-- **Usuarios** (/usuarios): cuentas, estado (activo o desactivado), roles y permisos de cada persona. Desde el detalle de un usuario se edita, se restablece su contraseña o se ajustan sus permisos.
-- **Roles** (/roles): agrupan permisos por función; a cada usuario se le asignan uno o varios.
-- **Integraciones** (/integraciones): servicios externos conectados (Monday.com, Will Doo) y su prueba de conexión.
-- **Monday** (/monday): tableros de la cuenta de Monday.com conectada, si está configurada.
+## Sections of the app
+- **Refyt** (/): the Refyt apps (Director, Commercial, Accounts, Retrofit and Delivery), full screen.
+- **Dashboards** (/dashboard): user, role and sign-in indicators for the last 7, 14 or 30 days.
+- **Users** (/users): accounts, status (active or disabled), roles and permissions of each person. From a user's details you edit them, reset their password or adjust their permissions.
+- **Roles** (/roles): group permissions by job; each user gets one or more.
+- **Integrations** (/integrations): connected external services (Monday.com, Will Doo) and their connection test.
+- **Monday** (/monday): boards of the connected Monday.com account, if configured.
 
-## Cómo se hace
-- Crear un usuario: Usuarios → «Nuevo usuario», con su rol. Debe cambiar la contraseña en el primer ingreso.
-- Dar o quitar un permiso a una persona: Usuarios → icono de permisos de la fila.
-- Cambiar tu contraseña: menú de usuario (arriba a la derecha) → «Cambiar contraseña».
-- Tras varios intentos fallidos la cuenta se bloquea un rato; un administrador puede restablecer la contraseña.
+## How to
+- Create a user: Users → “New user”, with their role. They must change the password on first sign-in.
+- Give or remove a permission for one person: Users → permissions icon on their row.
+- Change your password: user menu (top right) → “Change password”.
+- After several failed attempts the account is locked for a while; an administrator can reset the password.
 `.trim();

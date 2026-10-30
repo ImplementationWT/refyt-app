@@ -43,7 +43,7 @@ export function UserPermissionsSheet({ user, onClose }: { user: User | null; onC
       api(`/api/users/${user!.id}/permissions`, { method: "PUT", body: { permissionKeys: [...selected] } }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast({ tone: "success", message: `Permisos de ${user?.displayName} actualizados` });
+      toast({ tone: "success", message: `Permissions of ${user?.displayName} updated` });
       onClose();
     }
   });
@@ -68,20 +68,20 @@ export function UserPermissionsSheet({ user, onClose }: { user: User | null; onC
     <Sheet
       open={user !== null}
       onClose={onClose}
-      title={user ? `Permisos de ${user.displayName}` : ""}
-      description={data ? `${selected.size} de ${data.permissions.length} permisos activos` : undefined}
+      title={user ? `Permissions of ${user.displayName}` : ""}
+      description={data ? `${selected.size} of ${data.permissions.length} permissions active` : undefined}
       leading={user ? <Avatar name={user.displayName} seed={user.id} size="lg" /> : null}
       footer={
         editable ? (
           <>
             <p className="mr-auto self-center text-[13px] text-muted">
-              {changes ? `${changes} ${changes === 1 ? "cambio" : "cambios"} sin guardar` : "Sin cambios"}
+              {changes ? `${changes} unsaved ${changes === 1 ? "change" : "changes"}` : "No changes"}
             </p>
             <Button variant="ghost" onClick={resetToRoles} disabled={save.isPending}>
-              <RotateCcw /> Solo los del rol
+              <RotateCcw /> Role permissions only
             </Button>
             <Button onClick={() => save.mutate()} disabled={!changes || save.isPending}>
-              {save.isPending ? "Guardando…" : "Guardar permisos"}
+              {save.isPending ? "Saving…" : "Save permissions"}
             </Button>
           </>
         ) : undefined
@@ -98,15 +98,15 @@ export function UserPermissionsSheet({ user, onClose }: { user: User | null; onC
               <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
               <p>
                 {data?.isAdmin
-                  ? "Los administradores tienen siempre todos los permisos."
+                  ? "Administrators always have every permission."
                   : data?.isSelf
-                    ? "No puedes cambiar tus propios permisos."
-                    : "Solo lectura: no puedes cambiar los permisos de este usuario."}
+                    ? "You cannot change your own permissions."
+                    : "Read only: you cannot change this user's permissions."}
               </p>
             </div>
           ) : (
             <p className="text-sm text-muted">
-              Los permisos vienen de los roles. Puedes añadir o quitar alguno solo para esta persona sin cambiar el rol.
+              Permissions come from roles. You can add or remove some for this person only, without changing the role.
             </p>
           )}
           {save.error instanceof ApiError ? <Alert>{save.error.message}</Alert> : null}
@@ -132,7 +132,7 @@ export function UserPermissionsSheet({ user, onClose }: { user: User | null; onC
                           "flex items-start gap-2.5 rounded-btn px-1.5 py-1.5 text-sm",
                           disabled ? "cursor-default" : "cursor-pointer hover:bg-surface"
                         )}
-                        title={!editable || row.grantable || on ? undefined : "No puedes conceder un permiso que no tienes"}
+                        title={!editable || row.grantable || on ? undefined : "You cannot grant a permission you do not have"}
                       >
                         <Checkbox
                           className="mt-0.5"
@@ -145,10 +145,10 @@ export function UserPermissionsSheet({ user, onClose }: { user: User | null; onC
                           <code className="ml-1.5 text-xs text-faint">{row.key}</code>
                           <span className="mt-1 flex flex-wrap gap-1">
                             {fromRole && on ? (
-                              <Pill tone="neutral">Rol: {row.fromRoles.join(", ")}</Pill>
+                              <Pill tone="neutral">Role: {row.fromRoles.join(", ")}</Pill>
                             ) : null}
-                            {fromRole && !on ? <Pill tone="red">Quitado (rol: {row.fromRoles.join(", ")})</Pill> : null}
-                            {!fromRole && on ? <Pill tone="green">Añadido</Pill> : null}
+                            {fromRole && !on ? <Pill tone="red">Removed (role: {row.fromRoles.join(", ")})</Pill> : null}
+                            {!fromRole && on ? <Pill tone="green">Added</Pill> : null}
                           </span>
                         </span>
                       </label>

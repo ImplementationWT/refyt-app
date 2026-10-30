@@ -43,7 +43,7 @@ function Header({
         </h2>
         {description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}
       </div>
-      <IconButton size="sm" onClick={onClose} aria-label="Cerrar">
+      <IconButton size="sm" onClick={onClose} aria-label="Close">
         <X />
       </IconButton>
     </div>
@@ -147,7 +147,7 @@ export function ConfirmDialog({
   open,
   title,
   description,
-  confirmLabel = "Confirmar",
+  confirmLabel = "Confirm",
   destructive = false,
   pending = false,
   error,
@@ -173,7 +173,7 @@ export function ConfirmDialog({
       ) : null}
       <DialogFooter>
         <Button variant="secondary" onClick={onClose} disabled={pending}>
-          Cancelar
+          Cancel
         </Button>
         <Button variant={destructive ? "danger" : "primary"} onClick={onConfirm} disabled={pending}>
           {confirmLabel}

@@ -12,8 +12,8 @@ export function WillDooLauncher({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      aria-label="Abrir Will Doo"
-      title="Pregúntale a Will Doo"
+      aria-label="Open Will Doo"
+      title="Ask Will Doo"
       className="fixed right-4 bottom-4 z-40 grid size-14 place-items-center rounded-full border-[1.5px] border-brand-100 bg-surface shadow-sh3 transition-transform duration-200 ease-soft hover:-translate-y-0.5 sm:right-6 sm:bottom-6"
     >
       <WillDooAvatar className="size-11" />

@@ -149,6 +149,21 @@ describe.skipIf(skipDb)("migrations", () => {
     expect(assessor?.permissionKeys).toEqual(["refyt.retrofit"]);
   });
 
+  it("migration 6 writes the stored texts in English, keeping what an administrator changed", async () => {
+    const db = mongo.freshDb();
+    const c = collections(db);
+    const upTo5 = (await import("../src/db/migrations/index.js")).MIGRATIONS.filter((m) => m.version <= 5);
+    await runMigrations(context(db), upTo5);
+    await c.roles.updateOne({ key: "user" }, { $set: { name: "Staff" } });
+    await runMigrations(context(db));
+
+    expect(await c.roles.findOne({ key: "admin" })).toMatchObject({ name: "Administrator", description: "Full access to the system" });
+    expect(await c.roles.findOne({ key: "user" })).toMatchObject({ name: "Staff", description: "Minimum permissions" });
+    expect((await c.roles.findOne({ key: "assessor" }))?.description).toBe("Carries out the assessment visit and uploads the evidence");
+    expect((await c.users.findOne({ username: "admin" }))?.displayName).toBe("Administrator");
+    expect((await c.permissions.findOne({ key: "users.read" }))?.description).toBe("See users");
+  });
+
   it("only runs migrations newer than the recorded version", async () => {
     const db = mongo.freshDb();
     await runMigrations(context(db));

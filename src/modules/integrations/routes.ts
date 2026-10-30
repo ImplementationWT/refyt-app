@@ -39,10 +39,10 @@ export async function integrationRoutes(app: FastifyInstance, deps: Deps) {
       const id = (request.params as { provider: string }).provider;
       const provider = findProvider(id);
       if (!provider) {
-        throw notFound("Integración no encontrada");
+        throw notFound("Integration not found");
       }
       if (!deps.integrations.isConfigured(provider.id)) {
-        throw new AppError(409, "not_configured", "La integración no está configurada");
+        throw new AppError(409, "not_configured", "The integration is not configured");
       }
 
       let result: { ok: true } | { ok: false; error: IntegrationError["code"] };
@@ -74,7 +74,7 @@ export async function integrationRoutes(app: FastifyInstance, deps: Deps) {
       const actor = requireAuth(request);
       const client = deps.integrations.monday();
       if (!client) {
-        throw notFound("Monday no está configurado");
+        throw notFound("Monday is not configured");
       }
 
       const c = await deps.collections();

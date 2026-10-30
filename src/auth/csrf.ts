@@ -26,12 +26,12 @@ export function installCsrfProtection(app: FastifyInstance) {
 
     const contentType = request.headers["content-type"] ?? "";
     if (!/^application\/json(\s*;|$)/i.test(contentType)) {
-      throw new AppError(415, "unsupported_media_type", "Se requiere Content-Type: application/json");
+      throw new AppError(415, "unsupported_media_type", "Content-Type: application/json is required");
     }
 
     const source = request.headers.origin ?? request.headers.referer;
     if (!source || !sameOrigin(request, source)) {
-      throw new AppError(403, "invalid_origin", "Origen de la solicitud no permitido");
+      throw new AppError(403, "invalid_origin", "Request origin not allowed");
     }
   });
 }

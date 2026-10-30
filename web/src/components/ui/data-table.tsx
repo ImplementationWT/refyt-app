@@ -25,7 +25,7 @@ export function DataTable<T>({
   isLoading,
   error,
   onRetry,
-  emptyMessage = "No hay resultados",
+  emptyMessage = "No results",
   emptyIcon = Inbox,
   sort,
   onSortChange,
@@ -126,7 +126,7 @@ export function DataTable<T>({
 
   return (
     <div className="overflow-hidden rounded-card border border-line bg-surface shadow-sh1">
-      {isLoading ? <span role="status" className="sr-only">Cargando…</span> : null}
+      {isLoading ? <span role="status" className="sr-only">Loading…</span> : null}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead className="bg-n-25">
@@ -180,14 +180,14 @@ export function Pagination({
   return (
     <div className="flex items-center justify-between gap-2 border-t border-line px-4 py-2.5 text-[13px] text-muted">
       <span>
-        <strong className="font-semibold text-ink">{total}</strong> {total === 1 ? "resultado" : "resultados"} · Página{" "}
-        {page} de {pages}
+        <strong className="font-semibold text-ink">{total}</strong> {total === 1 ? "result" : "results"} · Page{" "}
+        {page} of {pages}
       </span>
       <div className="flex gap-1.5">
-        <Button variant="secondary" size="sm" aria-label="Página anterior" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
+        <Button variant="secondary" size="sm" aria-label="Previous page" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
           <ChevronLeft />
         </Button>
-        <Button variant="secondary" size="sm" aria-label="Página siguiente" disabled={page >= pages} onClick={() => onPageChange(page + 1)}>
+        <Button variant="secondary" size="sm" aria-label="Next page" disabled={page >= pages} onClick={() => onPageChange(page + 1)}>
           <ChevronRight />
         </Button>
       </div>

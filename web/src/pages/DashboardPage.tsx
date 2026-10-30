@@ -14,9 +14,9 @@ type Range = "7" | "14" | "30";
 
 // Series dates are calendar days (YYYY-MM-DD): format them in UTC so they
 // are never shifted by the browser's offset.
-const shortDate = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", timeZone: "UTC" });
-const longDate = new Intl.DateTimeFormat("es", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
-const number = new Intl.NumberFormat("es");
+const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+const longDate = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const number = new Intl.NumberFormat("en-GB");
 
 function timeZone(): string {
   try {
@@ -28,7 +28,7 @@ function timeZone(): string {
 
 export function DashboardPage() {
   const { session, can } = useSession();
-  const greeting = `Hola, ${session?.user.displayName ?? ""}. Así va la actividad de tu equipo.`;
+  const greeting = `Hi, ${session?.user.displayName ?? ""}. Here is your team's activity.`;
 
   return (
     <div>
@@ -38,8 +38,8 @@ export function DashboardPage() {
       ) : (
         <EmptyState
           icon={BarChart3}
-          title="No tienes indicadores disponibles"
-          message="Pide a un administrador el permiso «dashboard.read» para ver los indicadores."
+          title="You have no indicators available"
+          message="Ask an administrator for the “dashboard.read” permission to see the indicators."
         />
       )}
     </div>
@@ -58,7 +58,7 @@ function Indicators() {
   });
   const data = query.data;
   const value = (n: number | undefined) => (n === undefined ? "…" : number.format(n));
-  const periodLabel = `Últimos ${range} días`;
+  const periodLabel = `Last ${range} days`;
 
   const chartData: ColumnDatum[] =
     data?.series.map((day) => {
@@ -68,7 +68,7 @@ function Indicators() {
         label: shortDate.format(date),
         fullLabel: longDate.format(date),
         value: day.logins,
-        details: [{ label: "Intentos fallidos", value: day.failures }]
+        details: [{ label: "Failed attempts", value: day.failures }]
       };
     }) ?? [];
 
@@ -76,13 +76,13 @@ function Indicators() {
     <div className="space-y-6">
       {/* One filter row above everything it scopes. */}
       <FilterChips<Range>
-        label="Periodo"
+        label="Period"
         value={range}
         onChange={setRange}
         options={[
-          { value: "7", label: "7 días" },
-          { value: "14", label: "14 días" },
-          { value: "30", label: "30 días" }
+          { value: "7", label: "7 days" },
+          { value: "14", label: "14 days" },
+          { value: "30", label: "30 days" }
         ]}
       />
 
@@ -97,23 +97,23 @@ function Indicators() {
         <div className={cn("space-y-6 transition-opacity duration-200", query.isPlaceholderData && "opacity-60")}>
           <KpiGrid>
             <KpiCard
-              label="Usuarios activos"
+              label="Active users"
               value={value(data?.kpis.activeUsers)}
-              hint={data ? `${number.format(data.kpis.disabledUsers)} desactivados · total actual` : undefined}
+              hint={data ? `${number.format(data.kpis.disabledUsers)} disabled · current total` : undefined}
               icon={Users}
               tone="blue"
-              to={can("users.read") ? "/usuarios" : undefined}
+              to={can("users.read") ? "/users" : undefined}
             />
-            <KpiCard label="Inicios de sesión" value={value(data?.kpis.logins)} hint={periodLabel} icon={LogIn} tone="brand" />
+            <KpiCard label="Sign-ins" value={value(data?.kpis.logins)} hint={periodLabel} icon={LogIn} tone="brand" />
             <KpiCard
-              label="Personas que entraron"
+              label="People who signed in"
               value={value(data?.kpis.uniqueUsers)}
               hint={periodLabel}
               icon={UserCheck}
               tone="green"
             />
             <KpiCard
-              label="Intentos fallidos"
+              label="Failed attempts"
               value={value(data?.kpis.failedLogins)}
               hint={periodLabel}
               icon={ShieldAlert}
@@ -124,25 +124,25 @@ function Indicators() {
           <Card className="p-5 md:p-6">
             <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold">Inicios de sesión por día</h2>
+                <h2 className="text-lg font-bold">Sign-ins per day</h2>
                 <p className="text-sm text-muted">{periodLabel} · accesos correctos</p>
               </div>
               <Button variant="secondary" size="sm" onClick={() => setAsTable((current) => !current)} aria-pressed={asTable}>
                 {asTable ? <BarChart3 /> : <Table2 />}
-                {asTable ? "Ver gráfico" : "Ver tabla"}
+                {asTable ? "Show chart" : "Show table"}
               </Button>
             </div>
 
             {!data ? (
-              <div role="status" aria-label="Cargando…" className="h-[256px] animate-pulse rounded-btn bg-n-50" />
+              <div role="status" aria-label="Loading…" className="h-[256px] animate-pulse rounded-btn bg-n-50" />
             ) : asTable ? (
               <div className="max-h-[256px] overflow-y-auto rounded-btn border border-line">
                 <table className="w-full text-left text-sm">
                   <thead className="sticky top-0 bg-n-25 text-xs text-muted">
                     <tr>
                       <th scope="col" className="px-4 py-2.5 font-semibold">Fecha</th>
-                      <th scope="col" className="px-4 py-2.5 text-right font-semibold">Inicios de sesión</th>
-                      <th scope="col" className="px-4 py-2.5 text-right font-semibold">Intentos fallidos</th>
+                      <th scope="col" className="px-4 py-2.5 text-right font-semibold">Sign-ins</th>
+                      <th scope="col" className="px-4 py-2.5 text-right font-semibold">Failed attempts</th>
                     </tr>
                   </thead>
                   <tbody className="tabular-nums">
@@ -157,7 +157,7 @@ function Indicators() {
                 </table>
               </div>
             ) : (
-              <ColumnChart data={chartData} valueLabel="inicios de sesión" title={`Inicios de sesión por día, ${periodLabel.toLowerCase()}`} />
+              <ColumnChart data={chartData} valueLabel="sign-ins" title={`Sign-ins per day, ${periodLabel.toLowerCase()}`} />
             )}
           </Card>
         </div>

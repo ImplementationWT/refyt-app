@@ -18,9 +18,10 @@ workflows, endpoints, colecciones) está en
 
 ## Refyt
 
-La app es Refyt: primero el login y, una vez dentro, las apps de los equipos (Director,
+La app es Refyt, toda en inglés: primero el login y, una vez dentro, las apps de los equipos (Director,
 Commercial, Accounts, Retrofit y Delivery) en `/`. El menú de usuario del encabezado lleva a
-la administración: Usuarios, Roles e Integraciones (según los permisos de cada persona).
+la administración: Users (`/users`), Roles (`/roles`) e Integrations (`/integrations`), según los
+permisos de cada persona. La migración 6 pasa a inglés los textos que ya estaban guardados en la base.
 
 El diseño aprobado por el cliente (`Refyt, demo v3.20.html`) manda en toda la app:
 

@@ -18,7 +18,7 @@ const LEFT = 40;
 const MAX_BAR = 24;
 const MIN_LABEL_GAP = 46;
 
-const compact = new Intl.NumberFormat("es", { notation: "compact", maximumFractionDigits: 1 });
+const compact = new Intl.NumberFormat("en-GB", { notation: "compact", maximumFractionDigits: 1 });
 const formatTick = (value: number) => (value >= 1000 ? compact.format(value) : String(value));
 
 /** Clean axis: step of 1, 2 or 5 × 10^k, about four intervals, integers only. */
@@ -80,7 +80,7 @@ export function ColumnChart({ data, valueLabel, title }: { data: ColumnDatum[]; 
         width={width}
         height={base + AXIS}
         role="img"
-        aria-label={`${title}. Máximo: ${max} ${valueLabel}.`}
+        aria-label={`${title}. Maximum: ${max} ${valueLabel}.`}
         className="block overflow-visible"
       >
         {/* Recessive grid: solid hairlines, one step off the surface. */}
@@ -138,7 +138,7 @@ export function ColumnChart({ data, valueLabel, title }: { data: ColumnDatum[]; 
 
       {empty ? (
         <p className="pointer-events-none absolute inset-x-0 top-[40%] text-center text-sm font-semibold text-muted">
-          Sin actividad en este periodo
+          No activity in this period
         </p>
       ) : null}
 

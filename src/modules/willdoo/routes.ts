@@ -34,7 +34,7 @@ const QUICK_RATE_LIMIT = { max: 30, timeWindow: 60_000 };
 const screenSchema = z.strictObject({ path: z.string().max(200).regex(/^\//) }).optional();
 const quickBodySchema = z.strictObject({ timeZone: z.string().max(64).optional(), screen: screenSchema });
 const basicSchema = z.strictObject({
-  text: z.string().trim().min(1, { error: "Escribe una pregunta" }).max(500),
+  text: z.string().trim().min(1, { error: "Type a question" }).max(500),
   timeZone: z.string().max(64).optional(),
   screen: screenSchema
 });
@@ -44,7 +44,7 @@ const ASK_RATE_LIMIT = { max: 20, timeWindow: 60_000 };
 
 const askSchema = z.strictObject({
   conversationId: z.string().regex(/^[a-f0-9]{24}$/i).optional(),
-  text: z.string().trim().min(1, { error: "Escribe una pregunta" }).max(4000),
+  text: z.string().trim().min(1, { error: "Type a question" }).max(4000),
   screen: z
     .strictObject({
       path: z.string().max(200).regex(/^\//),
@@ -69,7 +69,7 @@ function toSummary(doc: Pick<WillDooConversationDoc, "_id" | "title" | "updatedA
 export async function willDooRoutes(app: FastifyInstance, deps: Deps) {
   const requireModel = () => {
     const model = deps.model();
-    if (!model) throw notFound("Will Doo no está configurado");
+    if (!model) throw notFound("Will Doo is not configured");
     return model;
   };
   const canUse = { preHandler: [async () => void requireModel(), requirePermission("willdoo.use")] };
@@ -79,7 +79,7 @@ export async function willDooRoutes(app: FastifyInstance, deps: Deps) {
   const canBrowse = {
     preHandler: [
       async () => {
-        if (deps.mode === "off") throw notFound("Will Doo no está activado");
+        if (deps.mode === "off") throw notFound("Will Doo is not enabled");
       },
       requirePermission("willdoo.use")
     ]
@@ -113,7 +113,7 @@ export async function willDooRoutes(app: FastifyInstance, deps: Deps) {
     }
   }
 
-  const unavailable = () => new AppError(503, "unavailable", "No se pudo completar la consulta. Inténtalo de nuevo.");
+  const unavailable = () => new AppError(503, "unavailable", "The query could not be completed. Try again.");
 
   /** Runs a quick query and returns it with its 3 follow-ups. */
   async function answerWith(request: FastifyRequest, ctx: ToolContext, query: QuickQuery, available: readonly QuickQuery[], screenPath?: string) {
@@ -129,7 +129,7 @@ export async function willDooRoutes(app: FastifyInstance, deps: Deps) {
     const available = quickQueriesFor(ctx, quickQueries, tools);
     // Unknown or not permitted: the same 404 (does not reveal which queries exist).
     const query = available.find((candidate) => candidate.id === id);
-    if (!query) throw notFound("Consulta no encontrada");
+    if (!query) throw notFound("Query not found");
     const { result, suggestions } = await answerWith(request, ctx, query, available, screen?.path);
     await recordAudit(ctx.c, request, {
       actorId: ctx.auth.user._id,
@@ -193,7 +193,7 @@ export async function willDooRoutes(app: FastifyInstance, deps: Deps) {
     const id = parseObjectId((request.params as { id: string }).id);
     const filter = auth.permissions.has("willdoo.audit") ? { _id: id } : { _id: id, userId: auth.user._id };
     const conversation = await c.willdooConversations.findOne(filter);
-    if (!conversation) throw notFound("Conversación no encontrada");
+    if (!conversation) throw notFound("Conversation not found");
     return conversation;
   }
 
@@ -217,7 +217,7 @@ export async function willDooRoutes(app: FastifyInstance, deps: Deps) {
     void runAsk({ c, integrations: deps.integrations, model, settings: deps.settings, request, ...(deps.tools ? { tools: deps.tools } : {}) }, prepared, emit, controller.signal)
       .catch((error: unknown) => {
         request.log.error({ err: error }, "willdoo stream failed");
-        emit({ type: "error", error: "internal_error", message: "Will Doo tuvo un problema al responder. Inténtalo de nuevo." });
+        emit({ type: "error", error: "internal_error", message: "Will Doo had a problem answering. Try again." });
       })
       .finally(() => stream.end());
 
@@ -232,7 +232,7 @@ export async function willDooRoutes(app: FastifyInstance, deps: Deps) {
   app.get("/api/willdoo/conversations", canUse, async (request) => {
     const auth = requireAuth(request);
     const { userId } = listSchema.parse(request.query);
-    if (userId && !auth.permissions.has("willdoo.audit")) throw new AppError(403, "forbidden", "No tienes permiso para ver conversaciones de otros usuarios");
+    if (userId && !auth.permissions.has("willdoo.audit")) throw new AppError(403, "forbidden", "You do not have permission to see other users' conversations");
     const c = await deps.collections();
     const docs = await c.willdooConversations
       .find({ userId: userId ? new ObjectId(userId) : auth.user._id }, { projection: { title: 1, createdAt: 1, updatedAt: 1 } })
@@ -252,7 +252,7 @@ export async function willDooRoutes(app: FastifyInstance, deps: Deps) {
     const id = parseObjectId((request.params as { id: string }).id);
     const c = await deps.collections();
     const result = await c.willdooConversations.deleteOne({ _id: id, userId: auth.user._id });
-    if (result.deletedCount === 0) throw notFound("Conversación no encontrada");
+    if (result.deletedCount === 0) throw notFound("Conversation not found");
     await recordAudit(c, request, { actorId: auth.user._id, action: "willdoo.conversation.delete", entityType: "willdoo_conversation", entityId: id });
     return { ok: true };
   });

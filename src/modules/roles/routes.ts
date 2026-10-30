@@ -20,7 +20,7 @@ interface Deps {
 }
 
 const permissionKeys = z
-  .array(z.string().refine(isPermissionKey, { error: "Permiso desconocido" }))
+  .array(z.string().refine(isPermissionKey, { error: "Unknown permission" }))
   .max(100)
   .transform((keys) => [...new Set(keys)].sort());
 
@@ -30,7 +30,7 @@ const createSchema = z.object({
     .trim()
     .toLowerCase()
     .regex(/^[a-z][a-z0-9_.-]{1,49}$/, {
-      error: "Usa de 2 a 50 caracteres: letras minúsculas, números, punto, guion o guion bajo"
+      error: "Use 2 to 50 characters: lowercase letters, numbers, dot, hyphen or underscore"
     }),
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().max(500).default(""),
@@ -43,7 +43,7 @@ const updateSchema = z
     description: z.string().trim().max(500).optional(),
     permissionKeys: permissionKeys.optional()
   })
-  .refine((value) => Object.keys(value).length > 0, { error: "No hay cambios" });
+  .refine((value) => Object.keys(value).length > 0, { error: "No changes" });
 
 const listSchema = paginationSchema(["key", "name", "createdAt"], "name");
 
@@ -63,7 +63,7 @@ function toPublicRole(role: RoleDoc, userCount?: number) {
 
 type PublicRole = ReturnType<typeof toPublicRole>;
 
-const systemRole = () => conflict("system_role", "Los roles del sistema no se pueden modificar ni eliminar");
+const systemRole = () => conflict("system_role", "System roles cannot be changed or deleted");
 
 export async function roleRoutes(app: FastifyInstance, deps: Deps) {
   app.get(
@@ -111,7 +111,7 @@ export async function roleRoutes(app: FastifyInstance, deps: Deps) {
       const c = await deps.collections();
       const result = await c.roles.insertOne(doc as RoleDoc).catch((error: unknown) => {
         if (error instanceof MongoServerError && error.code === 11000) {
-          throw conflict("role_key_taken", "Ya existe un rol con esa clave");
+          throw conflict("role_key_taken", "A role with that key already exists");
         }
         throw error;
       });
@@ -130,7 +130,7 @@ export async function roleRoutes(app: FastifyInstance, deps: Deps) {
     const id = parseObjectId((request.params as { id: string }).id);
     const role = await (await deps.collections()).roles.findOne({ _id: id });
     if (!role) {
-      throw notFound("Rol no encontrado");
+      throw notFound("Role not found");
     }
     return { role: toPublicRole(role) };
   });
@@ -143,7 +143,7 @@ export async function roleRoutes(app: FastifyInstance, deps: Deps) {
 
     const role = await c.roles.findOne({ _id: id });
     if (!role) {
-      throw notFound("Rol no encontrado");
+      throw notFound("Role not found");
     }
     if (role.isSystem) {
       throw systemRole();
@@ -179,14 +179,14 @@ export async function roleRoutes(app: FastifyInstance, deps: Deps) {
 
     const role = await c.roles.findOne({ _id: id });
     if (!role) {
-      throw notFound("Rol no encontrado");
+      throw notFound("Role not found");
     }
     if (role.isSystem) {
       throw systemRole();
     }
     assertWithinActorPermissions(actor, [role]);
     if (await c.users.countDocuments({ roleIds: id }, { limit: 1 })) {
-      throw conflict("role_in_use", "El rol está asignado a usuarios; quítalo antes de eliminarlo");
+      throw conflict("role_in_use", "The role is assigned to users; remove it from them before deleting it");
     }
 
     await c.roles.deleteOne({ _id: id });

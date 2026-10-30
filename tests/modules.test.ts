@@ -251,7 +251,7 @@ describe.skipIf(skipDb)("API modules", () => {
       expect(response.json().items[0]).toEqual({
         key: "audit.read",
         module: "audit",
-        description: "Ver el registro de auditoría"
+        description: "See the audit log"
       });
     });
   });

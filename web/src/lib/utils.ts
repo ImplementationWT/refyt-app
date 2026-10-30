@@ -34,7 +34,7 @@ export function initials(name: string): string {
 }
 
 
-const dateTime = new Intl.DateTimeFormat("es", { dateStyle: "short", timeStyle: "short" });
+const dateTime = new Intl.DateTimeFormat("en-GB", { dateStyle: "short", timeStyle: "short" });
 
 export function formatDateTime(value: string | null | undefined): string {
   return value ? dateTime.format(new Date(value)) : "—";

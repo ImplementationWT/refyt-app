@@ -21,13 +21,13 @@ export class ApiError extends Error {
 }
 
 const DEFAULT_MESSAGES: Record<number, string> = {
-  400: "Los datos enviados no son válidos",
-  401: "Tu sesión no es válida o ha expirado",
-  403: "No tienes permiso para realizar esta acción",
-  404: "No se encontró el recurso",
-  409: "La operación no es posible en el estado actual",
-  429: "Demasiados intentos. Inténtalo de nuevo más tarde.",
-  503: "El servicio no está disponible en este momento"
+  400: "The data sent is not valid",
+  401: "Your session is not valid or has expired",
+  403: "You do not have permission to do this",
+  404: "Not found",
+  409: "This is not possible in the current state",
+  429: "Too many attempts. Try again later.",
+  503: "The service is not available right now"
 };
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -45,7 +45,7 @@ export async function api<T>(path: string, options: { method?: Method; body?: un
       ...(unsafe ? { body: JSON.stringify(options.body ?? {}) } : {})
     });
   } catch {
-    throw new ApiError(0, "network_error", "No se pudo conectar con el servidor");
+    throw new ApiError(0, "network_error", "Could not connect to the server");
   }
 
   const data = (await response.json().catch(() => null)) as
@@ -56,7 +56,7 @@ export async function api<T>(path: string, options: { method?: Method; body?: un
     throw new ApiError(
       response.status,
       data?.error ?? "error",
-      data?.message ?? DEFAULT_MESSAGES[response.status] ?? "Ha ocurrido un error inesperado",
+      data?.message ?? DEFAULT_MESSAGES[response.status] ?? "Something went wrong",
       data?.issues ?? []
     );
   }

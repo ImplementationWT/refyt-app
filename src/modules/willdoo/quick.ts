@@ -37,7 +37,7 @@ export interface QuickQuery {
   /** Up to 3 follow-ups suggested after answering it (ids of other queries). */
   next: string[];
   /**
-   * Screens where it is most relevant (route prefixes, e.g. "/usuarios"; "/" only
+   * Screens where it is most relevant (route prefixes, e.g. "/users"; "/" only
    * matches the home page). On those screens it wins ties and is suggested first.
    */
   screens?: string[];
@@ -57,7 +57,7 @@ export function defineQuick<Result>(query: Omit<QuickQuery, "present"> & { prese
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-const when = (value: unknown, ctx: ToolContext) => (value ? formatInTimeZone(new Date(String(value)), ctx.timeZone) : "nunca");
+const when = (value: unknown, ctx: ToolContext) => (value ? formatInTimeZone(new Date(String(value)), ctx.timeZone) : "never");
 
 interface UsersResult {
   total: number;
@@ -66,11 +66,11 @@ interface UsersResult {
 }
 
 const presentUsers = (empty: string) => (result: UsersResult, ctx: ToolContext): QuickResult => ({
-  summary: result.total ? plural(result.total, "usuario", "usuarios") : empty,
+  summary: result.total ? plural(result.total, "user", "users") : empty,
   items: result.usuarios.map((user) => ({
     title: user.nombre,
     subtitle: `@${user.usuario}${user.correo ? ` · ${user.correo}` : ""}`,
-    meta: `${user.estado}${user.bloqueado ? " · bloqueado" : ""} · ${user.roles.join(", ") || "sin rol"} · último ingreso: ${when(user.ultimoIngreso, ctx)}`,
+    meta: `${user.estado}${user.bloqueado ? " · locked" : ""} · ${user.roles.join(", ") || "no role"} · last sign-in: ${when(user.ultimoIngreso, ctx)}`,
     link: result.enlace
   })),
   link: result.enlace
@@ -79,22 +79,22 @@ const presentUsers = (empty: string) => (result: UsersResult, ctx: ToolContext):
 export const BUILT_IN_QUICK_QUERIES: readonly QuickQuery[] = [
   defineQuick({
     id: "indicadores-semana",
-    label: "Indicadores de la semana",
-    description: "Usuarios activos, ingresos e intentos fallidos de los últimos 7 días",
-    question: "¿Cómo va la actividad de esta semana?",
-    group: "Actividad",
+    label: "This week's indicators",
+    description: "Active users, sign-ins and failed attempts in the last 7 days",
+    question: "How is activity this week?",
+    group: "Activity",
     keywords: ["indicadores", "actividad", "semana", "ingresos", "entraron", "iniciaron sesion", "login", "usuarios activos", "resumen", "kpi", "sign in", "activity"],
     next: ["ingresos-fallidos-hoy", "usuarios-desactivados", "usuarios-recientes"],
-    screens: ["/panel"],
+    screens: ["/dashboard"],
     tool: "indicadores",
     input: () => ({ dias: 7 }),
     present: (result: { kpis: Record<string, number>; enlace: string }) => ({
-      summary: `${plural(result.kpis.logins ?? 0, "ingreso", "ingresos")} en 7 días`,
+      summary: `${plural(result.kpis.logins ?? 0, "sign-in", "sign-ins")} in 7 days`,
       items: [
-        { title: "Usuarios activos", meta: String(result.kpis.activeUsers ?? 0) },
-        { title: "Usuarios desactivados", meta: String(result.kpis.disabledUsers ?? 0) },
-        { title: "Personas distintas que entraron", meta: String(result.kpis.uniqueUsers ?? 0) },
-        { title: "Intentos fallidos", meta: String(result.kpis.failedLogins ?? 0) },
+        { title: "Active users", meta: String(result.kpis.activeUsers ?? 0) },
+        { title: "Disabled users", meta: String(result.kpis.disabledUsers ?? 0) },
+        { title: "Different people who signed in", meta: String(result.kpis.uniqueUsers ?? 0) },
+        { title: "Failed attempts", meta: String(result.kpis.failedLogins ?? 0) },
         { title: "Roles", meta: String(result.kpis.roles ?? 0) }
       ],
       link: result.enlace
@@ -102,81 +102,81 @@ export const BUILT_IN_QUICK_QUERIES: readonly QuickQuery[] = [
   }),
   defineQuick({
     id: "usuarios-desactivados",
-    label: "Usuarios desactivados",
-    description: "Cuentas que hoy no pueden entrar",
-    question: "¿Qué usuarios están desactivados?",
-    group: "Equipo",
+    label: "Disabled users",
+    description: "Accounts that cannot sign in today",
+    question: "Which users are disabled?",
+    group: "Team",
     keywords: ["desactivados", "desactivado", "inactivos", "bloqueados", "no pueden entrar", "sin acceso", "disabled", "locked"],
     next: ["usuarios-recientes", "roles", "ingresos-fallidos-hoy"],
-    screens: ["/usuarios"],
+    screens: ["/users"],
     tool: "buscar_usuarios",
     input: () => ({ estado: "disabled", limite: 25 }),
-    present: presentUsers("No hay usuarios desactivados")
+    present: presentUsers("There are no disabled users")
   }),
   defineQuick({
     id: "usuarios-recientes",
-    label: "Usuarios más recientes",
-    description: "Las últimas cuentas creadas",
-    question: "¿Quiénes son los usuarios más recientes?",
-    group: "Equipo",
+    label: "Most recent users",
+    description: "The latest accounts created",
+    question: "Who are the most recent users?",
+    group: "Team",
     keywords: ["recientes", "nuevos usuarios", "ultimos usuarios", "creados", "altas", "usuarios nuevos", "lista de usuarios", "new users"],
     next: ["roles", "usuarios-desactivados", "indicadores-semana"],
-    screens: ["/usuarios"],
+    screens: ["/users"],
     tool: "buscar_usuarios",
     input: () => ({ limite: 10 }),
-    present: presentUsers("Aún no hay usuarios")
+    present: presentUsers("There are no users yet")
   }),
   defineQuick({
     id: "ingresos-fallidos-hoy",
-    label: "Ingresos fallidos de hoy",
-    description: "Intentos de ingreso con contraseña incorrecta hoy",
-    question: "¿Hubo ingresos fallidos hoy?",
-    group: "Seguridad",
+    label: "Today's failed sign-ins",
+    description: "Sign-in attempts with a wrong password today",
+    question: "Were there failed sign-ins today?",
+    group: "Security",
     keywords: ["fallidos", "fallido", "intentos", "contrasena incorrecta", "errores de ingreso", "seguridad", "failed", "wrong password"],
     next: ["usuarios-desactivados", "indicadores-semana", "usuarios-recientes"],
-    screens: ["/panel"],
+    screens: ["/dashboard"],
     tool: "consultar_auditoria",
     input: (ctx) => ({ accion: "auth.login.failure", desde: formatInTimeZone(new Date(), ctx.timeZone).slice(0, 10), limite: 30 }),
     present: (result: { total: number; registros: Array<{ fecha: string; usuario: string | null; detalle: Record<string, unknown> }> }, ctx) => ({
-      summary: result.total ? plural(result.total, "intento fallido hoy", "intentos fallidos hoy") : "Ningún intento fallido hoy",
+      summary: result.total ? plural(result.total, "failed attempt today", "failed attempts today") : "No failed attempts today",
       items: result.registros.map((entry) => ({
-        title: entry.usuario ?? (typeof entry.detalle.username === "string" ? `@${entry.detalle.username}` : "Usuario desconocido"),
+        title: entry.usuario ?? (typeof entry.detalle.username === "string" ? `@${entry.detalle.username}` : "Unknown user"),
         meta: when(entry.fecha, ctx)
       }))
     })
   }),
   defineQuick({
     id: "mis-notificaciones",
-    label: "Mis notificaciones sin leer",
-    description: "Tus avisos pendientes",
-    question: "¿Tengo notificaciones sin leer?",
-    group: "Mis avisos",
+    label: "My unread notifications",
+    description: "Your pending notices",
+    question: "Do I have unread notifications?",
+    group: "My notices",
     keywords: ["notificaciones", "avisos", "pendientes", "mensajes", "alertas", "sin leer", "notifications", "unread"],
     next: ["indicadores-semana", "usuarios-recientes", "roles"],
     tool: "mis_notificaciones",
     input: () => ({ soloNoLeidas: true, limite: 20 }),
     present: (result: { noLeidas: number; notificaciones: Array<{ titulo: string; texto: string; fecha: string }> }, ctx) => ({
-      summary: result.noLeidas ? plural(result.noLeidas, "notificación sin leer", "notificaciones sin leer") : "No tienes notificaciones sin leer",
+      summary: result.noLeidas ? plural(result.noLeidas, "unread notification", "unread notifications") : "You have no unread notifications",
       items: result.notificaciones.map((item) => ({ title: item.titulo, subtitle: item.texto || null, meta: when(item.fecha, ctx) }))
     })
   }),
   defineQuick({
     id: "roles",
-    label: "Roles y sus usuarios",
-    description: "Cada rol con cuántas personas lo tienen",
-    question: "¿Qué roles hay y cuántas personas tiene cada uno?",
-    group: "Equipo",
+    label: "Roles and their users",
+    description: "Each role with how many people have it",
+    question: "Which roles are there and how many people does each have?",
+    group: "Team",
     keywords: ["roles", "rol", "perfiles", "permisos", "quien tiene", "cuantas personas", "roles"],
     next: ["usuarios-recientes", "usuarios-desactivados", "indicadores-semana"],
     screens: ["/roles"],
     tool: "listar_roles",
     input: () => ({}),
     present: (result: { roles: Array<{ nombre: string; descripcion: string; permisos: number; usuarios: number }>; enlace: string }) => ({
-      summary: plural(result.roles.length, "rol", "roles"),
+      summary: plural(result.roles.length, "role", "roles"),
       items: result.roles.map((role) => ({
         title: role.nombre,
         subtitle: role.descripcion || null,
-        meta: `${plural(role.usuarios, "usuario", "usuarios")} · ${plural(role.permisos, "permiso", "permisos")}`,
+        meta: `${plural(role.usuarios, "user", "users")} · ${plural(role.permisos, "permission", "permissions")}`,
         link: result.enlace
       })),
       link: result.enlace
@@ -184,18 +184,18 @@ export const BUILT_IN_QUICK_QUERIES: readonly QuickQuery[] = [
   }),
   defineQuick({
     id: "tableros-monday",
-    label: "Tableros de Monday",
-    description: "Tableros de la cuenta conectada",
-    question: "¿Qué tableros hay en Monday?",
-    group: "Integraciones",
+    label: "Monday boards",
+    description: "Boards of the connected account",
+    question: "Which boards are there in Monday?",
+    group: "Integrations",
     keywords: ["monday", "tableros", "boards", "tablero"],
     next: ["indicadores-semana", "mis-notificaciones", "roles"],
     screens: ["/monday"],
     tool: "tableros_monday",
     input: () => ({}),
     present: (result: { total: number; tableros: Array<{ nombre: string; espacio: string | null; enlace: string | null }> }) => ({
-      summary: plural(result.total, "tablero", "tableros"),
-      items: result.tableros.map((board) => ({ title: board.nombre, subtitle: board.espacio ?? "Espacio principal", link: board.enlace }))
+      summary: plural(result.total, "board", "boards"),
+      items: result.tableros.map((board) => ({ title: board.nombre, subtitle: board.espacio ?? "Main workspace", link: board.enlace }))
     })
   })
 ];

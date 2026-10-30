@@ -7,16 +7,16 @@ export const DEFAULT_ADMIN_PASSWORD = "admin123";
 /** Returns a Spanish message describing the first violated rule, or null. */
 export function passwordPolicyError(password: string, username: string): string | null {
   if (password === DEFAULT_ADMIN_PASSWORD) {
-    return "La contraseña no puede ser la contraseña inicial";
+    return "The password cannot be the initial password";
   }
   if (password.length < MIN_PASSWORD_LENGTH) {
-    return `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`;
+    return `The password must have at least ${MIN_PASSWORD_LENGTH} characters`;
   }
   if (password.length > MAX_PASSWORD_LENGTH) {
-    return `La contraseña debe tener como máximo ${MAX_PASSWORD_LENGTH} caracteres`;
+    return `The password must have at most ${MAX_PASSWORD_LENGTH} characters`;
   }
   if (password.toLowerCase() === username.toLowerCase()) {
-    return "La contraseña no puede ser igual al usuario";
+    return "The password cannot be the same as the username";
   }
   return null;
 }

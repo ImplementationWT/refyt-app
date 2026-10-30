@@ -98,7 +98,7 @@ describe.skipIf(skipDb)("Will Doo", () => {
     expect((await api.request("GET", "/api/auth/me", { cookie })).json().features).toEqual(["willdoo"]);
     expect((await ask(api, cookie, { text: "Hola" })).statusCode).toBe(404);
     expect((await api.request("GET", "/api/willdoo/conversations", { cookie })).statusCode).toBe(404);
-    expect((await api.request("GET", "/api/willdoo/guide", { cookie })).json().guide).toContain("## Secciones de la app");
+    expect((await api.request("GET", "/api/willdoo/guide", { cookie })).json().guide).toContain("## Sections of the app");
 
     const list = (await api.request("GET", "/api/willdoo/quick", { cookie })).json();
     expect(list.mode).toBe("basic");
@@ -116,9 +116,9 @@ describe.skipIf(skipDb)("Will Doo", () => {
     await api.c.users.updateOne({ username: "inactivo" }, { $set: { status: "disabled" } });
     const disabled = await quick(api, cookie, "usuarios-desactivados");
     expect(disabled.statusCode).toBe(200);
-    expect(disabled.json()).toMatchObject({ id: "usuarios-desactivados", summary: "1 usuario", link: "/usuarios", items: [{ title: "inactivo", subtitle: "@inactivo" }] });
+    expect(disabled.json()).toMatchObject({ id: "usuarios-desactivados", summary: "1 user", link: "/users", items: [{ title: "inactivo", subtitle: "@inactivo" }] });
     expect(disabled.body).not.toContain("passwordHash");
-    expect((await quick(api, cookie, "indicadores-semana")).json().items[0]).toEqual({ title: "Usuarios activos", meta: "1" });
+    expect((await quick(api, cookie, "indicadores-semana")).json().items[0]).toEqual({ title: "Active users", meta: "1" });
     expect(await api.c.auditLogs.findOne({ action: "willdoo.quick" })).toMatchObject({ entityId: "usuarios-desactivados", metadata: { consulta: "usuarios-desactivados", resultados: 1 } });
   });
 
@@ -130,7 +130,7 @@ describe.skipIf(skipDb)("Will Doo", () => {
     expect((await api.request("GET", "/api/willdoo/quick", { cookie })).json().items.map((item: { id: string }) => item.id)).toEqual(["mis-notificaciones"]);
     expect((await quick(api, cookie, "usuarios-desactivados")).statusCode).toBe(404);
     expect((await quick(api, cookie, "no-existe")).statusCode).toBe(404);
-    expect((await quick(api, cookie, "mis-notificaciones")).json()).toMatchObject({ summary: "1 notificación sin leer", items: [{ title: "Aviso de Ana" }] });
+    expect((await quick(api, cookie, "mis-notificaciones")).json()).toMatchObject({ summary: "1 unread notification", items: [{ title: "Aviso de Ana" }] });
 
     const plain = await api.createUser({ username: "sinwill", permissions: ["users.read"] });
     const plainCookie = await plain.cookie();
@@ -180,9 +180,9 @@ describe.skipIf(skipDb)("Will Doo", () => {
 
     const stream = events(response.body);
     expect(stream.map((event) => event.type)).toEqual(["start", "tool", "text", "done"]);
-    expect(stream[1]).toMatchObject({ name: "indicadores", label: "Consultando indicadores" });
+    expect(stream[1]).toMatchObject({ name: "indicadores", label: "Looking up indicators" });
     const done = stream.at(-1) as { conversationId: string; turn: { text: string; tools: string[] } };
-    expect(done.turn).toMatchObject({ text: "Hay **1** usuario activo. [Ver dashboard](/)", tools: ["Consultando indicadores"] });
+    expect(done.turn).toMatchObject({ text: "Hay **1** usuario activo. [Ver dashboard](/)", tools: ["Looking up indicators"] });
 
     // The tool result went back to Claude with live data, inside a tool_result.
     const second = fake.requests[1]!;
@@ -191,7 +191,7 @@ describe.skipIf(skipDb)("Will Doo", () => {
     expect(JSON.parse(results[0]!.content).kpis.activeUsers).toBe(1);
     // Screen and identity travel as marked data in the user turn, not in the system prompt.
     const userTurn = fake.requests[0]!.messages[0]!.content as Array<{ text: string }>;
-    expect(userTurn[0]!.text).toMatch(/^<contexto>[\s\S]*Pantalla abierta: \/ · «Dashboards»[\s\S]*<\/contexto>$/);
+    expect(userTurn[0]!.text).toMatch(/^<context>[\s\S]*Open screen: \/ · “Dashboards”[\s\S]*<\/context>$/);
     expect(userTurn[1]!.text).toBe("¿Cuántos usuarios activos hay?");
     expect(JSON.stringify(fake.requests[0]!.system)).not.toContain("@admin");
     expect(fake.requests[0]!.system[0]!.cache_control).toEqual({ type: "ephemeral" });

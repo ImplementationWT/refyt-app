@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ADMIN_NEW_PASSWORD, ORIGIN, cookieHeader, setupApi } from "./api.js";
 import { skipDb, startMongo, type TestMongo } from "./mongo-server.js";
 
-const GENERIC = { error: "invalid_credentials", message: "Usuario o contraseña incorrectos" };
+const GENERIC = { error: "invalid_credentials", message: "Incorrect username or password" };
 
 describe.skipIf(skipDb)("authentication", () => {
   let mongo: TestMongo;
@@ -115,9 +115,9 @@ describe.skipIf(skipDb)("authentication", () => {
     });
 
     it.each([
-      ["admin123", "La contraseña no puede ser la contraseña inicial"],
-      ["corta", "La contraseña debe tener al menos 10 caracteres"],
-      ["Admin", "La contraseña debe tener al menos 10 caracteres"]
+      ["admin123", "The password cannot be the initial password"],
+      ["corta", "The password must have at least 10 characters"],
+      ["Admin", "The password must have at least 10 characters"]
     ])("rejects %j as the new password", async (newPassword, message) => {
       const api = await setupApi(mongo);
       const cookie = await api.login("admin", "admin123");
@@ -139,7 +139,7 @@ describe.skipIf(skipDb)("authentication", () => {
         body: { currentPassword: "Clave-de-prueba-1", newPassword: "MARIA.LOPEZ1" }
       });
 
-      expect(response.json().message).toBe("La contraseña no puede ser igual al usuario");
+      expect(response.json().message).toBe("The password cannot be the same as the username");
     });
 
     it("rejects a wrong current password", async () => {

@@ -147,7 +147,7 @@ describe("security headers and SPA serving", () => {
 
     try {
       const root = await app.inject({ method: "GET", url: "/" });
-      const route = await app.inject({ method: "GET", url: "/usuarios/123" });
+      const route = await app.inject({ method: "GET", url: "/users/123" });
       const asset = await app.inject({ method: "GET", url: "/assets/app-abc123.js" });
 
       expect(root.statusCode).toBe(200);

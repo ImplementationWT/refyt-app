@@ -30,30 +30,30 @@ export const ADMIN_GROUP_ID = "admin";
 export const NAV_GROUPS: NavGroup[] = [
   {
     id: ADMIN_GROUP_ID,
-    label: "Administración",
+    label: "Administration",
     items: [
       {
-        to: "/usuarios",
-        label: "Usuarios",
+        to: "/users",
+        label: "Users",
         icon: Users,
         tone: "blue",
         permission: "users.read",
-        description: "Cuentas, accesos y permisos"
+        description: "Accounts, access and permissions"
       },
-      { to: "/roles", label: "Roles", icon: ShieldCheck, tone: "violet", permission: "roles.read", description: "Agrupa permisos por función" },
+      { to: "/roles", label: "Roles", icon: ShieldCheck, tone: "violet", permission: "roles.read", description: "Groups permissions by job" },
       {
-        to: "/integraciones",
-        label: "Integraciones",
+        to: "/integrations",
+        label: "Integrations",
         icon: Plug,
         tone: "teal",
         permission: "integrations.read",
-        description: "Servicios externos conectados"
+        description: "Connected external services"
       }
     ]
   },
   {
     id: "integrations",
-    label: "Servicios conectados",
+    label: "Connected services",
     items: [
       {
         to: "/monday",
@@ -62,14 +62,14 @@ export const NAV_GROUPS: NavGroup[] = [
         tone: "orange",
         permission: "monday.read",
         feature: "monday",
-        description: "Tableros de Monday.com"
+        description: "Monday.com boards"
       }
     ]
   },
   {
     id: "activity",
-    label: "Actividad",
-    items: [{ to: "/panel", label: "Dashboards", icon: LayoutDashboard, tone: "brand", description: "Indicadores y actividad" }]
+    label: "Activity",
+    items: [{ to: "/dashboard", label: "Dashboards", icon: LayoutDashboard, tone: "brand", description: "Indicators and activity" }]
   }
 ];
 

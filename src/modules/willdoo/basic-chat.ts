@@ -10,15 +10,15 @@ import type { QuickQuery } from "./quick.js";
  * Texts in COPY so each project can translate them (the app's language).
  */
 export const COPY = {
-  answer: "Esto es lo que hay en el sistema:",
-  partial: "No tengo exactamente eso, pero esto es lo más cercano que hay en el sistema:",
-  guide: "Según la guía de uso:",
+  answer: "This is what the system has:",
+  partial: "I do not have exactly that, but this is the closest thing in the system:",
+  guide: "From the user guide:",
   analytics:
-    "Sin la conexión con Claude no hago pronósticos, tendencias ni análisis. Te muestro los datos que hay hoy sobre eso; para analizarlos se necesita «Will Doo + Claude».",
+    "Without the Claude connection I do not do forecasts, trends or analysis. Here is the data there is today about it; analysing it needs “Will Doo + Claude”.",
   analyticsNoData:
-    "Sin la conexión con Claude no hago pronósticos, tendencias ni análisis, y no encontré datos sobre eso. Para analizar se necesita «Will Doo + Claude». Esto sí puedo responderte:",
-  noMatch: "No encontré datos sobre eso. Solo respondo con lo que hay en el sistema y con tus permisos. Puedo responderte esto:",
-  empty: "Escribe una pregunta o elige una de la lista."
+    "Without the Claude connection I do not do forecasts, trends or analysis, and I found no data about it. Analysing needs “Will Doo + Claude”. This I can answer:",
+  noMatch: "I found no data about that. I only answer with what is in the system and within your permissions. I can answer this:",
+  empty: "Type a question or pick one from the list."
 };
 
 /** Words that ask for a forecast or analysis (accents removed, prefixes). */

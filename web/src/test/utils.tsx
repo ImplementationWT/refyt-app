@@ -34,7 +34,7 @@ export function mockApi(routes: Record<string, Handler | unknown>) {
   return { calls, fetchMock };
 }
 
-export const META = { appName: "Aplicación de prueba", clientId: "demo", templateVersion: "1.1.0", schemaVersion: 1 };
+export const META = { appName: "Test app", clientId: "demo", templateVersion: "1.1.0", schemaVersion: 1 };
 
 export function session(
   permissions: string[],

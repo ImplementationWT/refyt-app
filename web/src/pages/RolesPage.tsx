@@ -36,7 +36,7 @@ export function RolesPage() {
     mutationFn: (role: Role) => api(`/api/roles/${role.id}`, { method: "DELETE" }),
     onSuccess: (_data, role) => {
       setDeleting(null);
-      toast({ tone: "success", message: `Se eliminó el rol ${role.name}` });
+      toast({ tone: "success", message: `Role ${role.name} deleted` });
       return queryClient.invalidateQueries({ queryKey: ROLES_KEY });
     }
   });
@@ -44,7 +44,7 @@ export function RolesPage() {
   const columns: Column<Role>[] = [
     {
       key: "name",
-      header: "Rol",
+      header: "Role",
       sortField: "name",
       cell: (role) => (
         <div className="flex items-center gap-3">
@@ -52,7 +52,7 @@ export function RolesPage() {
           <div className="min-w-0">
             <p className="flex items-center gap-2 font-semibold">
               {role.name}
-              {role.isSystem ? <Pill tone="brand">Sistema</Pill> : null}
+              {role.isSystem ? <Pill tone="brand">System</Pill> : null}
             </p>
             <p className="text-[13px] text-muted">
               <code>{role.key}</code>
@@ -63,29 +63,29 @@ export function RolesPage() {
     },
     {
       key: "description",
-      header: "Descripción",
+      header: "Description",
       className: "hidden md:table-cell text-muted",
       cell: (role) => role.description || "—"
     },
     {
       key: "permissions",
-      header: "Permisos",
+      header: "Permissions",
       cell: (role) => <Pill tone="teal">{role.permissionKeys.length}</Pill>
     },
     {
       key: "users",
-      header: "Usuarios",
+      header: "Users",
       cell: (role) => <Pill tone="blue">{role.userCount ?? "—"}</Pill>
     },
     {
       key: "actions",
-      header: "Acciones",
+      header: "Actions",
       className: "text-right",
       cell: (role) =>
         role.isSystem ? null : (
           <div className="flex justify-end gap-0.5">
             {can("roles.update") ? (
-              <IconButton size="sm" aria-label={`Editar ${role.name}`} onClick={() => setEditing(role)}>
+              <IconButton size="sm" aria-label={`Edit ${role.name}`} onClick={() => setEditing(role)}>
                 <Pencil />
               </IconButton>
             ) : null}
@@ -93,7 +93,7 @@ export function RolesPage() {
               <IconButton
                 size="sm"
                 className="hover:bg-danger-25 hover:text-danger-500"
-                aria-label={`Eliminar ${role.name}`}
+                aria-label={`Delete ${role.name}`}
                 onClick={() => setDeleting(role)}
               >
                 <Trash2 />
@@ -110,11 +110,11 @@ export function RolesPage() {
         icon={ShieldCheck}
         tone="violet"
         title="Roles"
-        description="Agrupan permisos que luego se asignan a los usuarios."
+        description="Group permissions that are then assigned to users."
         actions={
           can("roles.create") ? (
             <Button onClick={() => setEditing("new")}>
-              <Plus /> Nuevo rol
+              <Plus /> New role
             </Button>
           ) : null
         }
@@ -122,8 +122,8 @@ export function RolesPage() {
       <div className="relative mb-4 w-full max-w-sm">
         <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-faint" aria-hidden />
         <Input
-          aria-label="Buscar roles"
-          placeholder="Buscar por nombre o clave"
+          aria-label="Search roles"
+          placeholder="Search by name or key"
           className="pl-10"
           value={list.search}
           onChange={(event) => list.setSearch(event.target.value)}
@@ -137,7 +137,7 @@ export function RolesPage() {
         error={query.error}
         onRetry={() => query.refetch()}
         emptyIcon={ShieldCheck}
-        emptyMessage="No hay roles que mostrar"
+        emptyMessage="No roles to show"
         sort={list.sort}
         onSortChange={list.setSort}
         pagination={
@@ -155,15 +155,15 @@ export function RolesPage() {
           onClose={() => setEditing(null)}
           onSaved={(name, created) => {
             setEditing(null);
-            toast({ tone: "success", message: created ? `Se creó el rol ${name}` : "Cambios guardados" });
+            toast({ tone: "success", message: created ? `Role ${name} created` : "Changes saved" });
           }}
         />
       ) : null}
       <ConfirmDialog
         open={deleting !== null}
-        title="Eliminar rol"
-        description={`Se eliminará el rol «${deleting?.name}». No debe estar asignado a ningún usuario.`}
-        confirmLabel="Eliminar"
+        title="Delete role"
+        description={`Role “${deleting?.name}” will be deleted. It must not be assigned to any user.`}
+        confirmLabel="Delete"
         destructive
         pending={remove.isPending}
         error={remove.error instanceof ApiError ? remove.error.message : null}
@@ -183,9 +183,9 @@ const roleSchema = z.object({
     .trim()
     .toLowerCase()
     .regex(/^[a-z][a-z0-9_.-]{1,49}$/, {
-      error: "Usa de 2 a 50 caracteres: letras minúsculas, números, punto, guion o guion bajo"
+      error: "Use 2 to 50 characters: lowercase letters, numbers, dot, hyphen or underscore"
     }),
-  name: z.string().trim().min(1, { error: "Introduce el nombre" }).max(100),
+  name: z.string().trim().min(1, { error: "Enter the name" }).max(100),
   description: z.string().trim().max(500),
   permissionKeys: z.array(z.string())
 });
@@ -244,7 +244,7 @@ function RoleFormDialog({
   const selected = form.watch("permissionKeys").length;
 
   return (
-    <Dialog open onClose={onClose} title={creating ? "Nuevo rol" : `Editar ${role.name}`} wide>
+    <Dialog open onClose={onClose} title={creating ? "New role" : `Edit ${role.name}`} wide>
       <form
         className="grid gap-4"
         noValidate
@@ -255,26 +255,26 @@ function RoleFormDialog({
       >
         {formError ? <Alert>{formError}</Alert> : null}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Nombre" error={errors.name?.message}>
+          <Field label="Name" error={errors.name?.message}>
             {(props) => <Input {...props} {...form.register("name")} />}
           </Field>
-          <Field label="Clave" hint={creating ? "No se puede cambiar después." : undefined} error={errors.key?.message}>
+          <Field label="Key" hint={creating ? "It cannot be changed later." : undefined} error={errors.key?.message}>
             {(props) => <Input {...props} disabled={!creating} autoComplete="off" {...form.register("key")} />}
           </Field>
         </div>
-        <Field label="Descripción" error={errors.description?.message}>
+        <Field label="Description" error={errors.description?.message}>
           {(props) => <Input {...props} {...form.register("description")} />}
         </Field>
         <fieldset>
           <legend className="mb-2 flex w-full items-center justify-between text-[13.5px] font-semibold">
-            Permisos <Pill tone="teal">{selected} seleccionados</Pill>
+            Permissions <Pill tone="teal">{selected} selected</Pill>
           </legend>
           {!can("permissions.read") ? (
-            <Alert>Necesitas el permiso «permissions.read» para ver el catálogo.</Alert>
+            <Alert>You need the “permissions.read” permission to see the catalog.</Alert>
           ) : catalog.isPending ? (
             <Spinner />
           ) : catalog.isError ? (
-            <Alert>No se pudo cargar el catálogo de permisos.</Alert>
+            <Alert>Could not load the permission catalog.</Alert>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {[...grouped].map(([module, permissions]) => {
@@ -307,10 +307,10 @@ function RoleFormDialog({
         </fieldset>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
-            Cancelar
+            Cancel
           </Button>
           <Button type="submit" disabled={save.isPending}>
-            {save.isPending ? "Guardando…" : creating ? "Crear rol" : "Guardar cambios"}
+            {save.isPending ? "Saving…" : creating ? "Create role" : "Save changes"}
           </Button>
         </DialogFooter>
       </form>

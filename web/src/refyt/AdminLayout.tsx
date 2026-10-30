@@ -8,7 +8,7 @@ import { visibleNavGroups } from "../navigation";
 import { RefytHeader, TAB_TITLE } from "./RefytHeader";
 
 /**
- * Administración (Usuarios, Roles, Integraciones…) inside the Refyt shell: the same header and
+ * Administration (Usuarios, Roles, Integraciones…) inside the Refyt shell: the same header and
  * sidebar as the teams' apps, with the app's own screens in the content area.
  */
 export function AdminLayout() {
@@ -26,7 +26,7 @@ export function AdminLayout() {
     <div className="shell rf-admin">
       <RefytHeader homeLink>
         <nav className="appsw" aria-label="Apps">
-          <button type="button" className="rf-hb rf-menu" aria-label="Menú" onClick={() => setMenuOpen((value) => !value)}>
+          <button type="button" className="rf-hb rf-menu" aria-label="Menu" onClick={() => setMenuOpen((value) => !value)}>
             <List size={17} aria-hidden />
           </button>
           <span className="rf-appdd static">
@@ -34,21 +34,21 @@ export function AdminLayout() {
               <Settings size={16} aria-hidden />
             </span>
             <span className="rf-adn">
-              <b>Administración</b>
-              <small>Usuarios, roles e integraciones</small>
+              <b>Administration</b>
+              <small>Users, roles and integrations</small>
             </span>
           </span>
         </nav>
         <div className="tools">
           <Link to="/" className="rf-hb wide">
             <ArrowLeft size={14} aria-hidden />
-            Volver a Refyt
+            Back to Refyt
           </Link>
         </div>
       </RefytHeader>
       <div className="main">
         <div className={`oapp${menuOpen ? " sbopen" : ""}`}>
-          <aside className="sb rfx" aria-label="Navegación principal">
+          <aside className="sb rfx" aria-label="Main navigation">
             {groups.map((group) => (
               <div key={group.id}>
                 <div className="sb-sec">{group.label}</div>

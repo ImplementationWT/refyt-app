@@ -65,12 +65,12 @@ export async function askWillDoo(body: AskBody, onEvent: (event: WillDooEvent) =
     });
   } catch (error) {
     if (signal?.aborted) throw error;
-    throw new ApiError(0, "network_error", "No se pudo conectar con el servidor");
+    throw new ApiError(0, "network_error", "Could not connect to the server");
   }
 
   if (!response.ok || !response.body) {
     const data = (await response.json().catch(() => null)) as { error?: string; message?: string } | null;
-    throw new ApiError(response.status, data?.error ?? "error", data?.message ?? "Will Doo no pudo responder. Inténtalo de nuevo.");
+    throw new ApiError(response.status, data?.error ?? "error", data?.message ?? "Will Doo could not answer. Try again.");
   }
 
   const reader = response.body.getReader();

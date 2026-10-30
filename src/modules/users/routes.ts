@@ -22,14 +22,14 @@ interface Deps {
   collections: () => Promise<Collections>;
 }
 
-const objectIdString = z.string().regex(/^[a-f0-9]{24}$/i, { error: "Identificador no válido" });
+const objectIdString = z.string().regex(/^[a-f0-9]{24}$/i, { error: "Invalid identifier" });
 
 const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
   .max(200)
-  .pipe(z.email({ error: "Correo electrónico no válido" }));
+  .pipe(z.email({ error: "Invalid email" }));
 
 const listSchema = paginationSchema(
   ["username", "displayName", "email", "status", "createdAt", "lastLoginAt"],
@@ -42,7 +42,7 @@ const createSchema = z.object({
     .trim()
     .toLowerCase()
     .regex(/^[a-z0-9._-]{3,50}$/, {
-      error: "Usa de 3 a 50 caracteres: letras minúsculas, números, punto, guion o guion bajo"
+      error: "Use 3 to 50 characters: lowercase letters, numbers, dot, hyphen or underscore"
     }),
   email: emailSchema.optional(),
   displayName: z.string().trim().min(1).max(100),
@@ -58,7 +58,7 @@ const updateSchema = z
     status: z.enum(["active", "disabled"]).optional(),
     roleIds: z.array(objectIdString).max(20).optional()
   })
-  .refine((value) => Object.keys(value).length > 0, { error: "No hay cambios" });
+  .refine((value) => Object.keys(value).length > 0, { error: "No changes" });
 
 const resetPasswordSchema = z.object({ password: z.string().min(1).max(MAX_PASSWORD_LENGTH) });
 
@@ -68,20 +68,20 @@ export function assertWithinActorPermissions(actor: AuthContext, roles: RoleDoc[
     role.permissionKeys.some((key) => !actor.permissions.has(key))
   );
   if (exceeding) {
-    throw forbidden("No puedes gestionar roles o usuarios con más permisos que los tuyos");
+    throw forbidden("You cannot manage roles or users with more permissions than yours");
   }
 }
 
 /** Same rule for a target user: their effective permissions (roles + overrides). */
 export function assertCanManageUser(actor: AuthContext, target: UserDoc, targetRoles: RoleDoc[]) {
   if ([...permissionsOf(targetRoles, target)].some((key) => !actor.permissions.has(key))) {
-    throw forbidden("No puedes gestionar usuarios con más permisos que los tuyos");
+    throw forbidden("You cannot manage users with more permissions than yours");
   }
 }
 
 const userPermissionsSchema = z.object({
   permissionKeys: z
-    .array(z.string().refine(isPermissionKey, { error: "Permiso desconocido" }))
+    .array(z.string().refine(isPermissionKey, { error: "Unknown permission" }))
     .max(100)
     .transform((keys) => [...new Set(keys)])
 });
@@ -90,7 +90,7 @@ async function loadRolesStrict(c: Collections, ids: string[]): Promise<RoleDoc[]
   const unique = [...new Set(ids)];
   const roles = await c.roles.find({ _id: { $in: unique.map((id) => new ObjectId(id)) } }).toArray();
   if (roles.length !== unique.length) {
-    throw new AppError(400, "unknown_role", "Alguno de los roles no existe");
+    throw new AppError(400, "unknown_role", "One of the roles does not exist");
   }
   return roles;
 }
@@ -117,7 +117,7 @@ async function assertNotLastAdmin(c: Collections, target: UserDoc, adminRoleId: 
     status: "active"
   });
   if (others === 0) {
-    throw conflict("last_admin", "No se puede dejar el sistema sin un administrador activo");
+    throw conflict("last_admin", "The system cannot be left without an active administrator");
   }
 }
 
@@ -125,8 +125,8 @@ function duplicateKeyConflict(error: unknown): never {
   if (error instanceof MongoServerError && error.code === 11000) {
     const field = Object.keys(error.keyPattern ?? {})[0];
     throw field === "email"
-      ? conflict("email_taken", "Ya existe un usuario con ese correo")
-      : conflict("username_taken", "Ya existe un usuario con ese nombre de usuario");
+      ? conflict("email_taken", "A user with that email already exists")
+      : conflict("username_taken", "A user with that username already exists");
   }
   throw error;
 }
@@ -225,7 +225,7 @@ export async function userRoutes(app: FastifyInstance, deps: Deps) {
       const c = await deps.collections();
       const user = await c.users.findOne({ _id: id });
       if (!user) {
-        throw notFound("Usuario no encontrado");
+        throw notFound("User not found");
       }
       return { user: (await withRoles(c, [user]))[0] };
     }
@@ -242,7 +242,7 @@ export async function userRoutes(app: FastifyInstance, deps: Deps) {
 
       const target = await c.users.findOne({ _id: id });
       if (!target) {
-        throw notFound("Usuario no encontrado");
+        throw notFound("User not found");
       }
       const currentRoles = await c.roles.find({ _id: { $in: target.roleIds } }).toArray();
       assertCanManageUser(actor, target, currentRoles);
@@ -265,10 +265,10 @@ export async function userRoutes(app: FastifyInstance, deps: Deps) {
       }
 
       if (isSelf && input.status === "disabled") {
-        throw conflict("cannot_disable_self", "No puedes desactivar tu propio usuario");
+        throw conflict("cannot_disable_self", "You cannot disable your own user");
       }
       if (isSelf && isActiveAdmin(target, adminRoleId) && !isActiveAdmin(next, adminRoleId)) {
-        throw conflict("cannot_remove_own_admin", "No puedes quitarte a ti mismo el rol de administrador");
+        throw conflict("cannot_remove_own_admin", "You cannot remove the administrator role from yourself");
       }
       if (isActiveAdmin(target, adminRoleId) && !isActiveAdmin(next, adminRoleId)) {
         await assertNotLastAdmin(c, target, adminRoleId);
@@ -317,10 +317,10 @@ export async function userRoutes(app: FastifyInstance, deps: Deps) {
 
       const target = await c.users.findOne({ _id: id });
       if (!target) {
-        throw notFound("Usuario no encontrado");
+        throw notFound("User not found");
       }
       if (target._id.equals(actor.user._id)) {
-        throw conflict("use_change_password", "Para tu propia cuenta usa «Cambiar contraseña»");
+        throw conflict("use_change_password", "For your own account use “Change password”");
       }
       assertCanManageUser(actor, target, await c.roles.find({ _id: { $in: target.roleIds } }).toArray());
       weakPassword(password, target.username);
@@ -359,10 +359,10 @@ export async function userRoutes(app: FastifyInstance, deps: Deps) {
 
       const target = await c.users.findOne({ _id: id });
       if (!target) {
-        throw notFound("Usuario no encontrado");
+        throw notFound("User not found");
       }
       if (target._id.equals(actor.user._id)) {
-        throw conflict("cannot_delete_self", "No puedes eliminar tu propio usuario");
+        throw conflict("cannot_delete_self", "You cannot delete your own user");
       }
       assertCanManageUser(actor, target, await c.roles.find({ _id: { $in: target.roleIds } }).toArray());
       await assertNotLastAdmin(c, target, await getAdminRoleId(c));
@@ -393,7 +393,7 @@ export async function userRoutes(app: FastifyInstance, deps: Deps) {
       const c = await deps.collections();
       const target = await c.users.findOne({ _id: id });
       if (!target) {
-        throw notFound("Usuario no encontrado");
+        throw notFound("User not found");
       }
       const roles = await c.roles.find({ _id: { $in: target.roleIds } }).toArray();
       const catalog = await c.permissions.find().sort({ module: 1, key: 1 }).toArray();
@@ -438,20 +438,20 @@ export async function userRoutes(app: FastifyInstance, deps: Deps) {
 
       const target = await c.users.findOne({ _id: id });
       if (!target) {
-        throw notFound("Usuario no encontrado");
+        throw notFound("User not found");
       }
       if (target._id.equals(actor.user._id)) {
-        throw conflict("cannot_edit_own_permissions", "No puedes cambiar tus propios permisos");
+        throw conflict("cannot_edit_own_permissions", "You cannot change your own permissions");
       }
       const roles = await c.roles.find({ _id: { $in: target.roleIds } }).toArray();
       if (isAdmin(roles)) {
-        throw conflict("admin_has_all_permissions", "Los administradores tienen siempre todos los permisos");
+        throw conflict("admin_has_all_permissions", "Administrators always have every permission");
       }
       assertCanManageUser(actor, target, roles);
 
       const desired = new Set<string>(permissionKeys);
       if ([...desired].some((key) => !actor.permissions.has(key))) {
-        throw forbidden("No puedes conceder permisos que tú no tienes");
+        throw forbidden("You cannot grant permissions you do not have");
       }
       const fromRoles = new Set(roles.flatMap((role) => role.permissionKeys));
       const granted = [...desired].filter((key) => !fromRoles.has(key)).sort();

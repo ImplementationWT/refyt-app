@@ -3,16 +3,16 @@ import type { Tone } from "./utils";
 
 /** Presentation of each permission module (labels, colors, icons). */
 export const MODULE_LABELS: Record<string, string> = {
-  users: "Usuarios",
+  users: "Users",
   roles: "Roles",
-  permissions: "Permisos",
-  notifications: "Notificaciones",
-  audit: "Auditoría",
+  permissions: "Permissions",
+  notifications: "Notifications",
+  audit: "Audit",
   dashboard: "Dashboards",
-  integrations: "Integraciones",
+  integrations: "Integrations",
   monday: "Monday",
   willdoo: "Will Doo",
-  refyt: "Apps de Refyt"
+  refyt: "Refyt apps"
 };
 
 export const MODULE_TONES: Record<string, Tone> = {

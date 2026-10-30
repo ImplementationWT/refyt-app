@@ -12,7 +12,7 @@ describe("chat de «Will Doo solo» (sin IA)", () => {
   it("cada consulta tiene pregunta, tema, palabras clave y continuaciones válidas", () => {
     const ids = new Set(ALL.map((query) => query.id));
     for (const query of ALL) {
-      expect(query.question, query.id).toMatch(/^¿.+\?$/);
+      expect(query.question, query.id).toMatch(/^[A-Z].+\?$/);
       expect(query.group, query.id).toBeTruthy();
       expect(query.keywords.length, query.id).toBeGreaterThan(2);
       expect(query.next.length, query.id).toBeLessThanOrEqual(3);
@@ -62,17 +62,17 @@ describe("chat de «Will Doo solo» (sin IA)", () => {
   });
 
   it("«cómo…» responde con la guía; lo que no reconoce da una respuesta general", () => {
-    const howTo = understand("¿Cómo cambio mi contraseña?", ALL);
+    const howTo = understand("How do I change my password?", ALL);
     expect(howTo.kind).toBe("guide");
-    expect(howTo.kind === "guide" && howTo.lines.join(" ")).toContain("contraseña");
+    expect(howTo.kind === "guide" && howTo.lines.join(" ")).toContain("password");
     expect(understand("hola qué tal el clima", ALL).kind).toBe("none");
     expect(understand("   ¿?  ", ALL).kind).toBe("none");
     // One loose word is too weak to pick data: it answers with the guide…
-    const loose = understand("usuarios", ALL);
+    const loose = understand("users", ALL);
     expect(loose.kind).toBe("guide");
-    expect(loose.kind === "guide" && loose.lines[0]).toContain("Usuarios");
+    expect(loose.kind === "guide" && loose.lines[0]).toContain("Users");
     // …but on the Usuarios screen it answers with the closest data and suggests the other candidate first.
-    const onUsers = understand("usuarios", ALL, undefined, "/usuarios");
+    const onUsers = understand("users", ALL, undefined, "/users");
     expect(onUsers).toMatchObject({ kind: "answer", partial: true, message: COPY.partial });
     const shown = onUsers.kind === "answer" ? [onUsers.query, ...onUsers.alternatives].map((query) => query.id).sort() : [];
     expect(shown).toEqual(["usuarios-desactivados", "usuarios-recientes"]);
@@ -93,7 +93,7 @@ describe("chat de «Will Doo solo» (sin IA)", () => {
     expect(normalize("¿Qué ÚSUARIOS?")).toBe("que usuarios");
     // With nothing to follow, the open screen's queries come first.
     expect(followUps(null, ALL, 3, "/roles")[0]!.id).toBe("roles");
-    expect(followUps(null, ALL, 3, "/panel")[0]!.id).toBe("indicadores-semana");
+    expect(followUps(null, ALL, 3, "/dashboard")[0]!.id).toBe("indicadores-semana");
     // Other candidates first; what is already shown is never suggested.
     const withFirst = followUps(byId("usuarios-desactivados"), ALL, 3, undefined, { first: [byId("mis-notificaciones")], skip: [byId("usuarios-recientes")] });
     expect(withFirst.map((query) => query.id)).toEqual(["mis-notificaciones", "roles", "ingresos-fallidos-hoy"]);
@@ -120,9 +120,9 @@ describe.skipIf(skipDb)("API del chat sin IA", () => {
     const response = await ask(api, cookie, "¿Quiénes están desactivados?");
     expect(response.statusCode).toBe(200);
     const body = response.json();
-    expect(body).toMatchObject({ kind: "answer", result: { id: "usuarios-desactivados", summary: "1 usuario", question: "¿Qué usuarios están desactivados?" } });
+    expect(body).toMatchObject({ kind: "answer", result: { id: "usuarios-desactivados", summary: "1 user", question: "Which users are disabled?" } });
     expect(body.suggestions.map((s: { id: string }) => s.id)).toEqual(["usuarios-recientes", "roles", "ingresos-fallidos-hoy"]);
-    expect(body.suggestions[0].question).toMatch(/^¿/);
+    expect(body.suggestions[0].question).toMatch(/\?$/);
     expect(await api.c.auditLogs.findOne({ action: "willdoo.basic" })).toMatchObject({
       entityId: "usuarios-desactivados",
       metadata: { pregunta: "¿Quiénes están desactivados?", tipo: "answer", consulta: "usuarios-desactivados" }
@@ -145,7 +145,7 @@ describe.skipIf(skipDb)("API del chat sin IA", () => {
     expect(quick.suggestions.map((s: { id: string }) => s.id)).not.toContain("roles");
 
     const list = (await api.request("GET", "/api/willdoo/quick", { cookie })).json();
-    expect(list.items[0]).toMatchObject({ id: "indicadores-semana", question: "¿Cómo va la actividad de esta semana?", group: "Actividad" });
+    expect(list.items[0]).toMatchObject({ id: "indicadores-semana", question: "How is activity this week?", group: "Activity" });
   });
 
   it("pronósticos: respuesta general con los datos que hay; guía y sin coincidencias, con sugerencias", async () => {
@@ -156,9 +156,9 @@ describe.skipIf(skipDb)("API del chat sin IA", () => {
     expect(forecast.message).toContain("Will Doo + Claude");
     expect(forecast.suggestions).toHaveLength(3);
 
-    const guide = (await ask(api, cookie, "¿Cómo creo un usuario?")).json();
+    const guide = (await ask(api, cookie, "How do I create a user?")).json();
     expect(guide.kind).toBe("guide");
-    expect(guide.guide.join(" ")).toContain("Nuevo usuario");
+    expect(guide.guide.join(" ")).toContain("New user");
 
     const none = (await ask(api, cookie, "hola, ¿qué tal el clima?")).json();
     expect(none).toMatchObject({ kind: "none" });
@@ -176,11 +176,11 @@ describe.skipIf(skipDb)("API del chat sin IA", () => {
     await api.createUser({ username: "beto" });
 
     const one = (await ask(api, cookie, "¿quién es @ana? usuarios nuevos")).json();
-    expect(one.result).toMatchObject({ id: "usuarios-recientes", summary: "1 usuario" });
+    expect(one.result).toMatchObject({ id: "usuarios-recientes", summary: "1 user" });
     const all = (await ask(api, cookie, "usuarios nuevos")).json();
-    expect(all.result.summary).toBe("3 usuarios");
+    expect(all.result.summary).toBe("3 users");
     // A click on the roadmap never reads text: the fixed input.
-    expect((await api.request("POST", "/api/willdoo/quick/usuarios-recientes", { cookie, body: {} })).json().summary).toBe("3 usuarios");
+    expect((await api.request("POST", "/api/willdoo/quick/usuarios-recientes", { cookie, body: {} })).json().summary).toBe("3 users");
   });
 
   it("con los permisos del usuario: nunca responde con una consulta que no puede ver", async () => {
@@ -192,7 +192,7 @@ describe.skipIf(skipDb)("API del chat sin IA", () => {
     expect(body.kind).not.toBe("answer");
     expect(body.result).toBeUndefined();
     expect(JSON.stringify(body)).not.toContain("usuarios-desactivados");
-    expect((await ask(api, cookie, "¿tengo notificaciones?")).json()).toMatchObject({ kind: "answer", result: { id: "mis-notificaciones", summary: "1 notificación sin leer" } });
+    expect((await ask(api, cookie, "¿tengo notificaciones?")).json()).toMatchObject({ kind: "answer", result: { id: "mis-notificaciones", summary: "1 unread notification" } });
   });
 
   it("valida la entrada y respeta el modo apagado", async () => {

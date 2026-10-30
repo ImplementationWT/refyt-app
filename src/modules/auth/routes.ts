@@ -30,7 +30,7 @@ export interface AuthRouteDeps {
   features: (permissions: ReadonlySet<string>) => string[];
 }
 
-const INVALID_CREDENTIALS = "Usuario o contraseña incorrectos";
+const INVALID_CREDENTIALS = "Incorrect username or password";
 
 const loginSchema = z.object({
   username: z.string().trim().toLowerCase().min(1).max(100),
@@ -162,14 +162,14 @@ export async function authRoutes(app: FastifyInstance, deps: AuthRouteDeps) {
       const { currentPassword, newPassword } = changePasswordSchema.parse(request.body);
 
       if (!(await verifyPassword(currentPassword, user.passwordHash))) {
-        throw new AppError(400, "invalid_current_password", "La contraseña actual no es correcta");
+        throw new AppError(400, "invalid_current_password", "The current password is not correct");
       }
       const policyError = passwordPolicyError(newPassword, user.username);
       if (policyError) {
         throw new AppError(400, "weak_password", policyError);
       }
       if (newPassword === currentPassword) {
-        throw new AppError(400, "weak_password", "La nueva contraseña debe ser distinta de la actual");
+        throw new AppError(400, "weak_password", "The new password must be different from the current one");
       }
 
       const c = await deps.collections();

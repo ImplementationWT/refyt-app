@@ -21,9 +21,9 @@ export class AppError extends Error {
   }
 }
 
-export const notFound = (message = "Recurso no encontrado") =>
+export const notFound = (message = "Not found") =>
   new AppError(404, "not_found", message);
-export const forbidden = (message = "No tienes permiso para realizar esta acción") =>
+export const forbidden = (message = "You do not have permission to do this") =>
   new AppError(403, "forbidden", message);
 export const conflict = (code: string, message: string) => new AppError(409, code, message);
 
@@ -60,7 +60,7 @@ export function installErrorHandling(app: FastifyInstance) {
     if (error instanceof ZodError) {
       return reply.code(400).send({
         error: "validation_error",
-        message: "Los datos enviados no son válidos",
+        message: "The data sent is not valid",
         // Path and rule only; Zod messages never include the received value.
         issues: error.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message }))
       });

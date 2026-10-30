@@ -78,7 +78,7 @@ export function permissionsOf(
   return effective;
 }
 
-const unauthorized = () => new AppError(401, "unauthorized", "Tu sesión no es válida o ha expirado");
+const unauthorized = () => new AppError(401, "unauthorized", "Your session is not valid or has expired");
 
 /**
  * Resolves the session cookie on every /api request and enforces:
@@ -122,7 +122,7 @@ export function installAuth(
       throw unauthorized();
     }
     if (request.auth.user.mustChangePassword && !config?.allowDuringPasswordChange) {
-      throw new AppError(403, "password_change_required", "Debes cambiar tu contraseña para continuar");
+      throw new AppError(403, "password_change_required", "You must change your password to continue");
     }
   });
 }

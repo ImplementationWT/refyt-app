@@ -19,13 +19,13 @@ function isTimeZone(value: string): boolean {
 }
 
 const querySchema = z.object({
-  days: z.coerce.number().int().refine((n) => [7, 14, 30].includes(n), { error: "Debe ser 7, 14 o 30" }).default(14),
+  days: z.coerce.number().int().refine((n) => [7, 14, 30].includes(n), { error: "Must be 7, 14 or 30" }).default(14),
   // IANA zone of the viewer so days match their calendar (e.g. America/Lima).
   tz: z
     .string()
     .max(64)
     .regex(/^[A-Za-z0-9_+\-/]+$/)
-    .refine(isTimeZone, { error: "Zona horaria no válida" })
+    .refine(isTimeZone, { error: "Invalid time zone" })
     .default("UTC")
 });
 

@@ -22,17 +22,17 @@ export function ChangePasswordPage() {
 
   const schema = z
     .object({
-      currentPassword: z.string().min(1, { error: "Introduce tu contraseña actual" }),
+      currentPassword: z.string().min(1, { error: "Enter your current password" }),
       newPassword: passwordSchema(() => username),
       confirmPassword: z.string()
     })
     .refine((values) => values.newPassword === values.confirmPassword, {
       path: ["confirmPassword"],
-      error: "Las contraseñas no coinciden"
+      error: "The passwords do not match"
     })
     .refine((values) => values.newPassword !== values.currentPassword, {
       path: ["newPassword"],
-      error: "La nueva contraseña debe ser distinta de la actual"
+      error: "The new password must be different from the current one"
     });
   type Values = z.infer<typeof schema>;
 
@@ -45,7 +45,7 @@ export function ChangePasswordPage() {
       api("/api/auth/change-password", { method: "POST", body: { currentPassword, newPassword } }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: SESSION_KEY });
-      toast({ message: "Contraseña actualizada", tone: "success" });
+      toast({ message: "Password updated", tone: "success" });
       navigate("/", { replace: true });
     },
     onError: (error) => {
@@ -56,11 +56,11 @@ export function ChangePasswordPage() {
   // Standalone screen: while the change is forced there is no navigation.
   return (
     <AuthLayout
-      title="Cambiar contraseña"
+      title="Change password"
       subtitle={
         forced
-          ? "Por seguridad debes establecer una contraseña nueva antes de continuar."
-          : "Las demás sesiones abiertas se cerrarán al cambiarla."
+          ? "For security, set a new password before you continue."
+          : "Your other open sessions will be signed out when you change it."
       }
     >
       <form
@@ -73,22 +73,22 @@ export function ChangePasswordPage() {
       >
         {formError ? <AuthError>{formError}</AuthError> : null}
         <AuthField
-          label="Contraseña actual"
+          label="Current password"
           type="password"
           autoComplete="current-password"
           error={form.formState.errors.currentPassword?.message}
           {...form.register("currentPassword")}
         />
         <AuthField
-          label="Nueva contraseña"
+          label="New password"
           type="password"
           autoComplete="new-password"
-          hint="Mínimo 10 caracteres; distinta de tu usuario."
+          hint="At least 10 characters, different from your username."
           error={form.formState.errors.newPassword?.message}
           {...form.register("newPassword")}
         />
         <AuthField
-          label="Repite la nueva contraseña"
+          label="Repeat the new password"
           type="password"
           autoComplete="new-password"
           error={form.formState.errors.confirmPassword?.message}
@@ -97,15 +97,15 @@ export function ChangePasswordPage() {
         <div className="rf-auth-acts">
           {forced ? (
             <button type="button" className="btn sec lg" onClick={() => logout().then(() => navigate("/login", { replace: true }))}>
-              Cerrar sesión
+              Sign out
             </button>
           ) : (
             <button type="button" className="btn sec lg" onClick={() => navigate(-1)}>
-              Cancelar
+              Cancel
             </button>
           )}
           <button type="submit" className="btn pri lg" disabled={change.isPending}>
-            {change.isPending ? "Guardando…" : "Guardar contraseña"}
+            {change.isPending ? "Saving…" : "Save password"}
           </button>
         </div>
       </form>

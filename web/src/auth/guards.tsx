@@ -4,7 +4,7 @@ import { Link, Navigate, useLocation } from "react-router";
 import { EmptyState, Spinner } from "../components/ui/misc";
 import { useSession } from "./session";
 
-export const CHANGE_PASSWORD_PATH = "/cambiar-contrasena";
+export const CHANGE_PASSWORD_PATH = "/change-password";
 
 function FullPageSpinner() {
   return (
@@ -45,7 +45,7 @@ function HomeLink() {
       to="/"
       className="inline-flex h-[38px] items-center rounded-btn border-[1.5px] border-line-2 bg-surface px-[15px] text-sm font-semibold hover:bg-n-25"
     >
-      Volver al inicio
+      Back to home
     </Link>
   );
 }
@@ -61,8 +61,8 @@ export function Forbidden() {
     <div className="mx-auto max-w-lg py-12">
       <EmptyState
         icon={ShieldAlert}
-        title="Acceso denegado"
-        message="No tienes permiso para ver esta sección. Si lo necesitas, pídeselo a un administrador."
+        title="Access denied"
+        message="You do not have permission to see this section. Ask an administrator if you need it."
         action={<HomeLink />}
       />
     </div>
@@ -72,7 +72,7 @@ export function Forbidden() {
 export function NotFound() {
   return (
     <div className="mx-auto max-w-lg py-12">
-      <EmptyState title="Página no encontrada" message="La dirección no existe o se ha movido." action={<HomeLink />} />
+      <EmptyState title="Page not found" message="This address does not exist or has moved." action={<HomeLink />} />
     </div>
   );
 }
