@@ -17,6 +17,8 @@
 .rf-umn small{font-size:11.5px; font-weight:600; color:#C9D3E6; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .rf-ump{position:absolute; top:calc(100% + 8px); right:0; left:auto; width:300px; z-index:80}
 .rf-ump .rf-pi{text-decoration:none}
+/* Sin nota debajo, el icono ocupa una sola fila y el texto queda centrado con él. */
+.rf-ump .rf-pi:not(:has(small)) .rf-ai{grid-row:auto}
 .rf-ump .rf-pi.danger b, .rf-ump .rf-pi.danger .rf-ai{color:#8A2C22}
 .rf-ump .rf-pi.danger .rf-ai{background:#F5E4E2}
 .rf-ump .rf-pi.danger:hover{background:#FBF3F2}
