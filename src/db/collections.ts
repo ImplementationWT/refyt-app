@@ -114,6 +114,37 @@ export interface WillDooUsageDoc {
   expiresAt: Date;
 }
 
+export const FEEDBACK_TYPES = ["bug", "idea", "question"] as const;
+export const FEEDBACK_STATUSES = ["new", "in_progress", "fixed", "wont_fix"] as const;
+export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
+export type FeedbackStatus = (typeof FEEDBACK_STATUSES)[number];
+
+/** Feedback a user sends from the app, for the implementation team to review. */
+export interface FeedbackDoc {
+  _id: ObjectId;
+  userId: ObjectId;
+  /** Kept as sent: the person may be renamed or deleted later. */
+  userName: string;
+  username: string;
+  type: FeedbackType;
+  message: string;
+  /** Where it was sent from: route and the title of the screen. */
+  page: string;
+  screen: string | null;
+  status: FeedbackStatus;
+  /** Internal note of the team (never shown to the sender). */
+  note: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** app_metadata { key: "feedback" }: the admin switches the module on or off. */
+export interface FeedbackSettingsDoc {
+  key: "feedback";
+  enabled: boolean;
+  updatedAt: Date;
+}
+
 export interface SchemaMetadataDoc {
   key: "schema";
   version: number;
@@ -130,6 +161,7 @@ export function collections(db: Db) {
     sessions: db.collection<SessionDoc>("sessions"),
     willdooConversations: db.collection<WillDooConversationDoc>("willdoo_conversations"),
     willdooUsage: db.collection<WillDooUsageDoc>("willdoo_usage"),
+    feedback: db.collection<FeedbackDoc>("feedback"),
     metadata: db.collection("app_metadata")
   };
 }

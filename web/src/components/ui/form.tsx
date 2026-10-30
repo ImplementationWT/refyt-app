@@ -4,7 +4,8 @@ import {
   type InputHTMLAttributes,
   type LabelHTMLAttributes,
   type ReactNode,
-  type SelectHTMLAttributes
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes
 } from "react";
 import { cn } from "../../lib/utils";
 
@@ -24,6 +25,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
   )
 );
 Select.displayName = "Select";
+
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
+  ({ className, ...props }, ref) => (
+    <textarea ref={ref} className={cn(fieldClass, "min-h-[120px] resize-y py-3 leading-relaxed", className)} {...props} />
+  )
+);
+Textarea.displayName = "Textarea";
 
 export function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
   return <label className={cn("text-[13.5px] font-bold text-ink", className)} {...props} />;

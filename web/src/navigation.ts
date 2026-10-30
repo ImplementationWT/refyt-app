@@ -1,4 +1,4 @@
-import { KanbanSquare, LayoutDashboard, Plug, ShieldCheck, Users, type LucideIcon } from "lucide-react";
+import { KanbanSquare, LayoutDashboard, MessageSquareText, Plug, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import type { Tone } from "./lib/utils";
 
 export interface NavItem {
@@ -20,7 +20,7 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/** The group shown in the user menu of the header (Usuarios, Roles, Integraciones). */
+/** The group shown in the user menu of the header (Users, Roles, Integrations, Feedback). */
 export const ADMIN_GROUP_ID = "admin";
 
 /**
@@ -48,6 +48,14 @@ export const NAV_GROUPS: NavGroup[] = [
         tone: "teal",
         permission: "integrations.read",
         description: "Connected external services"
+      },
+      {
+        to: "/feedback",
+        label: "Feedback",
+        icon: MessageSquareText,
+        tone: "amber",
+        permission: "feedback.manage",
+        description: "What users report, and switching it on or off"
       }
     ]
   },

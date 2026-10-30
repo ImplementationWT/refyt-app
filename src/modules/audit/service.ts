@@ -21,7 +21,10 @@ export type AuditAction =
   | "willdoo.ask"
   | "willdoo.quick"
   | "willdoo.basic"
-  | "willdoo.conversation.delete";
+  | "willdoo.conversation.delete"
+  | "feedback.create"
+  | "feedback.update"
+  | "feedback.settings";
 
 const SENSITIVE_KEY = /pass|secret|token|cookie|hash|session|authorization|uri/i;
 

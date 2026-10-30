@@ -16,6 +16,7 @@ import { auditRoutes } from "./modules/audit/routes.js";
 import { authRoutes } from "./modules/auth/routes.js";
 import { createIntegrations, type Integrations } from "./integrations/service.js";
 import { dashboardRoutes } from "./modules/dashboard/routes.js";
+import { feedbackRoutes } from "./modules/feedback/routes.js";
 import { integrationRoutes } from "./modules/integrations/routes.js";
 import { notificationRoutes } from "./modules/notifications/routes.js";
 import { permissionRoutes } from "./modules/permissions/routes.js";
@@ -215,6 +216,7 @@ export async function buildApp({
   await notificationRoutes(app, deps);
   await auditRoutes(app, deps);
   await dashboardRoutes(app, deps);
+  await feedbackRoutes(app, deps);
   await integrationRoutes(app, { ...deps, integrations });
   let willDooModel: WillDooModel | null = null;
   await willDooRoutes(app, {

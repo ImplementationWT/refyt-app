@@ -7,6 +7,7 @@ import { ToastProvider } from "./components/ui/toast";
 import { ApiError } from "./lib/api";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { FeedbackPage } from "./pages/FeedbackPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MondayPage } from "./pages/MondayPage";
@@ -76,6 +77,7 @@ export function AppRoutes() {
         <Route path="users" element={page("users.read", <UsersPage />)} />
         <Route path="roles" element={page("roles.read", <RolesPage />)} />
         <Route path="integrations" element={page("integrations.read", <IntegrationsPage />)} />
+        <Route path="feedback" element={page("feedback.manage", <FeedbackPage />)} />
         <Route
           path="monday"
           element={

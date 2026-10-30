@@ -23,6 +23,7 @@ export const PERMISSIONS = [
   { key: "refyt.accounts", module: "refyt", description: "Open the Refyt Accounts app" },
   { key: "refyt.retrofit", module: "refyt", description: "Open the Refyt Retrofit app" },
   { key: "refyt.delivery", module: "refyt", description: "Open the Refyt Delivery app" },
+  { key: "feedback.manage", module: "feedback", description: "Review feedback and switch the feedback module on or off" },
   { key: "refyt.view_as", module: "refyt", description: "See Refyt as any role (the “Viewing as” selector)" }
 ] as const;
 

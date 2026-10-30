@@ -114,3 +114,27 @@ export interface DashboardData {
   };
   series: DashboardDay[];
 }
+
+export type FeedbackType = "bug" | "idea" | "question";
+export type FeedbackStatus = "new" | "in_progress" | "fixed" | "wont_fix";
+
+export interface Feedback {
+  id: string;
+  userId: string;
+  userName: string;
+  username: string;
+  type: FeedbackType;
+  message: string;
+  page: string;
+  screen: string | null;
+  status: FeedbackStatus;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** GET /api/feedback/settings; newCount only for those who review it (feedback.manage). */
+export interface FeedbackSettings {
+  enabled: boolean;
+  newCount?: number;
+}

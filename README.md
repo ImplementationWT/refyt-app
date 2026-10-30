@@ -20,7 +20,7 @@ workflows, endpoints, colecciones) está en
 
 La app es Refyt, toda en inglés: primero el login y, una vez dentro, las apps de los equipos (Director,
 Commercial, Accounts, Retrofit y Delivery) en `/`. El menú de usuario del encabezado lleva a
-la administración: Users (`/users`), Roles (`/roles`) e Integrations (`/integrations`), según los
+la administración: Users (`/users`), Roles (`/roles`), Integrations (`/integrations`) y Feedback (`/feedback`), según los
 permisos de cada persona. La migración 6 pasa a inglés los textos que ya estaban guardados en la base.
 
 El diseño aprobado por el cliente (`Refyt, demo v3.20.html`) manda en toda la app:
@@ -51,6 +51,12 @@ web/src/refyt/
   `refyt.retrofit` y `refyt.delivery`. `refyt.view_as` (Director y Administrador) permite usar el
   selector «Viewing as» con cualquier rol; sin él, solo aparecen los roles propios. El vínculo
   entre clave de rol y rol de Refyt está en `web/src/refyt/roles.ts`.
+- **Feedback.** Cualquier persona con sesión envía feedback (Something is wrong, Idea o Question)
+  desde «Send feedback» en su menú de usuario; se guarda con la página y la pantalla de Refyt en
+  que estaba. Quien tiene `feedback.manage` (el rol Administrador, migración 7) lo revisa en
+  `/feedback`, le pone estado (New, In progress, Fixed, Won't fix) y una nota interna, y puede
+  apagar o encender el módulo con el interruptor de esa pantalla: apagado, la opción desaparece
+  del menú y la API rechaza los envíos (`409 feedback_disabled`); lo ya recibido se conserva.
 - El CSS de Refyt va en la capa `refyt`, entre la base y las utilidades de Tailwind.
 - La CSP permite atributos `style` en línea (Refyt los usa al dibujar); los scripts siguen
   limitados a la propia app.
