@@ -1,0 +1,46 @@
+/*
+ * Refyt · protección frente al reset de Tailwind.
+ *
+ * El CSS de Refyt se escribió sobre los estilos por defecto del navegador, pero Tailwind aplica su
+ * reset a toda la app (márgenes a 0, listas sin viñetas, svg en bloque, botones sin estilo…). Dentro
+ * de lo que dibuja Refyt se devuelven los valores del navegador en las propiedades que toca ese
+ * reset, y solo en esas (así los atributos de los SVG, como stroke o width, siguen funcionando).
+ * Va primero y sin especificidad (:where), así que cualquier regla de Refyt lo sobrescribe.
+ * .rfx marca lo que dibuja Refyt; el resto son los paneles que el motor añade al <body>.
+ */
+:where(.rfx, .rfx *, #tourp, #tourp *, #vsel, #vsel *, #rfpop, #rfpop *, #rftt),
+:where(.rfx *, #tourp *, #vsel *, #rfpop *)::before,
+:where(.rfx *, #tourp *, #vsel *, #rfpop *)::after {
+  margin: revert;
+  padding: revert;
+  border: revert;
+  border-radius: revert;
+  font-family: revert;
+  font-size: revert;
+  font-weight: revert;
+  font-feature-settings: revert;
+  font-variation-settings: revert;
+  letter-spacing: revert;
+  line-height: revert;
+  color: revert;
+  text-decoration: revert;
+  text-indent: revert;
+  text-align: revert;
+  list-style: revert;
+  display: revert;
+  vertical-align: revert;
+  max-width: revert;
+  min-height: revert;
+  position: revert;
+  top: revert;
+  bottom: revert;
+  background-color: revert;
+  opacity: revert;
+  outline: revert;
+  box-shadow: revert;
+  border-collapse: revert;
+  resize: revert;
+  appearance: revert;
+  -webkit-appearance: revert;
+  -webkit-tap-highlight-color: revert;
+}

@@ -10,9 +10,9 @@ const VARIANTS = {
 } as const;
 
 const SIZES = {
-  sm: "h-[34px] gap-1.5 rounded-[11px] px-3 text-[13.5px]",
+  sm: "h-[34px] gap-1.5 rounded-btn px-3 text-[13px]",
   md: "h-[38px] gap-2 rounded-btn px-[15px] text-sm",
-  lg: "h-11 gap-2 rounded-[15px] px-[18px] text-[15px]"
+  lg: "h-11 gap-2 rounded-btn px-[18px] text-[15px]"
 } as const;
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -55,7 +55,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         "relative grid shrink-0 place-items-center text-muted transition-colors duration-150",
         "disabled:pointer-events-none disabled:opacity-50",
         size === "md"
-          ? "size-[42px] rounded-[14px] border-[1.5px] border-line bg-surface hover:border-brand-200 hover:bg-brand-25 hover:text-brand-600 [&_svg]:size-[19px]"
+          ? "size-[42px] rounded-btn border-[1.5px] border-line bg-surface hover:border-brand-200 hover:bg-brand-25 hover:text-brand-600 [&_svg]:size-[19px]"
           : "size-8 rounded-tile hover:bg-n-50 hover:text-ink [&_svg]:size-4",
         className
       )}

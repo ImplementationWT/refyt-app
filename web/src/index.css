@@ -1,98 +1,32 @@
+@layer theme, base, refyt, components, utilities;
 @import "tailwindcss";
-@import "@fontsource-variable/figtree";
+@import "./refyt/styles/index.css" layer(refyt);
 
 /*
- * Design system shared by every client project (same family as the client
- * demos): soft neutrals with a blue tint, an indigo brand scale and one color
- * scale per "tone" so each section has its own friendly accent.
- * The palette is fixed on purpose: projects do not configure colors.
- * Theme: <html data-theme="light|dark"> is set by src/lib/theme.ts.
+ * Sistema de diseño: el de Refyt (src/refyt/styles), aprobado por el cliente, manda en toda la
+ * app. Sus tokens (--n*, --b*, --g*, --a*, --r*, --surface, --ink, --line…, fuentes Manrope y
+ * Sora, radios de 10px) son la única fuente de colores. Aquí solo se añaden los alias que usan
+ * las pantallas de administración y que Refyt no define. Refyt es solo claro: no hay modo oscuro.
  */
 :root {
-  /* Neutrals */
-  --n0: #ffffff;
-  --n25: #f9fafc;
-  --n50: #f1f3f8;
-  --n100: #e5e8f0;
-  --n200: #d3d8e3;
-  --n300: #b7becd;
-  --n500: #7b8396;
-  --n600: #565e71;
-  --n900: #141826;
-  /* Brand (indigo) */
-  --p25: #f5f7ff;
-  --p50: #ebefff;
-  --p100: #d7defe;
-  --p200: #b2bffb;
-  --p400: #6b80f0;
-  --p500: #4960de;
-  --p600: #3949c2;
-  --p700: #2b3799;
-  --on-p: #ffffff;
-  /* Tones */
-  --g25: #f3faf6; --g50: #e6f4ec; --g100: #cde9d9; --g500: #1e8a55; --g700: #0f5835;
-  --a25: #fffbf1; --a50: #fff4d9; --a100: #fee8ae; --a300: #facd5c; --a500: #e2a200; --a700: #8a6000; --a900: #382700;
-  --r25: #fff7f6; --r50: #feeeec; --r100: #fbd7d2; --r500: #d33b2c; --r700: #9f2519;
-  --v25: #f8f6ff; --v50: #f0ecfe; --v100: #dfd7fc; --v500: #6b54d6; --v700: #4a36a8;
-  --b25: #f6f9ff; --b50: #ecf2fe; --b100: #d9e5fd; --b500: #3470e4; --b700: #2150b5;
-  --c25: #f1fafa; --c50: #e2f3f3; --c100: #c3e6e7; --c500: #13868a; --c700: #0b6064;
-  --k25: #fff5f9; --k50: #fde8f1; --k100: #f8ccdf; --k500: #c23b78; --k700: #8c2154;
-  --o25: #fff8f2; --o50: #feeee1; --o100: #fad5b8; --o500: #c45a12; --o700: #8a3e0b;
-
-  /* Semantic aliases */
-  --bg: var(--n50);
-  --surface: var(--n0);
-  --ink: var(--n900);
-  --muted: var(--n600);
-  --faint: var(--n500);
-  --line: var(--n100);
-  --line-2: var(--n200);
-  --scrim: rgb(20 24 38 / 0.38);
-  --sh-1: 0 1px 2px rgb(20 24 38 / 0.05), 0 1px 4px rgb(20 24 38 / 0.04);
-  --sh-2: 0 14px 30px -12px rgb(20 24 38 / 0.18), 0 3px 8px rgb(20 24 38 / 0.05);
-  --sh-3: 0 40px 70px -24px rgb(20 24 38 / 0.38), 0 10px 24px -10px rgb(20 24 38 / 0.18);
-  --sh-brand: 0 8px 16px -10px rgb(57 73 194 / 0.8);
-  /* Chart series 1, validated against each surface (dataviz validator). */
-  --chart-1: #4960de;
-  --chart-1-hover: #6b80f0;
-  color-scheme: light;
-}
-
-:root[data-theme="dark"] {
-  --n0: #171b27;
-  --n25: #1b2030;
-  --n50: #0f121b;
-  --n100: #252b3b;
-  --n200: #323a4d;
-  --n300: #485166;
-  --n500: #838ca2;
-  --n600: #aab2c4;
-  --n900: #eef0f6;
-  --p25: #161b33;
-  --p50: #1b2242;
-  --p100: #252f5c;
-  --p200: #34428a;
-  --p400: #7f93f5;
-  --p500: #90a2f7;
-  --p600: #a7b5fa;
-  --p700: #c3cdfc;
-  --on-p: #0d1233;
-  --g25: #132019; --g50: #16291f; --g100: #1c3b2b; --g500: #52c488; --g700: #a1e4be;
-  --a25: #1d1a10; --a50: #2a2211; --a100: #3d3113; --a300: #b08a2a; --a500: #e8b330; --a700: #f4c75a; --a900: #fff1cc;
-  --r25: #221514; --r50: #2c1715; --r100: #3f1e1a; --r500: #f06b5d; --r700: #f59c92;
-  --v25: #1a1729; --v50: #211c38; --v100: #2e2752; --v500: #a996f6; --v700: #c9bcfa;
-  --b25: #121a2a; --b50: #152036; --b100: #1c2c4a; --b500: #80a7f3; --b700: #aac4f8;
-  --c25: #11201f; --c50: #132a2a; --c100: #1b3c3d; --c500: #5cc7ca; --c700: #95dee0;
-  --k25: #221520; --k50: #2d1827; --k100: #45213a; --k500: #f07bb0; --k700: #f6a9cb;
-  --o25: #21170f; --o50: #2c1d10; --o100: #452c16; --o500: #f29a5b; --o700: #f7be93;
-  --scrim: rgb(0 0 0 / 0.55);
-  --sh-1: 0 1px 2px rgb(0 0 0 / 0.4);
-  --sh-2: 0 14px 30px -12px rgb(0 0 0 / 0.6);
-  --sh-3: 0 40px 70px -24px rgb(0 0 0 / 0.75);
-  --sh-brand: 0 8px 16px -10px rgb(0 0 0 / 0.6);
-  --chart-1: #6b80f0;
-  --chart-1-hover: #7f93f5;
-  color-scheme: dark;
+  /* Marca: los azules de REFYT (botones principales, enlaces, foco). */
+  --brand-25: #f3f5f9;
+  --brand-50: #e8ecf1;
+  --brand-100: #d1d9e2;
+  --brand-200: #b8c3cf;
+  --brand-400: #2b4c9e;
+  --brand-500: #1e3a8a;
+  --brand-600: #1e3a8a;
+  --brand-700: #16306e;
+  --on-brand: #ffffff;
+  /* Tonos que Refyt no trae. */
+  --v700: #4a36a8;
+  --k25: var(--p25); --k50: var(--p50); --k100: var(--p100); --k500: var(--p500); --k700: var(--p700);
+  --scrim: rgb(15 23 42 / 0.35);
+  --sh-brand: 0 1px 3px rgb(0 0 0 / 0.1);
+  /* Serie de gráficos: el azul de REFYT. */
+  --chart-1: #1e3a8a;
+  --chart-1-hover: #2b4c9e;
 }
 
 /*
@@ -101,7 +35,7 @@
  * error pill…). Exposed to Tailwind as bg-tone-50, text-tone-700, etc.
  * (not "t": border-t-* is Tailwind's border-top width).
  */
-.tone-brand { --t25: var(--p25); --t50: var(--p50); --t100: var(--p100); --t500: var(--p500); --t700: var(--p700); }
+.tone-brand { --t25: var(--brand-25); --t50: var(--brand-50); --t100: var(--brand-100); --t500: var(--brand-500); --t700: var(--brand-700); }
 .tone-green { --t25: var(--g25); --t50: var(--g50); --t100: var(--g100); --t500: var(--g500); --t700: var(--g700); }
 .tone-amber { --t25: var(--a25); --t50: var(--a50); --t100: var(--a100); --t500: var(--a500); --t700: var(--a700); }
 .tone-red { --t25: var(--r25); --t50: var(--r50); --t100: var(--r100); --t500: var(--r500); --t700: var(--r700); }
@@ -113,7 +47,8 @@
 .tone-neutral { --t25: var(--n25); --t50: var(--n50); --t100: var(--n100); --t500: var(--n500); --t700: var(--n600); }
 
 @theme inline {
-  --font-sans: "Figtree Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Sora", "Manrope", system-ui, sans-serif;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -133,15 +68,15 @@
   --color-n-600: var(--n600);
   --color-n-900: var(--n900);
 
-  --color-brand-25: var(--p25);
-  --color-brand-50: var(--p50);
-  --color-brand-100: var(--p100);
-  --color-brand-200: var(--p200);
-  --color-brand-400: var(--p400);
-  --color-brand-500: var(--p500);
-  --color-brand-600: var(--p600);
-  --color-brand-700: var(--p700);
-  --color-on-brand: var(--on-p);
+  --color-brand-25: var(--brand-25);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-on-brand: var(--on-brand);
 
   --color-ok-50: var(--g50);
   --color-ok-500: var(--g500);
@@ -163,10 +98,10 @@
   --color-tone-700: var(--t700);
 
   --radius-tile: 10px;
-  --radius-btn: 13px;
-  --radius-field: 14px;
-  --radius-card: 20px;
-  --radius-modal: 28px;
+  --radius-btn: 10px;
+  --radius-field: 10px;
+  --radius-card: 10px;
+  --radius-modal: 10px;
 
   --shadow-sh1: var(--sh-1);
   --shadow-sh2: var(--sh-2);
@@ -223,7 +158,7 @@
     background: var(--scrim);
   }
   :focus-visible {
-    outline: 2px solid var(--p500);
+    outline: 2px solid var(--b500);
     outline-offset: 2px;
   }
 }

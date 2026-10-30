@@ -88,7 +88,8 @@ describe.skipIf(skipDb)("migrations", () => {
     await initialMigration.up(context(db));
 
     expect(await c.users.countDocuments()).toBe(1);
-    expect(await c.roles.countDocuments()).toBe(2);
+    // admin, user and the 13 roles of REFYT's process (migration 5).
+    expect(await c.roles.countDocuments()).toBe(15);
     expect(await c.permissions.countDocuments()).toBe(ALL_PERMISSION_KEYS.length);
     expect(await c.metadata.countDocuments({ key: "schema" })).toBe(1);
 
@@ -117,6 +118,35 @@ describe.skipIf(skipDb)("migrations", () => {
     const admin = await c.roles.findOne({ key: "admin" });
     expect(admin?.permissionKeys.filter((key) => key === "dashboard.read")).toHaveLength(1);
     expect((await c.roles.findOne({ key: "user" }))?.permissionKeys).toEqual(["roles.read"]);
+  });
+
+  it("migration 5 creates REFYT's process roles with the apps of their team, keeping edits", async () => {
+    const db = mongo.freshDb();
+    await runMigrations(context(db));
+    const c = collections(db);
+
+    const roles = await c.roles.find({ key: { $nin: ["admin", "user"] } }).sort({ key: 1 }).toArray();
+    expect(roles.map((role) => role.key)).toEqual([
+      "accounts", "assessment-approver", "assessor", "commercial", "design-approver", "designer", "director",
+      "hsse-lead", "install-coordinator", "order-approver", "payment-approver", "site-manager", "survey-admin"
+    ]);
+    const byKey = new Map(roles.map((role) => [role.key, role]));
+    expect(byKey.get("assessor")?.permissionKeys).toEqual(["notifications.read", "refyt.retrofit"]);
+    expect(byKey.get("site-manager")?.permissionKeys).toEqual(["notifications.read", "refyt.delivery"]);
+    expect(byKey.get("director")?.permissionKeys).toEqual(
+      expect.arrayContaining(["refyt.director", "refyt.commercial", "refyt.accounts", "refyt.retrofit", "refyt.delivery", "refyt.view_as"])
+    );
+    expect(roles.every((role) => !role.isSystem)).toBe(true);
+    const admin = await c.roles.findOne({ key: "admin" });
+    expect(admin?.permissionKeys).toEqual(expect.arrayContaining(["refyt.director", "refyt.view_as"]));
+
+    // Running it again keeps what an administrator changed.
+    await c.roles.updateOne({ key: "assessor" }, { $set: { name: "Retrofit assessor", permissionKeys: ["refyt.retrofit"] } });
+    await db.collection("app_metadata").updateOne({ key: "schema" }, { $set: { version: 4 } });
+    await runMigrations(context(db));
+    const assessor = await c.roles.findOne({ key: "assessor" });
+    expect(assessor?.name).toBe("Retrofit assessor");
+    expect(assessor?.permissionKeys).toEqual(["refyt.retrofit"]);
   });
 
   it("only runs migrations newer than the recorded version", async () => {

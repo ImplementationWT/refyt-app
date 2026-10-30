@@ -128,7 +128,7 @@ export function Sheet({
         onClose();
       }}
       aria-labelledby={titleId}
-      className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-dvh w-[min(560px,100%)] max-w-none rounded-l-[24px] border-0 bg-surface p-0 text-ink shadow-sh3 open:flex open:animate-sheet open:flex-col"
+      className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-dvh w-[min(560px,100%)] max-w-none rounded-l-btn border-0 bg-surface p-0 text-ink shadow-sh3 open:flex open:animate-sheet open:flex-col"
     >
       {open ? (
         <>

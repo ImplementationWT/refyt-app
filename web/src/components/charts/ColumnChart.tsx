@@ -126,7 +126,7 @@ export function ColumnChart({ data, valueLabel, title }: { data: ColumnDatum[]; 
                 tabIndex={0}
                 role="graphics-symbol"
                 aria-label={`${datum.fullLabel}: ${datum.value} ${valueLabel}`}
-                className="cursor-default outline-none focus-visible:stroke-[var(--p500)] focus-visible:stroke-2"
+                className="cursor-default outline-none focus-visible:stroke-[var(--brand-500)] focus-visible:stroke-2"
                 onPointerEnter={() => setActive(index)}
                 onFocus={() => setActive(index)}
                 onBlur={() => setActive(null)}
@@ -145,7 +145,7 @@ export function ColumnChart({ data, valueLabel, title }: { data: ColumnDatum[]; 
       {activeDatum && active !== null ? (
         <div
           role="tooltip"
-          className="pointer-events-none absolute z-10 min-w-40 -translate-x-1/2 -translate-y-full rounded-[12px] border border-line bg-surface px-3 py-2 shadow-sh2"
+          className="pointer-events-none absolute z-10 min-w-40 -translate-x-1/2 -translate-y-full rounded-btn border border-line bg-surface px-3 py-2 shadow-sh2"
           style={{
             left: Math.min(Math.max(LEFT + band * (active + 0.5), 90), width - 90),
             top: Math.max(y(activeDatum.value) - 26, 64)

@@ -134,9 +134,9 @@ function Indicators() {
             </div>
 
             {!data ? (
-              <div role="status" aria-label="Cargando…" className="h-[256px] animate-pulse rounded-[14px] bg-n-50" />
+              <div role="status" aria-label="Cargando…" className="h-[256px] animate-pulse rounded-btn bg-n-50" />
             ) : asTable ? (
-              <div className="max-h-[256px] overflow-y-auto rounded-[14px] border border-line">
+              <div className="max-h-[256px] overflow-y-auto rounded-btn border border-line">
                 <table className="w-full text-left text-sm">
                   <thead className="sticky top-0 bg-n-25 text-xs text-muted">
                     <tr>

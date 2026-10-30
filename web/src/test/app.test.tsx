@@ -1,6 +1,7 @@
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import * as engine from "../refyt/engine/index.js";
 import { EMPTY_PAGE, META, mockApi, renderApp, session } from "./utils";
 
 afterEach(() => {
@@ -31,10 +32,10 @@ describe("login", () => {
     let loggedIn = false;
     const { calls } = mockApi({
       "GET /api/meta": META,
-      "GET /api/auth/me": () => (loggedIn ? { body: session(["users.read"]) } : UNAUTHORIZED),
+      "GET /api/auth/me": () => (loggedIn ? { body: session(["users.read", "refyt.retrofit"]) } : UNAUTHORIZED),
       "POST /api/auth/login": () => {
         loggedIn = true;
-        return { body: session(["users.read"]) };
+        return { body: session(["users.read", "refyt.retrofit"]) };
       }
     });
     const user = userEvent.setup();
@@ -45,7 +46,7 @@ describe("login", () => {
     await user.type(screen.getByLabelText("Contraseña"), "una-clave-cualquiera");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
-    expect(await screen.findByTitle("Refyt")).toHaveAttribute("src", "/refyt/index.html");
+    expect(await screen.findByTestId("refyt-workspace")).toBeInTheDocument();
     const login = calls.find((call) => call.method === "POST");
     expect(login?.body).toEqual({ username: "ana", password: "una-clave-cualquiera" });
   });
@@ -179,14 +180,35 @@ describe("route guards", () => {
 });
 
 describe("Refyt", () => {
-  it("shows the approved Refyt interface full screen at / after login", async () => {
+  it("shows Refyt at / after login, with the user section in the header", async () => {
+    mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(["refyt.director"]) });
+    renderApp("/");
+
+    expect(await screen.findByTestId("refyt-workspace")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "REFYT" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Menú de usuario" })).toHaveTextContent("Ana");
+    expect(screen.queryByRole("complementary", { name: "Navegación principal" })).not.toBeInTheDocument();
+  });
+
+  it("opens only the apps and roles of the signed-in user", async () => {
+    const roles = [{ id: "r1", key: "assessor", name: "Assessor" }, { id: "r2", key: "site-manager", name: "Site manager" }];
+    mockApi({
+      "GET /api/meta": META,
+      "GET /api/auth/me": session(["refyt.retrofit", "refyt.delivery"], { roles })
+    });
+    renderApp("/");
+
+    await waitFor(() => expect(engine.mount).toHaveBeenCalled());
+    expect(engine.mount).toHaveBeenLastCalledWith({ userId: "u1", apps: ["ret", "del"], roles: ["ass", "sit"], viewAs: false });
+  });
+
+  it("says so when the user has no Refyt role", async () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session([]) });
     renderApp("/");
 
-    const frame = await screen.findByTitle("Refyt");
-    expect(frame.tagName).toBe("IFRAME");
-    expect(frame).toHaveAttribute("src", "/refyt/index.html");
-    expect(screen.queryByRole("complementary", { name: "Navegación principal" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Todavía no tienes acceso a Refyt" })).toBeInTheDocument();
+    expect(screen.queryByTestId("refyt-workspace")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Menú de usuario" })).toBeInTheDocument();
   });
 
   it("asks to log in before showing Refyt", async () => {
@@ -194,7 +216,7 @@ describe("Refyt", () => {
     renderApp("/");
 
     expect(await screen.findByRole("button", { name: /entrar/i })).toBeInTheDocument();
-    expect(screen.queryByTitle("Refyt")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("refyt-workspace")).not.toBeInTheDocument();
   });
 });
 
@@ -209,14 +231,14 @@ describe("sidebar", () => {
   }
 
   it("shows only the sections the user may access", async () => {
-    expect(await sidebarLinks([])).toEqual(["Refyt", "Dashboards"]);
+    expect(await sidebarLinks([])).toEqual(["Dashboards"]);
   });
 
   it("shows every section to an administrator, grouped", async () => {
-    expect(await sidebarLinks(ALL_PERMISSIONS)).toEqual(["Refyt", "Dashboards", "Usuarios", "Roles"]);
+    expect(await sidebarLinks(ALL_PERMISSIONS)).toEqual(["Usuarios", "Roles", "Dashboards"]);
     const nav = screen.getByRole("complementary", { name: "Navegación principal" });
-    expect(within(nav).getByText("General")).toBeInTheDocument();
-    expect(within(nav).getByText("Configuración")).toBeInTheDocument();
+    expect(within(nav).getByText("Administración")).toBeInTheDocument();
+    expect(within(nav).getByText("Actividad")).toBeInTheDocument();
     expect(within(nav).queryByText("Notificaciones")).not.toBeInTheDocument();
     expect(within(nav).queryByText("Auditoría")).not.toBeInTheDocument();
     expect(within(nav).queryByText("Permisos")).not.toBeInTheDocument();
@@ -226,20 +248,12 @@ describe("sidebar", () => {
     await sidebarLinks(["notifications.read"]);
     const nav = screen.getByRole("complementary", { name: "Navegación principal" });
 
-    expect(within(nav).getByText("General")).toBeInTheDocument();
-    expect(within(nav).queryByText("Configuración")).not.toBeInTheDocument();
+    expect(within(nav).getByText("Actividad")).toBeInTheDocument();
+    expect(within(nav).queryByText("Administración")).not.toBeInTheDocument();
   });
 
   it("needs users.read for Usuarios (the catalog alone is not enough)", async () => {
-    expect(await sidebarLinks(["permissions.read"])).toEqual(["Refyt", "Dashboards"]);
-  });
-
-  it("collapses and expands", async () => {
-    await sidebarLinks(["users.read"]);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByRole("button", { name: "Contraer menú lateral" }));
-    expect(screen.getByRole("button", { name: "Expandir menú lateral" })).toHaveAttribute("aria-expanded", "false");
+    expect(await sidebarLinks(["permissions.read"])).toEqual(["Dashboards"]);
   });
 });
 
@@ -248,7 +262,7 @@ describe("header", () => {
     mockApi({ "GET /api/meta": META, "GET /api/auth/me": session(ALL_PERMISSIONS), "GET /api/dashboard": DASHBOARD });
     renderApp("/panel");
 
-    await waitFor(() => expect(document.title).toBe("Aplicación de prueba"));
+    await waitFor(() => expect(document.title).toBe("Refyt"));
     expect(screen.queryByRole("button", { name: /notificaciones/i })).not.toBeInTheDocument();
   });
 
@@ -272,25 +286,39 @@ describe("header", () => {
     expect(calls.some((call) => call.url === "/api/auth/logout")).toBe(true);
   });
 
-  it("toggles dark mode from the user menu and remembers it", async () => {
-    localStorage.removeItem("theme");
-    document.documentElement.dataset.theme = "light";
-    mockApi({ "GET /api/meta": META, "GET /api/auth/me": session([]) });
+  it("opens Usuarios, Roles and Integraciones from the user menu, by permission", async () => {
+    mockApi({
+      "GET /api/meta": META,
+      "GET /api/auth/me": session(["users.read", "roles.read", "integrations.read"]),
+      "GET /api/users": EMPTY_PAGE
+    });
     const user = userEvent.setup();
-    renderApp("/panel");
+    renderApp("/");
 
     await user.click(await screen.findByRole("button", { name: "Menú de usuario" }));
-    const toggle = screen.getByRole("menuitemcheckbox", { name: /modo oscuro/i });
-    expect(toggle).toHaveAttribute("aria-checked", "false");
+    const menu = screen.getByRole("menu", { name: "Menú de usuario" });
+    expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
+      "UsuariosCuentas, accesos y permisos",
+      "RolesAgrupa permisos por función",
+      "IntegracionesServicios externos conectados",
+      "Cambiar contraseña",
+      "Cerrar sesión"
+    ]);
 
-    await user.click(toggle);
-    expect(toggle).toHaveAttribute("aria-checked", "true");
-    expect(document.documentElement.dataset.theme).toBe("dark");
-    expect(localStorage.getItem("theme")).toBe("dark");
+    await user.click(within(menu).getByRole("menuitem", { name: /usuarios/i }));
+    expect(await screen.findByRole("heading", { name: "Usuarios" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /volver a refyt/i })).toHaveAttribute("href", "/");
+  });
 
-    await user.click(toggle);
-    expect(document.documentElement.dataset.theme).toBe("light");
-    localStorage.removeItem("theme");
+  it("shows only what the user may open in the user menu", async () => {
+    mockApi({ "GET /api/meta": META, "GET /api/auth/me": session([]) });
+    const user = userEvent.setup();
+    renderApp("/");
+
+    await user.click(await screen.findByRole("button", { name: "Menú de usuario" }));
+    const menu = screen.getByRole("menu", { name: "Menú de usuario" });
+    expect(within(menu).queryByText("Administración")).not.toBeInTheDocument();
+    expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual(["Cambiar contraseña", "Cerrar sesión"]);
   });
 });
 
@@ -471,10 +499,10 @@ describe("Monday integration", () => {
   }
 
   it("shows the Monday tab only with the feature", async () => {
-    expect(await sidebarText(withFeature)).toEqual(["Refyt", "Dashboards", "Monday"]);
+    expect(await sidebarText(withFeature)).toEqual(["Monday", "Dashboards"]);
     cleanup();
     // Permission alone is not enough: the backend must enable the feature.
-    expect(await sidebarText(session(["monday.read"]))).toEqual(["Refyt", "Dashboards"]);
+    expect(await sidebarText(session(["monday.read"]))).toEqual(["Dashboards"]);
   });
 
   it("protects the /monday route without the feature", async () => {

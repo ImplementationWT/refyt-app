@@ -280,7 +280,7 @@ function RoleFormDialog({
               {[...grouped].map(([module, permissions]) => {
                 const tone = MODULE_TONES[module] ?? "neutral";
                 return (
-                  <div key={module} className={`tone-${tone} rounded-[18px] border border-line bg-tone-25 p-3.5`}>
+                  <div key={module} className={`tone-${tone} rounded-btn border border-line bg-tone-25 p-3.5`}>
                     <p className="mb-2.5 flex items-center gap-2.5 text-sm font-bold">
                       <IconTile icon={MODULE_ICONS[module] ?? KeyRound} tone={tone} size="sm" />
                       {MODULE_LABELS[module] ?? module}
@@ -289,7 +289,7 @@ function RoleFormDialog({
                       {permissions.map((permission) => (
                         <label
                           key={permission.key}
-                          className="flex cursor-pointer items-start gap-2.5 rounded-[11px] px-1.5 py-1 text-sm hover:bg-surface"
+                          className="flex cursor-pointer items-start gap-2.5 rounded-btn px-1.5 py-1 text-sm hover:bg-surface"
                         >
                           <Checkbox className="mt-0.5" value={permission.key} {...form.register("permissionKeys")} />
                           <span>

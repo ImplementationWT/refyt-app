@@ -18,19 +18,41 @@ workflows, endpoints, colecciones) está en
 
 ## Refyt
 
-La interfaz de Refyt aprobada por el cliente vive en `web/refyt/` y se ve a pantalla
-completa en `/` después de iniciar sesión. Es copia exacta de `Refyt, demo v3.20.html`:
+La app es Refyt: primero el login y, una vez dentro, las apps de los equipos (Director,
+Commercial, Accounts, Retrofit y Delivery) en `/`. El menú de usuario del encabezado lleva a
+la administración: Usuarios, Roles e Integraciones (según los permisos de cada persona).
 
-- `web/refyt/index.html`: el marcado.
-- `web/refyt/refyt.css` y `web/refyt/refyt.js`: los estilos y la lógica, sin cambios.
-- `web/refyt/fonts.js`: Sora, Manrope, Figtree y Fraunces servidas desde la app (la CSP no
-  permite Google Fonts), con los mismos nombres de familia.
+El diseño aprobado por el cliente (`Refyt, demo v3.20.html`) manda en toda la app:
 
-Vite la construye como segunda página (`web/vite.config.ts`) y la app la muestra con
-`web/src/pages/RefytPage.tsx`, en un marco del mismo origen para que los estilos de la app
-no la toquen. Solo esa página permite estilos en línea y ser enmarcada por la app
-(`src/app.ts`). La administración (Dashboards, Usuarios, Roles, Integraciones) sigue en
-`/panel`, `/usuarios`, etc.
+```text
+web/src/refyt/
+  styles/        CSS de Refyt partido por áreas, en el mismo orden que el original
+                 (00 protege del reset de Tailwind; 10 son las piezas nuevas: login,
+                 menú de usuario, administración)
+  engine/        La lógica de Refyt en módulos (datos, cálculos, apps, reuniones, tour…).
+                 index.js es el barril: fija el orden de evaluación, no lo reordenes.
+  assets/        Logotipo REFYT
+  fonts.ts       Sora, Manrope, Figtree y Fraunces servidas desde la app
+  RefytHeader.tsx, UserMenu.tsx    Encabezado y menú de usuario
+  RefytWorkspace.tsx               Monta el motor de Refyt en "/"
+  AdminLayout.tsx                  Usuarios, Roles, Integraciones… con el mismo shell
+  AuthLayout.tsx                   Marco del login y del cambio de contraseña
+```
+
+- Los tokens de Refyt (`--n*`, `--b*`, `--surface`, `--ink`, `--line`…) son la única fuente de
+  colores; `web/src/index.css` solo añade los alias que usan las pantallas de administración
+  (la marca es el azul `#1E3A8A`, radios de 10px, Manrope y Sora). No hay modo oscuro.
+- **Usuarios, roles y permisos.** Los roles del proceso de REFYT (Survey admin, Assessor,
+  Assessment approver, Designer, Design approver, Install coordinator, Order approver, Payment
+  approver, Site manager, HSSE lead, Commercial, Accounts y Director) son roles reales que crea la
+  migración 5; se asignan a cada persona en Usuarios y se editan en Roles. Cada rol abre las apps
+  de su equipo con los permisos `refyt.director`, `refyt.commercial`, `refyt.accounts`,
+  `refyt.retrofit` y `refyt.delivery`. `refyt.view_as` (Director y Administrador) permite usar el
+  selector «Viewing as» con cualquier rol; sin él, solo aparecen los roles propios. El vínculo
+  entre clave de rol y rol de Refyt está en `web/src/refyt/roles.ts`.
+- El CSS de Refyt va en la capa `refyt`, entre la base y las utilidades de Tailwind.
+- La CSP permite atributos `style` en línea (Refyt los usa al dibujar); los scripts siguen
+  limitados a la propia app.
 
 ## Estructura
 

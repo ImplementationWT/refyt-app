@@ -187,7 +187,7 @@ export function WillDooChat() {
           ) : history.data?.items.length ? (
             <ul className="space-y-1">
               {history.data.items.map((item) => (
-                <li key={item.id} className="group flex items-center gap-1 rounded-[12px] hover:bg-n-25">
+                <li key={item.id} className="group flex items-center gap-1 rounded-btn hover:bg-n-25">
                   <button type="button" onClick={() => void openConversation(item.id)} className="min-w-0 flex-1 px-3 py-2 text-left">
                     <span className="block truncate text-sm font-semibold">{item.title}</span>
                     <span className="block text-xs text-muted">{formatDateTime(item.updatedAt)}</span>
@@ -208,7 +208,7 @@ export function WillDooChat() {
             <div className="space-y-3">
               <div className="flex gap-2.5">
                 <Avatar className="size-7" />
-                <p className="rounded-[16px] rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
+                <p className="rounded-btn rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
                   Hola{firstName ? `, ${firstName}` : ""}. Soy Will Doo: pregúntame por los datos del sistema o cómo hacer algo. Solo veo lo
                   que tú puedes ver.
                 </p>
@@ -219,7 +219,7 @@ export function WillDooChat() {
                     key={suggestion}
                     type="button"
                     onClick={() => void send(suggestion)}
-                    className="rounded-[12px] border border-line bg-surface px-3 py-1.5 text-left text-[13px] font-semibold text-brand-700 transition-colors hover:border-brand-200 hover:bg-brand-25"
+                    className="rounded-btn border border-line bg-surface px-3 py-1.5 text-left text-[13px] font-semibold text-brand-700 transition-colors hover:border-brand-200 hover:bg-brand-25"
                   >
                     {suggestion}
                   </button>
@@ -230,14 +230,14 @@ export function WillDooChat() {
 
           {turns.map((turn, index) =>
             turn.role === "user" ? (
-              <p key={index} className="ml-auto w-fit max-w-[85%] rounded-[16px] rounded-tr-[6px] bg-brand-600 px-3.5 py-2 text-[14.5px] whitespace-pre-wrap text-on-brand">
+              <p key={index} className="ml-auto w-fit max-w-[85%] rounded-btn rounded-tr-[6px] bg-brand-600 px-3.5 py-2 text-[14.5px] whitespace-pre-wrap text-on-brand">
                 {turn.text}
               </p>
             ) : (
               <div key={index} className="flex gap-2.5">
                 <Avatar className="size-7" />
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  <div className="rounded-[16px] rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
+                  <div className="rounded-btn rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
                     <Markdown text={turn.text || "…"} />
                   </div>
                   {turn.tools.length ? <p className="text-xs text-faint">Consultó: {turn.tools.map((tool) => tool.replace(/^Consultando\s+/i, "")).join(", ")}</p> : null}
@@ -249,7 +249,7 @@ export function WillDooChat() {
           {live ? (
             <div className="flex gap-2.5">
               <Avatar className="size-7" />
-              <div className="min-w-0 flex-1 rounded-[16px] rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
+              <div className="min-w-0 flex-1 rounded-btn rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
                 {live.text ? <Markdown text={live.text} /> : null}
                 <p role="status" className={cn("flex items-center gap-2 text-sm text-muted", live.text && "mt-2")}>
                   <Loader2 className="size-4 animate-spin text-brand-500" aria-hidden />
@@ -260,7 +260,7 @@ export function WillDooChat() {
           ) : null}
 
           {error ? (
-            <p role="alert" className="rounded-[14px] border border-danger-100 bg-danger-25 px-3.5 py-2.5 text-sm text-danger-700">
+            <p role="alert" className="rounded-btn border border-danger-100 bg-danger-25 px-3.5 py-2.5 text-sm text-danger-700">
               {error}
             </p>
           ) : null}

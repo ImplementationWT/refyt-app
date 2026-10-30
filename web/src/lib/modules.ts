@@ -1,4 +1,4 @@
-import { Bell, Bot, History, KanbanSquare, KeyRound, LayoutDashboard, Plug, ShieldCheck, Users, type LucideIcon } from "lucide-react";
+import { Bell, Bot, History, House, KanbanSquare, KeyRound, LayoutDashboard, Plug, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import type { Tone } from "./utils";
 
 /** Presentation of each permission module (labels, colors, icons). */
@@ -11,7 +11,8 @@ export const MODULE_LABELS: Record<string, string> = {
   dashboard: "Dashboards",
   integrations: "Integraciones",
   monday: "Monday",
-  willdoo: "Will Doo"
+  willdoo: "Will Doo",
+  refyt: "Apps de Refyt"
 };
 
 export const MODULE_TONES: Record<string, Tone> = {
@@ -23,7 +24,8 @@ export const MODULE_TONES: Record<string, Tone> = {
   dashboard: "brand",
   integrations: "teal",
   monday: "orange",
-  willdoo: "violet"
+  willdoo: "violet",
+  refyt: "brand"
 };
 
 export const MODULE_ICONS: Record<string, LucideIcon> = {
@@ -35,5 +37,6 @@ export const MODULE_ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   integrations: Plug,
   monday: KanbanSquare,
-  willdoo: Bot
+  willdoo: Bot,
+  refyt: House
 };

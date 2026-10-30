@@ -91,7 +91,7 @@ function ResultCard({ result, onRefresh }: { result: QuickResult; onRefresh: () 
         </IconButton>
       </div>
       {result.items.length ? (
-        <ul className="divide-y divide-line rounded-[14px] border border-line bg-surface">
+        <ul className="divide-y divide-line rounded-btn border border-line bg-surface">
           {result.items.map((item, index) => (
             <li key={index} className="px-3 py-2">
               <SafeLink href={item.link} className={cn("block", item.link && "group")}>
@@ -127,7 +127,7 @@ function Chips({ title, items, disabled, onPick }: { title?: string; items: Sugg
             type="button"
             disabled={disabled}
             onClick={() => onPick(item)}
-            className="rounded-[12px] border border-line bg-surface px-3 py-1.5 text-left text-[13px] font-semibold text-brand-700 transition-colors hover:border-brand-200 hover:bg-brand-25 disabled:opacity-50"
+            className="rounded-btn border border-line bg-surface px-3 py-1.5 text-left text-[13px] font-semibold text-brand-700 transition-colors hover:border-brand-200 hover:bg-brand-25 disabled:opacity-50"
           >
             {item.question}
           </button>
@@ -282,7 +282,7 @@ export function WillDooBasic() {
           <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-4" aria-live="polite">
             <div className="flex gap-2.5">
               <WillDooAvatar className="size-7" />
-              <p className="rounded-[16px] rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
+              <p className="rounded-btn rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
                 Hola{firstName ? `, ${firstName}` : ""}. Soy Will Doo: elige una pregunta o escríbela, y te respondo con los datos del sistema que tú puedes ver.
               </p>
             </div>
@@ -301,18 +301,18 @@ export function WillDooBasic() {
 
             {messages.map((message, index) =>
               message.role === "user" ? (
-                <p key={index} className="ml-auto w-fit max-w-[85%] rounded-[16px] rounded-tr-[6px] bg-brand-600 px-3.5 py-2 text-[14.5px] whitespace-pre-wrap text-on-brand">
+                <p key={index} className="ml-auto w-fit max-w-[85%] rounded-btn rounded-tr-[6px] bg-brand-600 px-3.5 py-2 text-[14.5px] whitespace-pre-wrap text-on-brand">
                   {message.text}
                 </p>
               ) : message.role === "error" ? (
-                <p key={index} role="alert" className="rounded-[14px] border border-danger-100 bg-danger-25 px-3.5 py-2.5 text-sm text-danger-700">
+                <p key={index} role="alert" className="rounded-btn border border-danger-100 bg-danger-25 px-3.5 py-2.5 text-sm text-danger-700">
                   {message.text}
                 </p>
               ) : (
                 <div key={index} className="space-y-2">
                   <div className="flex gap-2.5">
                     <WillDooAvatar className="size-7" />
-                    <div className="min-w-0 flex-1 space-y-2 rounded-[16px] rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
+                    <div className="min-w-0 flex-1 space-y-2 rounded-btn rounded-tl-[6px] bg-n-25 px-3.5 py-2.5 text-[14.5px]">
                       {message.answer.message ? <p>{message.answer.message}</p> : null}
                       {message.answer.guide?.length ? <Markdown text={message.answer.guide.join("\n")} /> : null}
                       {[message.answer.result, ...(message.answer.more ?? [])].map((result) =>

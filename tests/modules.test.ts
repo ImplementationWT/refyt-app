@@ -222,7 +222,7 @@ describe.skipIf(skipDb)("API modules", () => {
       expect(edited.json().role).toMatchObject({ name: "Auditoría", permissionKeys: ["audit.read", "users.read"] });
 
       const list = await api.request("GET", "/api/roles?sort=key", { cookie });
-      expect(list.json().items.map((r: { key: string }) => r.key)).toEqual(["admin", "auditor", "user"]);
+      expect(list.json().items.map((r: { key: string }) => r.key)).toEqual(expect.arrayContaining(["admin", "auditor", "user"]));
 
       expect((await api.request("DELETE", `/api/roles/${role.id}`, { cookie })).statusCode).toBe(200);
       expect(await api.c.auditLogs.countDocuments({ entityType: "role" })).toBe(3);

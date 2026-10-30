@@ -36,7 +36,7 @@ export function MondayPage() {
     content = (
       <div role="status" aria-label="Cargando tableros…" className="space-y-2">
         {[0, 1, 2, 3].map((index) => (
-          <div key={index} className="flex items-center gap-3 rounded-[16px] border border-line bg-surface p-3.5">
+          <div key={index} className="flex items-center gap-3 rounded-btn border border-line bg-surface p-3.5">
             <span className="size-8 animate-pulse rounded-tile bg-n-100" />
             <span className="h-3.5 w-1/3 animate-pulse rounded-full bg-n-100" />
           </div>

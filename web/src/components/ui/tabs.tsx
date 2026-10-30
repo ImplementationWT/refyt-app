@@ -12,7 +12,7 @@ export interface TabLink {
 /** Segmented tabs that are links (each tab has its own URL). */
 export function TabLinks({ tabs, label }: { tabs: TabLink[]; label: string }) {
   return (
-    <nav aria-label={label} className="mb-5 inline-flex max-w-full gap-1 overflow-x-auto rounded-[15px] border border-line bg-n-50 p-1">
+    <nav aria-label={label} className="mb-5 inline-flex max-w-full gap-1 overflow-x-auto rounded-btn border border-line bg-n-50 p-1">
       {tabs.map((tab) => (
         <NavLink
           key={tab.to}
@@ -21,7 +21,7 @@ export function TabLinks({ tabs, label }: { tabs: TabLink[]; label: string }) {
           className={({ isActive }) =>
             cn(
               `tone-${tab.tone ?? "brand"}`,
-              "flex h-10 items-center gap-2.5 rounded-[11px] pr-4 pl-1.5 text-sm font-semibold whitespace-nowrap text-muted transition-colors duration-150",
+              "flex h-10 items-center gap-2.5 rounded-btn pr-4 pl-1.5 text-sm font-semibold whitespace-nowrap text-muted transition-colors duration-150",
               "hover:bg-surface hover:text-ink",
               isActive && "bg-surface text-ink shadow-sh1"
             )

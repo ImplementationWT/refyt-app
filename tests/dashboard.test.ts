@@ -55,7 +55,8 @@ describe.skipIf(skipDb)("GET /api/dashboard", () => {
     expect(body.kpis).toEqual({
       activeUsers: 2,
       disabledUsers: 1,
-      roles: 2,
+      // admin, user and the 13 roles of REFYT's process.
+      roles: 15,
       logins: 3,
       failedLogins: 1,
       uniqueUsers: 2

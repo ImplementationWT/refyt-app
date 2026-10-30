@@ -2,11 +2,12 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { App } from "./App";
-import { applyTheme } from "./lib/theme";
+import { registerFonts } from "./refyt/fonts";
 import "./index.css";
 
-// Before the first render so there is no light/dark flash.
-applyTheme();
+// Refyt is light only, and its fonts are served by the app (see src/refyt/fonts.ts).
+document.documentElement.dataset.theme = "light";
+registerFonts();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

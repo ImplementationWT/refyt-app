@@ -1,0 +1,27 @@
+// Refyt · Las apps.
+import {
+  A, APPN, APPS, DB, OPENP, RN, S, VIEWS, allowed, asfPage, atnPage, autoPage, bkPage, cloPage, csPage,
+  delHome, frmPage, go, holdPage, hsPage, ico, invPage, later, mrgPage, mtgPage, myTasks, nWait,
+  nscPage, oph, ordPage, ovwPage, pIdx, packPage, pageAct, pend, prList, quoPage3, ratePage, rdyPage,
+  render, rolPage, rqPage, sbar, schPage, ssetPage, subPage, sumPage, supPage, tkPage, toast, trgPage,
+  tuePage, varPage, waitPage
+} from "../index.js";
+export const S3 = (app, items) => sbar(items, S.page[app], pageAct(app), sbar0(app));
+export const sbar0 = app => '';
+Object.keys(VIEWS).forEach(k => delete VIEWS[k]);
+export const W = app => ['wait', 'My approvals', 'checks', nWait(app), 2];
+export const AU = ['auto', 'Automations', 'sync'];
+VIEWS.dir = {side:() => S3('dir', [['-', 'Decide'], ['dec', 'Needs your decision', 'bell', pend('dir').length, 2], W('dir'), ['sum', 'Daily summary', 'mail'], ['-', 'Business'], ['ovw', 'Business overview', 'chart'], ['sch', 'Schemes', 'building', DB.sc.length, 1], ['prs', 'Properties', 'home', DB.pr.filter(p => OPENP.includes(p.ph)).length, 1], ['tue', 'Tuesday directors’ meeting', 'cal'], ['-', 'Settings'], ['nsc', 'New scheme setup', 'plus'], ['rol', 'Roles per scheme', 'users'], AU]),
+  pages:{dec:() => atnPage('dir', 'Needs your decision', 'Margins below target, jobs over time and approvals above the limits. Each one opens with its context.'), wait:() => waitPage('dir'), sum:sumPage, ovw:ovwPage, sch:schPage, prs:() => oph('Properties', 'Every property of every scheme, by phase.') + prList(DB.pr, 'dir'), tue:tuePage, nsc:nscPage, rol:rolPage, auto:() => autoPage('dir')}};
+VIEWS.com = {side:() => S3('com', [['-', 'Work'], ['mrg', 'Margins', 'trend'], ['atn', 'Needs attention', 'bell', pend('com').length, 2], W('com'), ['quo', 'Quotes and budgets', 'calc'], ['var', 'Variations and costs', 'swap', DB.va.filter(v => !['Approved', 'Rejected'].includes(v.st)).length, 1], ['-', 'Settings'], ['rate', 'Rates', 'tag'], ['sset', 'Scheme settings', 'cog'], AU]),
+  pages:{mrg:mrgPage, atn:() => atnPage('com', 'Needs attention', 'Margins below target, costs over budget and variations waiting for the client.'), wait:() => waitPage('com'), quo:quoPage3, var:varPage, rate:ratePage, sset:ssetPage, auto:() => autoPage('com')}};
+VIEWS.acc = {side:() => S3('acc', [['-', 'Work'], ['trg', 'Payment triggers', 'flag'], ['atn', 'Needs attention', 'bell', pend('acc').length, 2], ['inv', 'Invoices', 'receipt'], ['sup', 'Invoice matching', 'checks', DB.or.filter(o => o.st === 'Delivered').length, 1], ['sub', 'Subcontractors', 'wallet'], AU]),
+  pages:{trg:trgPage, atn:() => atnPage('acc', 'Needs attention', 'Triggers met, overdue invoices, subcontractors to pay.'), inv:invPage, sup:supPage, sub:subPage, auto:() => autoPage('acc')}};
+VIEWS.ret = {side:() => S3('ret', [['-', 'Work'], ['atn', 'Needs attention', 'bell', pend('ret').length, 2], W('ret'), ['bk', 'Bookings', 'cal', DB.pr.filter(p => p.ph === 'A. Job received').length, 1], ['rq', 'Review queue', 'todo', DB.pr.filter(p => p.ph === 'B. Assess and design').length, 1], ['pk', 'Survey pack', 'send'], ['-', 'On site'], ['asf', 'Assessor form', 'phone'], AU]),
+  pages:{atn:() => atnPage('ret', 'Needs attention', 'Jobs to book, revisits, packs ready to send and client system updates at survey stage.'), wait:() => waitPage('ret'), bk:() => bkPage().replace('</p></div>', `</p></div><div class="eh-a">${later('Microsoft 365 calendar')}<button class="btn pri" data-act="impOpen">${ico('upload', 15)}Import jobs from client list</button></div>`), rq:rqPage, pk:packPage, asf:asfPage, auto:() => autoPage('ret')}};
+VIEWS.del = {side:() => S3('del', [['-', 'Work'], ['hom', 'Overview', 'grid'], ['atn', 'Needs attention', 'bell', pend('del').length, 2], W('del'), ['pro', 'Properties', 'home', DB.pr.filter(p => ['C. Client approval', 'D. Prepare to install', 'E. Install', 'F. Close out'].includes(p.ph)).length, 1], ['rdy', 'Ready to install', 'checks'], ['hold', 'Redbridge tracker', 'building'], ['ord', 'Purchasing', 'cart', DB.or.filter(o => !['Invoiced', 'Rejected'].includes(o.st)).length, 1], ['clo', 'Close out', 'flag'], ['hs', 'Health and safety', 'shield'], ['cs', 'Client systems', 'sync', DB.pr.filter(p => p.csTodo).length, 2], ['-', 'On site'], ['site', 'Site forms', 'phone'], AU]),
+  pages:{hom:delHome, atn:() => atnPage('del', 'Needs attention', 'Ready to install, hold points, client systems to update and expiring certificates.'), wait:() => waitPage('del'), pro:() => oph('Properties', 'From client approval to close out, per scheme.') + prList(DB.pr.filter(p => pIdx(p.ph) >= 2), 'del'), rdy:rdyPage, hold:holdPage, ord:ordPage, clo:cloPage, hs:hsPage, cs:csPage, site:frmPage, auto:() => autoPage('del')}};
+VIEWS.tsk = {side:() => S3('tsk', [['-', 'Work'], ['my', 'My tasks', 'todo', DB.tk.filter(k => !k.done && k.r === S.role).length, 1], ['tk', 'All tasks by team', 'list', DB.tk.filter(k => !k.done).length, 1], ['-', 'Meetings'], ['mon', 'Monday meeting', 'cal'], ['thu', 'Thursday meeting', 'cal'], AU]),
+  pages:{my:myTasks, tk:tkPage, mon:() => mtgPage('mon'), thu:() => mtgPage('thu'), auto:() => autoPage('tsk')}};
+APPS.forEach(([a]) => { A[pageAct(a)] = el => { S.fi[a] = null; S.page[a] = el.dataset.v; render(true); }; });
+A.gogo = el => { const [a, p] = el.dataset.v.split(':'); if(!allowed(a)) return toast(`${APPN[a]} is not available for ${RN(S.role)}.`); go(a, p); };

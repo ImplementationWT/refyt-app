@@ -1,0 +1,66 @@
+// Refyt · motor de la interfaz aprobada por el cliente.
+//
+// Cada módulo es una parte de "Refyt, demo v3.20.html", con el mismo código. Todos comparten un
+// mismo ámbito a través de este barril: cada módulo importa de aquí lo que usa, y el orden de
+// las líneas de abajo es el orden en que se evalúan (el mismo del original). No lo cambies sin
+// revisar los módulos que envuelven funciones de módulos anteriores.
+export * from "./core/icons.js";
+export * from "./core/utils.js";
+export * from "./core/dates.js";
+export * from "./data/seed.js";
+export * from "./domain/money.js";
+export * from "./state.js";
+export * from "./auth.js";
+export * from "./ui/pieces.js";
+export * from "./domain/approvals.js";
+export * from "./domain/alerts.js";
+export * from "./domain/phases.js";
+export * from "./property/card.js";
+export * from "./schemes/card.js";
+export * from "./ui/lists.js";
+export * from "./apps/director/overview.js";
+export * from "./apps/retrofit/pages.js";
+export * from "./apps/delivery/pages.js";
+export * from "./apps/delivery/purchasing.js";
+export * from "./apps/commercial/pages.js";
+export * from "./apps/accounts/pages.js";
+export * from "./apps/delivery/site-forms.js";
+export * from "./apps/tasks/pages.js";
+export * from "./apps/director/new-scheme.js";
+export * from "./apps/registry.js";
+export * from "./guide/versions.js";
+export * from "./guide/tour.js";
+export * from "./guide/help.js";
+export * from "./guide/data-map.js";
+export * from "./shell/render.js";
+export * from "./shell/tour-panel.js";
+export * from "./shell/events.js";
+export * from "./apps/workspace.js";
+export * from "./property/views.js";
+export * from "./apps/team-pages.js";
+export * from "./apps/apps.js";
+export * from "./shell/header.js";
+export * from "./apps/tasks/team-tasks.js";
+export * from "./shell/app-dropdown.js";
+export * from "./apps/director/dashboards.js";
+export * from "./guide/versions-3-1.js";
+export * from "./meetings/tasks-and-meetings.js";
+export * from "./meetings/owners-and-actions.js";
+export * from "./apps/retrofit/bookings.js";
+export * from "./meetings/calendar.js";
+export * from "./apps/retrofit/visits-and-documents.js";
+export * from "./meetings/schedule.js";
+export * from "./apps/director/alerts.js";
+export * from "./apps/delivery/site-form-entry.js";
+export * from "./apps/phone-mockup.js";
+export * from "./apps/delivery/site-progress.js";
+export * from "./meetings/done-tasks.js";
+export * from "./apps/phone-jobs.js";
+export * from "./apps/director/clients.js";
+export * from "./apps/director/templates.js";
+export * from "./apps/director/finance-breakdown.js";
+export * from "./apps/director/templates-guided.js";
+export * from "./apps/director/template-save.js";
+export * from "./meetings/calendar-grid.js";
+export * from "./apps/director/blank-template.js";
+export * from "./mount.js";

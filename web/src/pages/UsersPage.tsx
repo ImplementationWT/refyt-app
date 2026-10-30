@@ -304,7 +304,7 @@ export function UsersPage() {
         {detail ? (
           <div className="space-y-6">
             <StatusPills user={detail} wrap />
-            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 rounded-[18px] border border-line bg-n-25 p-4 text-sm">
+            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 rounded-btn border border-line bg-n-25 p-4 text-sm">
               <DetailRow label="Usuario">@{detail.username}</DetailRow>
               <DetailRow label="Correo">{detail.email ?? "—"}</DetailRow>
               <DetailRow label="Último acceso">{formatDateTime(detail.lastLoginAt)}</DetailRow>
@@ -519,7 +519,7 @@ function UserFormDialog({
                 {roles.data.items.map((role) => (
                   <label
                     key={role.id}
-                    className="flex cursor-pointer items-start gap-2.5 rounded-[14px] border-[1.5px] border-line p-3 text-sm transition-colors hover:border-brand-200 has-[:checked]:border-brand-400 has-[:checked]:bg-brand-25"
+                    className="flex cursor-pointer items-start gap-2.5 rounded-btn border-[1.5px] border-line p-3 text-sm transition-colors hover:border-brand-200 has-[:checked]:border-brand-400 has-[:checked]:bg-brand-25"
                   >
                     <Checkbox className="mt-0.5" value={role.id} {...form.register("roleIds")} />
                     <span>

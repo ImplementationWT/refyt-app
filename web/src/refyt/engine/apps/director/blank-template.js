@@ -1,0 +1,16 @@
+// Refyt · Director: plantilla en blanco.
+import {
+  A, DB, PTYPE, S, TODAY, VERSIONS, VIEWS, esc, go, mkTpl, nx, scOf, tpClone, tpOf
+} from "../../index.js";
+export const hiddenTpl = (t) => { t.hidden = true; t.draft = false; return t; };
+A.nsBlank = () => { const b = hiddenTpl(mkTpl('TP-' + (++DB.seq.tp), 'blank', 'Blank')); b.ms = []; b.rates = {}; b.units = {}; b.trigk = 'installed'; b.sys = 'None'; b.st = ['Received', 'In progress', 'Complete']; DB.tpl.push(b); A.nsOpenT({dataset:{v:b.id}}); };
+A.nsCopy = el => { const s = scOf(el.dataset.v), base = DB.tpl.find(t => !t.hidden && !t.draft && t.ty === s.ty) || DB.tpl.find(t => !t.hidden && !t.draft), t = hiddenTpl(tpClone(base, s.n)); t.set = {...s.set}; t.trigk = s.trig || t.trigk; if(s.chk){ t.ev = [...s.chk.ev]; t.docs = [...s.chk.docs]; t.d = [...s.chk.d]; t.hand = [...s.chk.hand]; } if(PTYPE[s.ty]){ t.sys = PTYPE[s.ty].sys; t.st = [...PTYPE[s.ty].st]; } A.nsOpenT({dataset:{v:t.id}}); };
+{ const o = VIEWS.dir.pages.nsc; VIEWS.dir.pages.nsc = () => { let h = o(); if(S.f.wz || S.f.tpe) return h;
+  h = h.replace(`${nx('tpNew', '', 'New template', 'sec')}${nx('nsOpen', '', 'New scheme')}`, nx('tpNew', '', 'New template'));
+  h = h.replace('<div class="rf-tpg">', `<div class="rf-tpg"><div class="rf-tpk rf-blank"><div class="rf-tpkh"><b>Blank</b><small>No client system, no measures</small></div><small class="rf-tpt">Set every part step by step: client system and statuses, trigger, measures and prices, settings, limits, checklists and install tracking.</small><div class="rf-tpkb">${nx('nsBlank', '', 'Start from blank')}</div></div>`);
+  return h.replace(/data-act="nsOpen" data-v="(SC-\d+)"/g, 'data-act="nsCopy" data-v="$1"'); }; }
+{ const o = VIEWS.dir.pages.nsc; VIEWS.dir.pages.nsc = () => { const h = o(); const w = S.f.wz, t = w && tpOf(w.tid), src = t && tpOf(t.base); return src && src.hidden ? h.replace(`New scheme from ${esc(src.n)}`, src.n === 'blank' ? 'New scheme from blank' : `New scheme, copied from ${esc(src.n)}`).replace('Each next step shows what the template sets, to check or change before creating the scheme.', src.n === 'blank' ? 'Set each part in the next steps.' : 'Each next step shows what it brings, to check or change.').replace(`Starting from the template ${esc(src.n)}.`, src.n === 'blank' ? 'Starting from blank.' : `Copied from the scheme ${esc(src.n)}.`).replace(new RegExp(`From ${esc(src.n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\. Check it`, 'g'), src.n === 'blank' ? 'Blank so far. Set it' : `As in ${esc(src.n)}. Check it`) : h; }; }
+VERSIONS.forEach(v => { if(v.current){ v.current = false; v.url = 'https://claude.ai/artifact/QFufp3dEVvJBYVXVqqs2fJ'; } });
+VERSIONS.push({v:'v3.20', date:TODAY, major:false, current:true, url:null, title:'Blank among the templates', sum:'New scheme setup only creates templates from its header; starting from blank is a card among the templates, and copying a scheme also goes through the step by step setup.', steps:[
+  {t:'Blank as a template', min:.3, dolor:'Before, New scheme in the header meant starting from blank.', show:['The header only has New template.', 'Blank is the first card among the templates; copying a scheme also goes step by step.'], say:'Every scheme starts from a template, even a blank one.', go:() => { S.role = 'dir'; S.f.wz = null; S.f.tpe = null; go('dir', 'nsc'); }},
+]});

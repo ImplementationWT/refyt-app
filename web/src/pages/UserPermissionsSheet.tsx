@@ -114,7 +114,7 @@ export function UserPermissionsSheet({ user, onClose }: { user: User | null; onC
           {[...grouped].map(([module, rows]) => {
             const tone = MODULE_TONES[module] ?? "neutral";
             return (
-              <section key={module} className={`tone-${tone} rounded-[18px] border border-line bg-tone-25 p-3.5`}>
+              <section key={module} className={`tone-${tone} rounded-btn border border-line bg-tone-25 p-3.5`}>
                 <h3 className="mb-2 flex items-center gap-2.5 text-sm font-bold">
                   <IconTile icon={MODULE_ICONS[module] ?? KeyRound} tone={tone} size="sm" />
                   {MODULE_LABELS[module] ?? module}
@@ -129,7 +129,7 @@ export function UserPermissionsSheet({ user, onClose }: { user: User | null; onC
                       <label
                         key={row.key}
                         className={cn(
-                          "flex items-start gap-2.5 rounded-[11px] px-1.5 py-1.5 text-sm",
+                          "flex items-start gap-2.5 rounded-btn px-1.5 py-1.5 text-sm",
                           disabled ? "cursor-default" : "cursor-pointer hover:bg-surface"
                         )}
                         title={!editable || row.grantable || on ? undefined : "No puedes conceder un permiso que no tienes"}

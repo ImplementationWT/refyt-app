@@ -25,8 +25,8 @@ export function IconTile({
         `tone-${tone}`,
         "grid shrink-0 place-items-center bg-tone-50 text-tone-700 transition-transform duration-300 ease-soft",
         size === "sm" && "size-8 rounded-tile [&_svg]:size-4",
-        size === "md" && "size-10 rounded-[13px] [&_svg]:size-[18px]",
-        size === "lg" && "size-11 rounded-[15px] [&_svg]:size-5",
+        size === "md" && "size-10 rounded-btn [&_svg]:size-[18px]",
+        size === "lg" && "size-11 rounded-btn [&_svg]:size-5",
         className
       )}
     >

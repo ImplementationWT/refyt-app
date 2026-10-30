@@ -39,7 +39,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toast ? (
           <div
             key={toast.id}
-            className="pointer-events-auto fixed bottom-[calc(22px+env(safe-area-inset-bottom,0px))] left-1/2 flex max-w-[calc(100%-32px)] -translate-x-1/2 animate-toast items-center gap-3 rounded-[18px] bg-ink px-[18px] py-3 text-sm font-semibold text-surface shadow-sh3"
+            className="pointer-events-auto fixed bottom-[calc(22px+env(safe-area-inset-bottom,0px))] left-1/2 flex max-w-[calc(100%-32px)] -translate-x-1/2 animate-toast items-center gap-3 rounded-btn bg-ink px-[18px] py-3 text-sm font-semibold text-surface shadow-sh3"
           >
             {toast.tone !== "info" ? (
               <Icon

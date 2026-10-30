@@ -2,12 +2,13 @@ import { initialMigration } from "./001-initial.js";
 import { dashboardMigration } from "./002-dashboard.js";
 import { integrationsMigration } from "./003-integrations.js";
 import { willDooMigration } from "./004-willdoo.js";
+import { refytMigration } from "./005-refyt.js";
 import type { Migration, MigrationContext } from "./types.js";
 
 export type { Migration, MigrationContext } from "./types.js";
 
 /** Ordered list. Append new migrations; never edit or reorder applied ones. */
-export const MIGRATIONS: readonly Migration[] = [initialMigration, dashboardMigration, integrationsMigration, willDooMigration];
+export const MIGRATIONS: readonly Migration[] = [initialMigration, dashboardMigration, integrationsMigration, willDooMigration, refytMigration];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.at(-1)?.version ?? 0;
 

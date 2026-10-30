@@ -3,7 +3,6 @@ import { useState, type ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { CHANGE_PASSWORD_PATH, NotFound, RequireAuth, RequireFeature, RequirePermission } from "./auth/guards";
 import { SESSION_KEY, SessionProvider } from "./auth/session";
-import { AppLayout } from "./components/layout/AppLayout";
 import { ToastProvider } from "./components/ui/toast";
 import { ApiError } from "./lib/api";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
@@ -11,9 +10,10 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MondayPage } from "./pages/MondayPage";
-import { RefytPage } from "./pages/RefytPage";
 import { RolesPage } from "./pages/RolesPage";
 import { UsersPage } from "./pages/UsersPage";
+import { AdminLayout } from "./refyt/AdminLayout";
+import { RefytWorkspace } from "./refyt/RefytWorkspace";
 
 export function createQueryClient(): QueryClient {
   const client: QueryClient = new QueryClient({
@@ -56,19 +56,19 @@ export function AppRoutes() {
           </RequireAuth>
         }
       />
-      {/* Refyt, the client-approved interface, full screen and without the admin layout. */}
+      {/* Refyt: the teams' apps, the main page after signing in. */}
       <Route
         index
         element={
           <RequireAuth>
-            <RefytPage />
+            <RefytWorkspace />
           </RequireAuth>
         }
       />
       <Route
         element={
           <RequireAuth>
-            <AppLayout />
+            <AdminLayout />
           </RequireAuth>
         }
       >

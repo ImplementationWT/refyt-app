@@ -9,24 +9,24 @@ import {
 import { cn } from "../../lib/utils";
 
 const fieldClass =
-  "w-full rounded-field border-[1.5px] border-line-2 bg-surface px-3.5 text-[14.5px] text-ink transition-[border-color,box-shadow] duration-150 " +
-  "placeholder:text-faint focus:border-brand-500 focus:shadow-[0_0_0_4px_var(--p50)] focus:outline-none " +
+  "w-full rounded-field border-[1.5px] border-line-2 bg-surface px-3.5 text-[14.5px] font-semibold text-ink transition-[border-color,box-shadow] duration-150 " +
+  "placeholder:text-faint focus:border-brand-500 focus:shadow-[0_0_0_4px_var(--b50)] focus:outline-none " +
   "disabled:cursor-not-allowed disabled:bg-n-25 disabled:text-muted aria-invalid:border-danger-500 aria-invalid:focus:shadow-[0_0_0_4px_var(--r50)]";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
-  ({ className, ...props }, ref) => <input ref={ref} className={cn(fieldClass, "h-11", className)} {...props} />
+  ({ className, ...props }, ref) => <input ref={ref} className={cn(fieldClass, "h-[46px]", className)} {...props} />
 );
 Input.displayName = "Input";
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
   ({ className, ...props }, ref) => (
-    <select ref={ref} className={cn(fieldClass, "h-11 pr-9", className)} {...props} />
+    <select ref={ref} className={cn(fieldClass, "h-[46px] pr-9", className)} {...props} />
   )
 );
 Select.displayName = "Select";
 
 export function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label className={cn("text-[13.5px] font-semibold text-ink", className)} {...props} />;
+  return <label className={cn("text-[13.5px] font-bold text-ink", className)} {...props} />;
 }
 
 export const Checkbox = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(

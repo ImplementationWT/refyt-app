@@ -1,0 +1,16 @@
+/*
+ * Refyt: el sistema de diseño de toda la app (colores, fuentes, botones, formularios…).
+ * Los archivos son el CSS aprobado de "Refyt, demo v3.20.html", partido por áreas y en el
+ * mismo orden. Se importan en la capa "refyt" (ver src/index.css).
+ */
+@import "./00-preflight-guard.css";
+@import "./01-tokens.css";
+@import "./02-shell.css";
+@import "./03-apps.css";
+@import "./04-lists-and-tables.css";
+@import "./05-common-pieces.css";
+@import "./06-workflows.css";
+@import "./07-shared-components.css";
+@import "./08-refyt-parts.css";
+@import "./09-refyt-brand.css";
+@import "./10-app.css";

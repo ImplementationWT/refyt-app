@@ -25,8 +25,8 @@ export function Avatar({
         "grid shrink-0 place-items-center bg-tone-100 font-extrabold text-tone-700",
         size === "xs" && "size-[22px] rounded-[8px] text-[9.5px]",
         size === "sm" && "size-[26px] rounded-[9px] text-[10.5px]",
-        size === "md" && "size-9 rounded-[12px] text-[12.5px]",
-        size === "lg" && "size-14 rounded-[18px] text-lg",
+        size === "md" && "size-9 rounded-btn text-[12.5px]",
+        size === "lg" && "size-14 rounded-btn text-lg",
         className
       )}
     >
@@ -100,7 +100,7 @@ export function KpiCard({
     <div
       className={cn(
         `tone-${tone}`,
-        "group flex h-full flex-col items-start gap-3 rounded-[18px] border border-line bg-surface p-4 shadow-sh1 transition-[background-color,border-color,transform,box-shadow] duration-200 ease-soft",
+        "group flex h-full flex-col items-start gap-3 rounded-btn border border-line bg-surface p-4 shadow-sh1 transition-[background-color,border-color,transform,box-shadow] duration-200 ease-soft",
         "sm:flex-row sm:gap-3.5",
         to && "hover:-translate-y-0.5 hover:border-tone-100 hover:bg-tone-25 hover:shadow-sh2"
       )}
@@ -114,7 +114,7 @@ export function KpiCard({
     </div>
   );
   return to ? (
-    <Link to={to} className="block rounded-[18px]">
+    <Link to={to} className="block rounded-btn">
       {body}
     </Link>
   ) : (

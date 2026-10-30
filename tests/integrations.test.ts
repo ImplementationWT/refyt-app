@@ -31,7 +31,7 @@ describe.skipIf(skipDb)("integrations API", () => {
       const cookie = await api.adminCookie();
 
       expect((await api.request("GET", "/api/meta")).json().schemaVersion).toBe(LATEST_SCHEMA_VERSION);
-      expect(LATEST_SCHEMA_VERSION).toBe(4);
+      expect(LATEST_SCHEMA_VERSION).toBe(5);
       for (const key of ["integrations.read", "integrations.manage", "monday.read"]) {
         expect(await api.c.permissions.countDocuments({ key })).toBe(1);
       }

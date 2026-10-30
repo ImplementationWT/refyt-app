@@ -1,6 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 // The SPA never receives server variables: no `envPrefix` exposure beyond
@@ -17,15 +16,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     outDir: "dist",
-    sourcemap: false,
-    // Two pages: the React app (login, administración) and Refyt, the client-approved
-    // interface, which the app shows full screen at "/" (see web/src/pages/RefytPage.tsx).
-    rollupOptions: {
-      input: {
-        main: fileURLToPath(new URL("index.html", import.meta.url)),
-        refyt: fileURLToPath(new URL("refyt/index.html", import.meta.url))
-      }
-    }
+    sourcemap: false
   },
   server: {
     port: 5173,

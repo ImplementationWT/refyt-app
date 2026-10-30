@@ -1,18 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { KeyRound } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { z } from "zod";
 import { SESSION_KEY, useSession } from "../auth/session";
-import { Button } from "../components/ui/button";
-import { Field, Input } from "../components/ui/form";
-import { Alert, Card, IconTile } from "../components/ui/misc";
 import { useToast } from "../components/ui/toast";
 import { api } from "../lib/api";
 import { applyApiError } from "../lib/hooks";
 import { passwordSchema } from "../lib/password";
+import { AuthError, AuthField, AuthLayout } from "../refyt/AuthLayout";
 
 export function ChangePasswordPage() {
   const { session, logout } = useSession();
@@ -58,57 +55,60 @@ export function ChangePasswordPage() {
 
   // Standalone screen: while the change is forced there is no navigation.
   return (
-    <div className="flex min-h-svh items-center justify-center bg-bg p-4">
-      <Card className="w-full max-w-md animate-view p-7 shadow-sh2">
-        <IconTile icon={KeyRound} tone="amber" size="lg" className="mb-4" />
-        <h1 className="text-2xl font-extrabold tracking-[-0.025em]">Cambiar contraseña</h1>
-        <p className="mt-1 mb-6 text-[14.5px] text-muted">
-          {forced
-            ? "Por seguridad debes establecer una contraseña nueva antes de continuar."
-            : "Las demás sesiones abiertas se cerrarán al cambiarla."}
-        </p>
-        <form
-          className="grid gap-4"
-          noValidate
-          onSubmit={form.handleSubmit((values) => {
-            setFormError(null);
-            change.mutate(values);
-          })}
-        >
-          {formError ? <Alert>{formError}</Alert> : null}
-          <Field label="Contraseña actual" error={form.formState.errors.currentPassword?.message}>
-            {(props) => (
-              <Input {...props} type="password" autoComplete="current-password" {...form.register("currentPassword")} />
-            )}
-          </Field>
-          <Field
-            label="Nueva contraseña"
-            hint="Mínimo 10 caracteres; distinta de tu usuario."
-            error={form.formState.errors.newPassword?.message}
-          >
-            {(props) => <Input {...props} type="password" autoComplete="new-password" {...form.register("newPassword")} />}
-          </Field>
-          <Field label="Repite la nueva contraseña" error={form.formState.errors.confirmPassword?.message}>
-            {(props) => (
-              <Input {...props} type="password" autoComplete="new-password" {...form.register("confirmPassword")} />
-            )}
-          </Field>
-          <div className="mt-2 flex justify-end gap-2.5">
-            {forced ? (
-              <Button variant="ghost" onClick={() => logout().then(() => navigate("/login", { replace: true }))}>
-                Cerrar sesión
-              </Button>
-            ) : (
-              <Button variant="secondary" onClick={() => navigate(-1)}>
-                Cancelar
-              </Button>
-            )}
-            <Button type="submit" disabled={change.isPending}>
-              {change.isPending ? "Guardando…" : "Guardar contraseña"}
-            </Button>
-          </div>
-        </form>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Cambiar contraseña"
+      subtitle={
+        forced
+          ? "Por seguridad debes establecer una contraseña nueva antes de continuar."
+          : "Las demás sesiones abiertas se cerrarán al cambiarla."
+      }
+    >
+      <form
+        className="rf-auth-form"
+        noValidate
+        onSubmit={form.handleSubmit((values) => {
+          setFormError(null);
+          change.mutate(values);
+        })}
+      >
+        {formError ? <AuthError>{formError}</AuthError> : null}
+        <AuthField
+          label="Contraseña actual"
+          type="password"
+          autoComplete="current-password"
+          error={form.formState.errors.currentPassword?.message}
+          {...form.register("currentPassword")}
+        />
+        <AuthField
+          label="Nueva contraseña"
+          type="password"
+          autoComplete="new-password"
+          hint="Mínimo 10 caracteres; distinta de tu usuario."
+          error={form.formState.errors.newPassword?.message}
+          {...form.register("newPassword")}
+        />
+        <AuthField
+          label="Repite la nueva contraseña"
+          type="password"
+          autoComplete="new-password"
+          error={form.formState.errors.confirmPassword?.message}
+          {...form.register("confirmPassword")}
+        />
+        <div className="rf-auth-acts">
+          {forced ? (
+            <button type="button" className="btn sec lg" onClick={() => logout().then(() => navigate("/login", { replace: true }))}>
+              Cerrar sesión
+            </button>
+          ) : (
+            <button type="button" className="btn sec lg" onClick={() => navigate(-1)}>
+              Cancelar
+            </button>
+          )}
+          <button type="submit" className="btn pri lg" disabled={change.isPending}>
+            {change.isPending ? "Guardando…" : "Guardar contraseña"}
+          </button>
+        </div>
+      </form>
+    </AuthLayout>
   );
 }

@@ -1,0 +1,31 @@
+// Refyt · Aprobaciones: una bandeja para cada aprobador.
+import {
+  A, DB, EVID, MEAS, MODALS, PEO, RN, ROLES, S, approvals, area, canMoney, empty, esc, evOf, fm, his,
+  mfoot, modal, oph, pill, prOf, rTag, render, renderLayer, scOf, seg, toast
+} from "../index.js";
+export function approvals0(){ const xs = [];
+  DB.pr.forEach(p => { const sc = scOf(p.sc);
+    if(p.b.rev === 'Pending') xs.push({id:'ar' + p.id, k:'Assessment review', role:'aap', p, t:`${p.ad}, ${sc.n}`, d:`${p.b.ev.length} of ${EVID.length} evidence items in. ${p.b.revisits ? `Revisits so far: ${p.b.revisits}.` : ''}`, ok:'arOk', no:'arNo'});
+    if(p.ph === 'B. Assess and design' && p.ms.every(x => x.dsg) && p.ms.some(x => !x.dap)) xs.push({id:'dr' + p.id, k:'Design review', role:'dap', p, t:`${p.ad}, ${sc.n}`, d:`Designs for ${p.ms.map(x => MEAS[x.m].s).join(', ')} ready for review.`, ok:'drOk', no:'drNo'});
+  });
+  DB.or.filter(o => o.st === 'Requested').forEach(o => { const p = o.al[0].pr ? prOf(o.al[0].pr) : null, sc = p ? scOf(p.sc) : null, over = sc && o.amt > sc.set.ord; xs.push({id:'or' + o.id, k:'Material order', role:over ? 'dir' : 'oap', p, o, amt:o.amt, t:`${o.id} ${o.sup}`, d:`${o.ct}, ${o.al.length > 1 ? `split across ${o.al.length} properties` : p.ad + ' ' + MEAS[o.al[0].m].s}${over ? `. Over the ${sc.n} order limit of ${fm(sc.set.ord)}` : ''}.`, ok:'orOk', no:'orNo'}); });
+  DB.sp.filter(s => s.st === 'Waiting approval').forEach(s => { const p = prOf(s.pr), sc = scOf(p.sc), over = s.amt > sc.set.pay; xs.push({id:'sp' + s.id, k:'Subcontractor payment', role:over ? 'dir' : 'pap', p, amt:s.amt, t:`${s.sub}, ${p.ad}`, d:`${s.stage}. Evidence: ${s.ev}${over ? `. Over the ${sc.n} payment limit of ${fm(sc.set.pay)}` : ''}.`, ok:'spOk', no:'spNo', ref:s.id}); });
+  DB.va.filter(v => v.st === 'Waiting internal approval').forEach(v => { const p = prOf(v.pr), sc = scOf(p.sc), over = v.amt > sc.set.vr; xs.push({id:'va' + v.id, k:v.ty, role:over ? 'dir' : v.ty === 'Variation' ? 'com' : 'oap', p, amt:v.amt, t:`${v.id} ${p.ad}`, d:`${MEAS[v.m].s}: ${v.why}. Evidence: ${v.ev}${over ? `. Over the ${sc.n} limit of ${fm(sc.set.vr)}` : ''}.`, ok:'vaOk', no:'vaNo', ref:v.id}); });
+  return xs; }
+export const apCard = (a, app) => `<div class="ds-exc c-${a.role === 'dir' ? 'tred' : 'tb'}${S.hl === a.id ? ' hl2' : ''}" data-hl="${a.id}"><div class="ds-exh">${pill(a.role === 'dir' ? 'tred' : 'tb', a.k)}<b>${esc(a.t)}</b><span>${rTag(a.role)}${a.amt && canMoney(app) || a.amt && ['apr', 'pur'].includes(app) ? ' ' + fm(a.amt) : ''}</span></div><p>${esc(a.d)}</p><div class="ds-exb"><button class="btn pri sm" data-act="${a.ok}" data-v="${a.ref || (a.o ? a.o.id : a.p.id)}">Approve</button><button class="btn sec sm" data-act="apNo" data-v="${a.no}|${a.ref || (a.o ? a.o.id : a.p.id)}">Reject with a comment</button>${a.p ? `<button class="btn sec sm" data-act="prOpen" data-v="${a.p.id}|${a.k.startsWith('Assess') || a.k.startsWith('Design') ? 'ret' : 'mon'}">Open the property</button>` : ''}</div></div>`;
+export function aprPage(){ const role = S.f.apr || 'all', all = approvals(), xs = all.filter(a => role === 'all' || a.role === role), roles = ['aap', 'dap', 'oap', 'pap', 'com', 'dir'];
+  return oph('Approvals inbox', 'Everything waiting for an approval, for every approver. Approve in one click, or reject with a comment that goes back to whoever raised it.') + `<div class="rf-bar">${seg('aprr', role, [['all', 'Everything', all.length], ...roles.map(r => [r, RN(r), all.filter(a => a.role === r).length])])}</div>` + (xs.length ? xs.map(a => apCard(a, 'apr')).join('') : empty('Nothing waiting for this role.')); }
+A.aprr = el => { S.f.apr = el.dataset.v; render(); };
+A.apNo = el => { const [act, id] = el.dataset.v.split('|'); S.modal = {k:'rej', act, id, note:''}; renderLayer(); };
+MODALS.rej = m => modal('Reject with a comment', 'The comment goes back to whoever raised it, on the property’s history.', area('Comment', 'm', 'note', m.note, 'e.g. Loft photos missing on the rear slope', true), mfoot('Reject', 'rejOk', !!(m.note || '').trim()), 520);
+A.rejOk = () => { const m = S.modal; A[m.act]({dataset:{v:m.id}}, m.note.trim()); S.modal = null; render(); };
+A.arOk = el => { const p = prOf(el.dataset.v); p.b.rev = 'Approved'; p.b.ev = [...evOf(p)]; his(p, 'Assessment review approved', 'ram'); render(); toast('Approved. Assessment documents and modelling are next.'); };
+A.arNo = (el, why) => { const p = prOf(el.dataset.v); p.b.rev = null; p.b.vis = false; p.b.revisits++; his(p, `Assessment rejected: ${why || 'evidence missing'}. Revisit booked for the assessor, revisits ${p.b.revisits}.`, 'ram'); toast(`Rejected. Revisit booked and counted (${p.b.revisits}); ${PEO[ROLES.ass[1]].n} is notified.`); };
+A.drOk = el => { const p = prOf(el.dataset.v); p.ms.forEach(x => x.dap = true); his(p, 'Designs approved', 'ram'); render(); toast('Designs approved. Technical survey next.'); };
+A.drNo = (el, why) => { const p = prOf(el.dataset.v); p.ms.forEach(x => { if(!x.dap) x.dsg = false; }); his(p, `Design returned to the designer: ${why}`, 'ram'); toast('Returned to the designer with your comment.'); };
+A.orOk = el => { const o = DB.or.find(x => x.id === el.dataset.v); o.st = 'Ordered'; o.ok = true; render(); toast(`${o.id} approved: ${fm(o.amt)} now counts as committed cost.`); };
+A.orNo = (el, why) => { const o = DB.or.find(x => x.id === el.dataset.v); o.st = 'Rejected'; o.why = why; toast('Order rejected and sent back to the Install coordinator.'); };
+A.spOk = el => { const s = DB.sp.find(x => x.id === el.dataset.v); s.st = 'Approved'; render(); toast('Approved. Accounts sees it ready to pay.'); };
+A.spNo = (el, why) => { const s = DB.sp.find(x => x.id === el.dataset.v); s.st = 'Held'; s.why = why; toast('Payment held with your comment.'); };
+A.vaOk = el => { const v = DB.va.find(x => x.id === el.dataset.v); v.st = v.ty === 'Variation' ? 'Waiting client approval' : 'Approved'; render(); toast(v.ty === 'Variation' ? 'Approved internally. Now it needs the client’s approval.' : 'Approved. It adds to forecast cost and reduces the margin.'); };
+A.vaNo = (el, why) => { const v = DB.va.find(x => x.id === el.dataset.v); v.st = 'Rejected'; v.why = why; toast('Rejected: it will not be carried out.'); };

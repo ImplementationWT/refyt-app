@@ -1,0 +1,33 @@
+// Refyt · Mover una propiedad de fase.
+import {
+  A, ADOCS, BSTEPS, CANCEL, DB, DITEMS, HAND, MEAS, MODALS, PH, PHOWN, RGROUPS, RN, RP, S, TODAY,
+  addDays, area, csName, dApplies, daysIn, docsOf, esc, evOf, fmtDy, his, mfoot, mlab, modal, mseg,
+  pIdx, prOf, ptOf, ready, render, renderLayer, toast, tyOf
+} from "../index.js";
+export const bDone = p => p.b.rev === 'Approved' && docsOf(p).every(n => p.b.docs.includes(n)) && p.b.mod && p.ms.every(x => x.dsg && x.dap) && p.b.ts;
+export function phGate(p){ const miss = [];
+  if(p.ph === 'A. Job received' && !p.b.bk) miss.push('Assessment booked');
+  if(p.ph === 'B. Assess and design'){ if(p.b.rev !== 'Approved') miss.push(p.b.rev === 'Pending' ? 'Assessment review waiting' : 'Assessment visit and review'); if(!docsOf(p).every(n => p.b.docs.includes(n))) miss.push(`${docsOf(p).filter(n => !p.b.docs.includes(n)).length} assessment documents`); if(!p.b.mod) miss.push('Modelling'); if(p.ms.some(x => !x.dsg)) miss.push('Design for every measure'); else if(p.ms.some(x => !x.dap)) miss.push('Design review'); if(!p.b.ts) miss.push('Technical survey'); }
+  if(p.ph === 'C. Client approval' && !p.quoteOk) miss.push(`Client approval in ${ptOf(p).sys === 'PAS Hub' ? 'the PO' : ptOf(p).sys}`);
+  if(p.ph === 'D. Prepare to install') dApplies(p).filter(([k]) => p.d[k] !== 'Done').forEach(([, n]) => miss.push(n));
+  if(p.ph === 'E. Install'){ if(tyOf(p) === 'Redbridge'){ const xs = RGROUPS.filter(([k]) => !['Complete', 'Not applicable'].includes(p.g[k]) && k !== 'hnd'); if(xs.length) miss.push(`${xs.length} groups to complete`); } else if(p.ms.some(x => x.ip < 100)) miss.push('Every measure installed and signed off'); }
+  if(p.ph === 'F. Close out'){ const xs = HAND.filter(h => !(h.includes('solar') && !p.ms.some(x => x.m === 'SPV')) && !p.hand[h]); if(xs.length) miss.push(`Handover: ${xs.join(', ')}`); if(!DB.inv.some(v => v.pr === p.id && v.paid)) miss.push('Payment received'); }
+  return {ok:!miss.length, miss}; }
+export const CSNEXT = {'B. Assess and design':['E.ON', 2, 'Upload the survey pack to Dynamics and wait for paperwork approval'], 'C. Client approval':['E.ON', 5, 'Enter the technical survey date, asbestos survey and price in Dynamics, then submit'], 'E. Install':['E.ON', 6, 'Enter the install date in Dynamics']};
+A.phNext = el => { const p = prOf(el.dataset.v), g = phGate(p); if(!g.ok && p.ph !== 'F. Close out') return toast('Not yet: ' + esc(g.miss[0])); const from = p.ph, d = daysIn(p); p.ph = PH[pIdx(p.ph) + 1]; p.phOn = TODAY;
+  const c = CSNEXT[from]; if(c && tyOf(p) === c[0]){ p.cs = Math.max(p.cs, c[1] - 1); p.csTodo = c[2]; } else if(tyOf(p) === 'GLA' && from === 'B. Assess and design'){ p.csTodo = 'Upload the pre EPC, assessment documents and price to Shareworks'; }
+  his(p, `Moved from ${from} (${d} days) to ${p.ph}. Owner: ${RN(PHOWN[p.ph])}.`); render(); toast(`${p.id} is in ${p.ph}. ${RN(PHOWN[p.ph])} owns it now.${p.csTodo ? ` Reminder created: update ${ptOf(p).sys}.` : ''}`); };
+A.csDone = el => { const p = prOf(el.dataset.v); p.cs = Math.min(ptOf(p).st.length - 1, p.cs + 1); his(p, `${ptOf(p).sys} updated: ${csName(p)}`); p.csTodo = null; render(); toast(`${ptOf(p).sys} marked as updated: ${csName(p)}.`); };
+A.csStep = el => { const p = prOf(el.dataset.v); p.cs = Math.min(ptOf(p).st.length - 1, p.cs + 1); if(tyOf(p) === 'E.ON' && p.cs === 5 && p.ph === 'C. Client approval') p.quoteOk = true; if(tyOf(p) !== 'E.ON' && p.ph === 'C. Client approval') p.quoteOk = true; his(p, `${ptOf(p).sys}: ${csName(p)}`); render(); toast(`${ptOf(p).sys} now shows: ${csName(p)}.`); };
+A.bBook = el => { const p = prOf(el.dataset.v); p.b.bk = true; p.b.on = addDays(TODAY, 3); his(p, `Assessment booked for ${fmtDy(p.b.on)} with ${RP('ass')}`, 'sar'); if(tyOf(p) === 'E.ON') p.csTodo = 'Enter the assessment date in Dynamics'; render(); toast(`Booked for ${fmtDy(p.b.on)}. ${tyOf(p) === 'E.ON' ? 'Reminder: enter the date in Dynamics.' : ''}`); };
+A.bVis = el => { const p = prOf(el.dataset.v); p.b.vis = true; p.b.rev = 'Pending'; his(p, 'Assessment visit done, sent for review', 'afa'); render(); toast('Visit done. The Assessment approver has it in the inbox.'); };
+A.bStep = el => { const [id, k] = el.dataset.v.split('|'), p = prOf(id);
+  if(k === 'docs') p.b.docs = [...ADOCS]; if(k === 'mod') p.b.mod = {pre:'D', post:'C'}; if(k === 'ts') p.b.ts = true; if(k === 'dsg') p.ms.forEach(x => x.dsg = true); if(k === 'ev') p.b.ev = [...evOf(p)];
+  his(p, `${(BSTEPS.find(s => s[0] === k) || ['', 'Evidence'])[1]} done`); render(); toast('Saved.' + (k === 'dsg' ? ' The Design approver has it in the inbox.' : '')); };
+A.dSet = el => { const [id, k, v] = el.dataset.v.split('|'), p = prOf(id), was = ready(p); p.d[k] = v; his(p, `${DITEMS.find(x => x[0] === k)[1]}: ${v.toLowerCase()}`); render(); toast(!was && ready(p) ? 'Ready to install: every item is done. The Install coordinator is notified.' : 'Saved.'); };
+A.gSet = el => { const [id, k] = el.dataset.v.split('|'), p = prOf(id), cur = p.g[k], nx2 = cur === 'Not started' ? 'In progress' : cur === 'In progress' ? 'Complete' : cur === 'Waiting on decision' || cur === 'Blocked' ? 'Complete' : cur; p.g[k] = nx2; if(nx2 === 'Complete' && (k === 'stl' || k === 'ewi')){ p.hold = null; p.hold2 = null; } his(p, `${RGROUPS.find(g => g[0] === k)[1]}: ${nx2}`); render(); toast(nx2 === 'Complete' && RGROUPS.find(g => g[0] === k)[3] ? 'Hold point passed. The next group is unlocked and the site team is notified.' : `${RGROUPS.find(g => g[0] === k)[1]}: ${nx2.toLowerCase()}.`); };
+A.ipSet = el => { const [id, m] = el.dataset.v.split('|'), p = prOf(id), x = p.ms.find(y => y.m === m); x.ip = Math.min(100, x.ip + 50); his(p, `${MEAS[m].n} install ${x.ip}%`); render(); };
+A.hSet = el => { const [id, i] = el.dataset.v.split('|'), p = prOf(id), h = HAND[+i]; p.hand[h] = !p.hand[h]; render(); };
+A.cnOpen = el => { S.modal = {k:'cn', id:el.dataset.v, why:'', note:''}; renderLayer(); };
+MODALS.cn = m => { const p = prOf(m.id); return modal('Cancel the job', `${esc(p.ad)}, in ${p.ph}. The reason and the phase are recorded; work already done is flagged as abortive work to invoice.`, mlab('Reason', true) + mseg('why', m.why, CANCEL) + area('Note', 'm', 'note', m.note, 'e.g. The customer no longer wants solar'), mfoot('Cancel the job', 'cnOk', !!m.why), 560); };
+A.cnOk = () => { const m = S.modal, p = prOf(m.id), at = p.ph, ab = pIdx(at) >= 1; p.cancel = {why:m.why, at, abort:ab}; p.ph = 'Cancelled'; p.phOn = TODAY; his(p, `Cancelled at ${at}: ${m.why.toLowerCase()}.${ab ? ' Work done flagged as abortive work.' : ''}`); S.modal = null; render(); toast(ab ? 'Cancelled. An abortive work line is ready for Commercial to invoice.' : 'Cancelled.'); };

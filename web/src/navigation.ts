@@ -1,8 +1,5 @@
-import { House, KanbanSquare, LayoutDashboard, Plug, ShieldCheck, Sparkles, Users, type LucideIcon } from "lucide-react";
+import { KanbanSquare, LayoutDashboard, Plug, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import type { Tone } from "./lib/utils";
-
-/** Brand mark shown in the header and login. Each project may replace it. */
-export const BRAND_ICON: LucideIcon = Sparkles;
 
 export interface NavItem {
   to: string;
@@ -23,39 +20,17 @@ export interface NavGroup {
   items: NavItem[];
 }
 
+/** The group shown in the user menu of the header (Usuarios, Roles, Integraciones). */
+export const ADMIN_GROUP_ID = "admin";
+
 /**
- * Single source for the sidebar and the dashboard shortcuts. Projects add
- * their own groups between "General" and "Configuración"
- * (e.g. { id: "ventas", label: "Ventas", items: [...] }).
+ * Single source for the user menu of the header and the admin sidebar. Refyt itself ("/") has its
+ * own navigation (src/refyt/engine); these are the app's administration screens.
  */
 export const NAV_GROUPS: NavGroup[] = [
   {
-    id: "general",
-    label: "General",
-    items: [
-      { to: "/", label: "Refyt", icon: House, tone: "brand", description: "Directores, Comercial, Cuentas, Retrofit y Delivery" },
-      { to: "/panel", label: "Dashboards", icon: LayoutDashboard, tone: "brand", description: "Indicadores y actividad" }
-    ]
-  },
-  // ── Project groups go here ──
-  {
-    id: "integrations",
-    label: "Integraciones",
-    items: [
-      {
-        to: "/monday",
-        label: "Monday",
-        icon: KanbanSquare,
-        tone: "orange",
-        permission: "monday.read",
-        feature: "monday",
-        description: "Tableros de Monday.com"
-      }
-    ]
-  },
-  {
-    id: "config",
-    label: "Configuración",
+    id: ADMIN_GROUP_ID,
+    label: "Administración",
     items: [
       {
         to: "/usuarios",
@@ -75,6 +50,26 @@ export const NAV_GROUPS: NavGroup[] = [
         description: "Servicios externos conectados"
       }
     ]
+  },
+  {
+    id: "integrations",
+    label: "Servicios conectados",
+    items: [
+      {
+        to: "/monday",
+        label: "Monday",
+        icon: KanbanSquare,
+        tone: "orange",
+        permission: "monday.read",
+        feature: "monday",
+        description: "Tableros de Monday.com"
+      }
+    ]
+  },
+  {
+    id: "activity",
+    label: "Actividad",
+    items: [{ to: "/panel", label: "Dashboards", icon: LayoutDashboard, tone: "brand", description: "Indicadores y actividad" }]
   }
 ];
 

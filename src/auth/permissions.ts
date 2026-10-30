@@ -1,4 +1,4 @@
-/** System permission catalog. Generic: no client or business permissions. */
+/** System permission catalog: the template's generic permissions plus access to the Refyt apps. */
 export const PERMISSIONS = [
   { key: "users.read", module: "users", description: "Ver usuarios" },
   { key: "users.create", module: "users", description: "Crear usuarios" },
@@ -17,7 +17,13 @@ export const PERMISSIONS = [
   { key: "integrations.manage", module: "integrations", description: "Probar la conexión de las integraciones" },
   { key: "monday.read", module: "monday", description: "Ver los tableros de Monday.com" },
   { key: "willdoo.use", module: "willdoo", description: "Conversar con Will Doo (co-pilot con IA)" },
-  { key: "willdoo.audit", module: "willdoo", description: "Revisar las conversaciones y el gasto de Will Doo" }
+  { key: "willdoo.audit", module: "willdoo", description: "Revisar las conversaciones y el gasto de Will Doo" },
+  { key: "refyt.director", module: "refyt", description: "Abrir la app Director de Refyt" },
+  { key: "refyt.commercial", module: "refyt", description: "Abrir la app Commercial de Refyt" },
+  { key: "refyt.accounts", module: "refyt", description: "Abrir la app Accounts de Refyt" },
+  { key: "refyt.retrofit", module: "refyt", description: "Abrir la app Retrofit de Refyt" },
+  { key: "refyt.delivery", module: "refyt", description: "Abrir la app Delivery de Refyt" },
+  { key: "refyt.view_as", module: "refyt", description: "Ver Refyt como cualquier rol (selector «Viewing as»)" }
 ] as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[number]["key"];
