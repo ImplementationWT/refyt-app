@@ -1,0 +1,14 @@
+.git
+.github
+.claude
+**/node_modules
+**/dist
+coverage
+docs
+tests
+scripts
+web/src/test
+.env
+.env.*
+**/*.log
+.DS_Store

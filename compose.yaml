@@ -1,0 +1,95 @@
+# Local only. Production does NOT use this file: the platform generates its own
+# compose file on the server (publishes on 127.0.0.1 and nginx exposes it).
+# See docs/TEMPLATE_CONTRACT.md §6.
+#
+#   docker compose up --build        # http://localhost:3000  (admin / admin123)
+#
+# Only Docker is needed: this starts its own MongoDB (a one-node replica set,
+# like Atlas, so transactions work) and needs no .env. Optional values are read
+# from the shell or from .env: INITIAL_ADMIN_PASSWORD, APP_DISPLAY_NAME,
+# MONDAY_API_TOKEN, ANTHROPIC_API_KEY (Will Doo), PORT (host port of the app)
+# and LOCAL_MONGO_PORT.
+services:
+  mongo:
+    image: mongo:8
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      # Loopback only. `pnpm dev:local` connects here from the host.
+      - "127.0.0.1:${LOCAL_MONGO_PORT:-27027}:27017"
+    volumes:
+      - mongo-data:/data/db
+    # Initiates the replica set the first time and is healthy once it is primary.
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "try { rs.status() } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] }) } quit(db.hello().isWritablePrimary ? 0 : 1)"
+      interval: 2s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+
+  app:
+    build: .
+    image: node-typescript-app:local
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      # Loopback only; the app listens on the contract's internal port 3000.
+      - "127.0.0.1:${PORT:-3000}:3000"
+    environment:
+      # development: plain http cookies, so login works on http://localhost.
+      NODE_ENV: development
+      PORT: "3000"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Always the bundled MongoDB (not interpolated: a MONGODB_URI in .env for
+      # `pnpm dev` points at localhost, which inside the container is the app).
+      MONGODB_URI: mongodb://mongo:27017/?replicaSet=rs0&directConnection=true
+      MONGODB_DB: client_local
+      # Blank: a random one is generated at start (see command).
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      # Optional: blank means unset.
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+      APP_DISPLAY_NAME: ${APP_DISPLAY_NAME:-}
+      MONDAY_API_TOKEN: ${MONDAY_API_TOKEN:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      WILL_DOO_MODE: ${WILL_DOO_MODE:-}
+      # No reverse proxy locally (in production nginx is 1 hop).
+      TRUST_PROXY_HOPS: "0"
+    # Without SESSION_SECRET a random one is generated per start (no secret in the
+    # repo); restarting the container only closes the open sessions.
+    command:
+      - sh
+      - -c
+      - |
+        if [ -z "$${SESSION_SECRET:-}" ]; then
+          SESSION_SECRET=$$(node -e 'process.stdout.write(require("crypto").randomBytes(32).toString("base64url"))')
+          export SESSION_SECRET
+        fi
+        exec node dist/index.js
+    cpus: ${APP_CPUS:-0.5}
+    mem_limit: ${APP_MEMORY:-512m}
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Liveness only (/health never touches the database).
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  mongo-data:

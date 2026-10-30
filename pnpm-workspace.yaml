@@ -1,0 +1,8 @@
+packages:
+  - web
+
+allowBuilds:
+  esbuild: true
+  # The mongod binary is downloaded lazily the first time the tests run,
+  # so installs (including the Docker build stage) stay fast and offline-safe.
+  mongodb-memory-server: false

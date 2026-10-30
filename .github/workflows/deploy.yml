@@ -1,0 +1,172 @@
+name: Deploy
+
+# First deploy: run manually (workflow_dispatch) once the provisioner has
+# written the `production` environment. After that, every push to main
+# deploys automatically. Without the required secrets/variables, pushes
+# finish cleanly. Protocol: docs/TEMPLATE_CONTRACT.md §4–§5.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+permissions: {}
+
+jobs:
+  build:
+    # Never on the initial commit of a generated repo (the push that creates
+    # main has an all-zero `before`), and only from main.
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.before != '0000000000000000000000000000000000000000')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.name }}
+      digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compute image name
+        id: image
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          push: true
+          # Informational tag only: deployments always use the digest.
+          tags: ${{ steps.image.outputs.name }}:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Check the digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          [[ "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "::error::Build did not return an image digest"; exit 1; }
+          echo "Image digest: $DIGEST"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    concurrency:
+      group: deploy-${{ github.repository }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      # The job token is sent as registryToken so the server can pull the
+      # image from GHCR during the SSH session (it expires with the job).
+      packages: read
+
+    steps:
+      - name: Check deployment configuration
+        id: preflight
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ secrets.MONGODB_DB }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+          APP_HOSTNAME: ${{ vars.APP_HOSTNAME }}
+        run: |
+          missing=()
+          for name in DEPLOY_SSH_KEY MONGODB_URI MONGODB_DB SESSION_SECRET \
+                      DEPLOY_HOST DEPLOY_KNOWN_HOSTS APP_HOSTNAME; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+
+          if [ ${#missing[@]} -eq 0 ]; then
+            if [ ${#SESSION_SECRET} -lt 32 ]; then
+              echo "::error::SESSION_SECRET must be at least 32 characters"
+              exit 1
+            fi
+            if ! [[ "$APP_HOSTNAME" =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ ]]; then
+              echo "::error::APP_HOSTNAME must be a host name such as <slug>.apps.example.com (no scheme or path)"
+              exit 1
+            fi
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "ready=false" >> "$GITHUB_OUTPUT"
+          message="Missing in environment 'production': ${missing[*]}"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "::error::$message"
+            exit 1
+          fi
+          echo "::notice::Deployment skipped. $message"
+
+      - name: Checkout deploy script
+        if: steps.preflight.outputs.ready == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      # Builds the JSON with jq from the environment (never argv), masks every
+      # value and sends it on stdin to deploy@DEPLOY_HOST with no remote
+      # command. Fails unless the server's last line is DEPLOY_OK.
+      - name: Deploy over SSH
+        if: steps.preflight.outputs.ready == 'true'
+        env:
+          IMAGE: ${{ needs.build.outputs.image }}@${{ needs.build.outputs.digest }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ secrets.MONGODB_DB }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          INITIAL_ADMIN_PASSWORD: ${{ secrets.INITIAL_ADMIN_PASSWORD }}
+          APP_DISPLAY_NAME: ${{ vars.APP_DISPLAY_NAME }}
+          # Will Doo: off, basic (default when unset) or claude. Set from Launchpad.
+          WILL_DOO_MODE: ${{ vars.WILL_DOO_MODE }}
+          # Optional integrations: sent only when defined.
+          MONDAY_API_TOKEN: ${{ secrets.MONDAY_API_TOKEN }}
+          # Will Doo (co-pilot): the project's Anthropic key, set from Launchpad.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: .github/scripts/deploy.sh
+
+      - name: Health check
+        if: steps.preflight.outputs.ready == 'true'
+        env:
+          APP_HOSTNAME: ${{ vars.APP_HOSTNAME }}
+        run: |
+          url="https://$APP_HOSTNAME/health/ready"
+          # Up to ~3 minutes: container start plus migrations.
+          for attempt in $(seq 1 36); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$url" || true)
+            if [ "$status" = "200" ]; then
+              echo "Ready: $url"
+              exit 0
+            fi
+            echo "Attempt $attempt/36: HTTP $status, retrying in 5s"
+            sleep 5
+          done
+          echo "::error::$url did not return 200 within ~3 minutes"
+          exit 1

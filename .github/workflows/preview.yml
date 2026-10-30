@@ -1,0 +1,113 @@
+name: Preview
+
+# AI Developer preview (docs/TEMPLATE_CONTRACT.md §4 and §5.2). The platform
+# dispatches it on a work branch (`--ref ai/…`): it builds that branch and
+# starts it at preview-<slug>.<domain> with its own throwaway database. It never
+# deploys to production and never sends production values.
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: preview-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # Never on main: main deploys through deploy.yml.
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.name }}
+      digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compute image name
+        id: image
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # The branch's code only runs here, inside the image build: this job has
+      # no access to the production environment.
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.image.outputs.name }}:preview-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Check the digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          [[ "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "::error::Build did not return an image digest"; exit 1; }
+          echo "Image digest: $DIGEST"
+
+  preview:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Only for the SSH key and the server's address: no app secret is read.
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Check preview configuration
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          missing=()
+          for name in DEPLOY_SSH_KEY DEPLOY_HOST DEPLOY_KNOWN_HOSTS; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing in environment 'production': ${missing[*]}"
+            exit 1
+          fi
+
+      # The script comes from the default branch, never from the work branch:
+      # code under review cannot change what runs with the deploy key.
+      - name: Checkout deploy script (default branch)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Start the preview over SSH
+        env:
+          DEPLOY_TARGET: preview
+          IMAGE: ${{ needs.build.outputs.image }}@${{ needs.build.outputs.digest }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: .github/scripts/deploy.sh
