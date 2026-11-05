@@ -5,7 +5,7 @@ import {
   pName, plural, prOf, seg, setTkCal, sum, tkCal, tkList, tkOver, tkTone
 } from "../../index.js";
 /* =================== v3.27: the new palette, and one way to show a calendar =================== */
-/* Palette: Dark green #0A3323, Midnight green #105666, Moss green #839958, Rosy brown #D3968C, Beige #F7F4D5, on a white background.
+/* Palette: REFYT navy #16306E and blue #1E3A8A for the brand; Delft blue #1D2A62, Carolina blue #87AECE, Beige #F5F3D8, Pistachio #AFD06E and Fern green #43711E for the rest, on a white background.
    Calendars: every calendar uses the same bar (List, Week, Month, then Previous, Today, Next) and the same month grid.
    Things with a time (meetings) use the hour grid in Week; things with only a date (tasks, assessment bookings) use the day list. */
 export const tkCalBar = vw => { const wk = vw === 'week', mo = vw === 'month';
@@ -24,7 +24,7 @@ setTkCal(xs => { const wk = S.f.tkvw === 'week', base = S.f.tkc || TODAY, by = {
     return h.slice(0, i) + tkCalBar(vw) + (vw === 'list' ? h.slice(i) : tkCal(tkList())); }; }
 
 VERSIONS.forEach(v => { if(v.current){ v.current = false; v.url = 'https://claude.ai/artifact/T54n1L3hYAxV499m7UBRCj'; } });
-VERSIONS.push({v:'v3.27', date:TODAY, major:false, current:true, url:null, title:'New palette, and one calendar style', sum:'The app takes the new palette on a white background: dark green menu and header, midnight green for links and charts, moss and rosy brown as accents. Every calendar uses the same bar and the same month grid.', steps:[
-  {t:'The new palette', min:.5, dolor:'Before, the app was navy on a grey background.', show:['White background everywhere; the menu and the header in dark green, the current item in white.', 'Key figures with a soft accent; charts in midnight and moss green.'], say:'Calmer, and the important things stand out.', go:() => { S.role = 'dir'; S.trail = null; go('dir', 'ovw'); }},
+VERSIONS.push({v:'v3.27', date:TODAY, major:false, current:true, url:null, title:'New palette, and one calendar style', sum:'The app takes the new palette on a white background: the REFYT navy for the menu, the header and the buttons; Carolina blue, pistachio, fern green and beige as accents. Every calendar uses the same bar and the same month grid.', steps:[
+  {t:'The new palette', min:.5, dolor:'Before, the app was navy on a grey background.', show:['White background everywhere; the menu and the header in REFYT navy, the current item in white.', 'Key figures with a soft accent; charts in blue and pistachio.'], say:'Calmer, and the important things stand out.', go:() => { S.role = 'dir'; S.trail = null; go('dir', 'ovw'); }},
   {t:'One way to show a calendar', min:.5, dolor:'Before, tasks, meetings and bookings each had their own calendar.', show:['List, Week and Month, then Previous, Today and Next, in the same place everywhere.', 'Meetings, which have a time, use the hour grid; tasks and bookings, which only have a date, use the day list.'], say:'Learn one calendar, use it everywhere.', go:() => { S.role = 'dir'; S.trail = null; S.f.tkv3 = 'all'; S.f.tkvw = 'month'; go('dir', 'tasks'); }},
 ]});

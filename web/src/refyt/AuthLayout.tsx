@@ -3,7 +3,7 @@ import type { InputHTMLAttributes, ReactNode } from "react";
 import { forwardRef, useId } from "react";
 import logo from "./assets/refyt-logo.png";
 
-/** Full-page frame for signing in and changing the password, in Refyt's greens. */
+/** Full-page frame for signing in and changing the password, in Refyt's blues. */
 export function AuthLayout({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <div className="rf-auth rfx">
