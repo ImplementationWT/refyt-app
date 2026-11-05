@@ -1,0 +1,69 @@
+/*
+ * Refyt · piezas de la app que no estaban en la demo: menú de usuario, acceso (login y cambio de
+ * contraseña) y la administración. Solo usan tokens y medidas de Refyt.
+ */
+
+/* ---------- Altura completa: la app ocupa la ventana como la demo ---------- */
+#root{height:100%}
+
+/* ---------- Menú de usuario del encabezado ---------- */
+.rf-um{position:relative; flex:none}
+.rf-umb{display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 10px 0 4px; border-radius:10px; border:1px solid rgba(255,255,255,.28); background:transparent; color:#fff; font:inherit; font-size:13px; font-weight:700; cursor:pointer}
+.rf-umb:hover, .rf-umb[aria-expanded="true"]{background:rgba(255,255,255,.1)}
+.rf-umb > svg{color:#C9D6AC}
+.rf-uav{width:30px; height:30px; border-radius:9px; display:inline-grid; place-items:center; background:rgba(255,255,255,.16); color:#fff; font-size:11.5px; font-weight:800; letter-spacing:.02em; flex:none}
+.rf-umn{display:flex; flex-direction:column; align-items:flex-start; line-height:1.15; text-align:left; min-width:0}
+.rf-umn b{font-size:13px; font-weight:700; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rf-umn small{font-size:11.5px; font-weight:600; color:#C9D6AC; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rf-ump{position:absolute; top:calc(100% + 8px); right:0; left:auto; width:300px; z-index:80}
+.rf-ump .rf-pi{text-decoration:none}
+/* Sin nota debajo, el icono ocupa una sola fila y el texto queda centrado con él. */
+.rf-ump .rf-pi:not(:has(small)) .rf-ai{grid-row:auto}
+.rf-ump .rf-pi.danger b, .rf-ump .rf-pi.danger .rf-ai{color:#8A2C22}
+.rf-ump .rf-pi.danger .rf-ai{background:#F5E4E2}
+.rf-ump .rf-pi.danger:hover{background:#FBF3F2}
+.rf-umh{display:flex; align-items:center; gap:10px; padding:8px; margin-bottom:4px; border-radius:8px; background:#F3F5F9}
+.rf-umh .rf-uav{background:#105666}
+.rf-umh b{display:block; font-size:14px; color:#0F172A}
+.rf-umh small{display:block; font-size:12px; color:#334155}
+@media (max-width: 900px){ .rf-umn{display:none} .rf-umb{padding:0 6px 0 4px} }
+/* Encabezado alineado: todos los controles de la derecha miden 34px y quedan a 8px entre sí. */
+.top .tourb{height:34px}
+.top > .rf-um{margin-left:-14px}
+.rf-umb{height:34px; padding:0 9px 0 3px}
+.rf-umb > .rf-uav{width:26px; height:26px; border-radius:8px; font-size:10.5px}
+.rf-umn b{font-size:12.5px} .rf-umn small{font-size:11px}
+
+/* ---------- Encabezado de la administración ---------- */
+.top .brand a{display:flex; align-items:center; gap:11px; color:inherit; text-decoration:none; border-radius:10px}
+.rf-appdd.static{cursor:default}
+.rf-appdd.static:hover{background:transparent}
+a.rf-hb{text-decoration:none}
+
+/* ---------- Administración: el contenido usa los componentes de la app ---------- */
+.rf-admin .op{max-width:1400px}
+.rf-admin .sb .nav{text-decoration:none}
+
+/* ---------- Acceso: iniciar sesión y cambiar contraseña ---------- */
+.rf-auth{min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; padding:32px 16px; background:linear-gradient(135deg, #0A3323 0%, #105666 60%, #105666 100%); box-sizing:border-box}
+.rf-auth-logo{height:30px; width:auto; filter:brightness(0) invert(1); display:block}
+.rf-auth-card{width:min(420px, 100%); box-sizing:border-box; padding:30px 28px 28px; border-radius:10px; background:#fff; color:#0F172A; box-shadow:0 20px 40px -18px rgba(15,23,42,.45)}
+.rf-auth-card h1{font-size:26px; line-height:1.15; color:#0F172A; margin:0}
+.rf-auth-card > p{font-size:14.5px; color:#334155; margin:6px 0 22px; line-height:1.5}
+.rf-auth-form{display:flex; flex-direction:column; gap:14px}
+.rf-auth-form .tsel{min-width:0}
+.rf-auth-form .tsel small{font-size:13.5px; color:#0F172A}
+.rf-auth-form .um-in{width:100%; box-sizing:border-box}
+.rf-auth-form .um-in[aria-invalid="true"]{border-color:#A8382B}
+.rf-ferr{font-size:12.5px; font-weight:600; color:#A8382B; margin-top:2px}
+.rf-fhint{font-size:12.5px; color:#334155; margin-top:2px}
+.rf-auth-form .btn.pri.lg{width:100%; justify-content:center; margin-top:6px}
+.rf-auth-acts{display:flex; justify-content:flex-end; gap:8px; margin-top:6px}
+.rf-auth-acts .btn.pri.lg{width:auto; margin-top:0}
+.rf-auth .ds-w{margin-top:0}
+
+/* ---------- Sin acceso a ninguna app de Refyt ---------- */
+.rf-noacc{max-width:520px; margin:80px auto; padding:28px; border-radius:10px; background:#fff; border:1px solid #D1D9E2; box-shadow:0 1px 3px rgba(0,0,0,.1); text-align:center}
+.rf-noacc .rf-ai{width:44px; height:44px; margin:0 auto 12px}
+.rf-noacc h1{font-size:22px; margin:0 0 8px}
+.rf-noacc p{font-size:14.5px; color:#334155; line-height:1.5; margin:0}

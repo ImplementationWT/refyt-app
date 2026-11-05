@@ -9,24 +9,24 @@
  * las pantallas de administración y que Refyt no define. Refyt es solo claro: no hay modo oscuro.
  */
 :root {
-  /* Marca: los azules de REFYT (botones principales, enlaces, foco). */
-  --brand-25: #f3f5f9;
-  --brand-50: #e8ecf1;
-  --brand-100: #d1d9e2;
+  /* Marca: los verdes de la paleta v3.27 de REFYT (botones principales, enlaces, foco). */
+  --brand-25: #f2f7f8;
+  --brand-50: #dcebee;
+  --brand-100: #b5d3da;
   --brand-200: #b8c3cf;
-  --brand-400: #2b4c9e;
-  --brand-500: #1e3a8a;
-  --brand-600: #1e3a8a;
-  --brand-700: #16306e;
+  --brand-400: #105666;
+  --brand-500: #105666;
+  --brand-600: #105666;
+  --brand-700: #0a3323;
   --on-brand: #ffffff;
   /* Tonos que Refyt no trae. */
   --v700: #4a36a8;
   --k25: var(--p25); --k50: var(--p50); --k100: var(--p100); --k500: var(--p500); --k700: var(--p700);
   --scrim: rgb(15 23 42 / 0.35);
   --sh-brand: 0 1px 3px rgb(0 0 0 / 0.1);
-  /* Serie de gráficos: el azul de REFYT. */
-  --chart-1: #1e3a8a;
-  --chart-1-hover: #2b4c9e;
+  /* Serie de gráficos: el verde medianoche de REFYT. */
+  --chart-1: #105666;
+  --chart-1-hover: #0a3323;
 }
 
 /*

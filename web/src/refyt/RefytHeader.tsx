@@ -7,7 +7,7 @@ import { UserMenu } from "./UserMenu";
 export const TAB_TITLE = "Refyt";
 
 /**
- * The Refyt header (the dark blue bar of the approved design): logo, the app area in the middle,
+ * The Refyt header (the dark green bar of the approved design): logo, the app area in the middle,
  * tools on the right and, last, the signed-in user with the admin dropdown.
  */
 export function RefytHeader({ children, homeLink = false }: { children: ReactNode; homeLink?: boolean }) {
