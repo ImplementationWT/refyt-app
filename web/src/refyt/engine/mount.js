@@ -1,7 +1,7 @@
 // Refyt · arranque. Sustituye al final del original («STARTUP»): el componente React
 // RefytWorkspace pone el marcado (encabezado, vistas, capas) y llama a mount() al mostrarse y a
 // unmount() al salir, para que el motor dibuje en esos contenedores y no deje paneles abiertos.
-import { S, VIEWS, drawPop, drawTour, drawVs, render, setAuth } from "./index.js";
+import { S, VIEWS, drawPop, drawSetPop, drawTour, drawVs, render, setAuth } from "./index.js";
 
 let started = false;
 let lastUser = null;
@@ -40,8 +40,9 @@ export function mount(auth) {
 
 /** Closes the floating panels the engine appends to <body> (tour, versions, menus, tooltip). */
 export function unmount() {
-  S.tour.open = false; S.vs.open = false; S.pop = null; S.modal = null; S.f.fs = false;
-  drawTour(); drawVs(); drawPop();
+  S.tour.open = false; S.vs.open = false; S.pop = null; S.modal = null; S.f.fs = false; S.setPop = false;
+  drawTour(); drawVs(); drawPop(); drawSetPop();
   document.body.classList.remove('rf-fsb');
-  for (const id of ['tourp', 'vsel', 'rfpop', 'rftt']) document.getElementById(id)?.remove();
+  document.querySelectorAll('.oapp.sbopen').forEach(o => o.classList.remove('sbopen'));
+  for (const id of ['tourp', 'vsel', 'rfpop', 'rftt', 'setpop']) document.getElementById(id)?.remove();
 }

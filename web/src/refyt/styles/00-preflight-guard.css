@@ -8,9 +8,9 @@
  * Va primero y sin especificidad (:where), así que cualquier regla de Refyt lo sobrescribe.
  * .rfx marca lo que dibuja Refyt; el resto son los paneles que el motor añade al <body>.
  */
-:where(.rfx, .rfx *, #tourp, #tourp *, #vsel, #vsel *, #rfpop, #rfpop *, #rftt),
-:where(.rfx *, #tourp *, #vsel *, #rfpop *)::before,
-:where(.rfx *, #tourp *, #vsel *, #rfpop *)::after {
+:where(.rfx, .rfx *, #tourp, #tourp *, #vsel, #vsel *, #rfpop, #rfpop *, #setpop, #setpop *, #rftt),
+:where(.rfx *, #tourp *, #vsel *, #rfpop *, #setpop *)::before,
+:where(.rfx *, #tourp *, #vsel *, #rfpop *, #setpop *)::after {
   margin: revert;
   padding: revert;
   border: revert;

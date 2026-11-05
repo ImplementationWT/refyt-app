@@ -150,7 +150,7 @@
 .sg-tk > i{position:absolute; top:5px; bottom:5px; border-radius:7px; font-style:normal}
 .sg-tpast{top:0 !important; bottom:0 !important; left:0; border-radius:10px 0 0 10px !important; background:repeating-linear-gradient(45deg, var(--n100), var(--n100) 4px, transparent 4px, transparent 8px); opacity:.8}
 .sg-tf{background:var(--g50); border:1.5px dashed var(--g400, #8db32a)} .sg-tf.short{background:transparent; border-color:var(--n200)}
-.sg-tb{background:var(--b50); border:1px solid var(--b100, #cfe0f5); color:var(--b700); font-size:10.5px; font-weight:700; padding:3px 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; pointer-events:none}
+.sg-tb{background:var(--b50); border:1px solid var(--b100, #DCEBEE); color:var(--b700); font-size:10.5px; font-weight:700; padding:3px 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; pointer-events:none}
 .sg-tb.u{background:var(--r50); border-color:#f3c1bb; color:var(--r500)}
 .sg-tsel{background:var(--g600, #3f7d16) !important; color:#fff; font-size:11px; font-weight:800; padding:3px 6px; box-shadow:0 6px 14px -8px rgba(0,0,0,.6); pointer-events:none; top:2px !important; bottom:2px !important; z-index:2}
 .sg-tl-lg{display:flex; flex-wrap:wrap; gap:14px; font-size:12px; color:var(--muted); margin:6px 0 10px} .sg-tl-lg span{display:inline-flex; align-items:center; gap:6px} .sg-tl-lg i{position:static; display:inline-block; width:22px; height:12px; border-radius:4px; padding:0}
