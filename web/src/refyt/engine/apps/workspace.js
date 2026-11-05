@@ -6,7 +6,7 @@ import {
 ROLES.sit = ['Site manager', 'akr'];
 prOf('PR-2020').cs = 4;
 Object.assign(PHS, {'A. Job received':'tb', 'B. Assess and design':'tb', 'C. Client approval':'tb', 'D. Prepare to install':'tb', 'E. Install':'tb', 'F. Close out':'tb', 'Paid':'tg', 'Cancelled':'tk'});
-Object.assign(GRAD, {tk:'#0A3323', tb:'#105666', tg:'#105666', ta:'#3A5DB0', tt:'#0A3323', tv:'#105666', tp:'#3A5DB0', to:'#105666', tred:'#0A3323'});
+Object.assign(GRAD, {tk:'#16306E', tb:'#1E3A8A', tg:'#2B4C9E', ta:'#3A5DB0', tt:'#16306E', tv:'#2B4C9E', tp:'#3A5DB0', to:'#1E3A8A', tred:'#16306E'});
 export const LAPPS = {
   dir:{team:'Directors', roles:['dir'], line:'The whole business at a glance, drill down to a cost line, new schemes, roles and approvals above the scheme limits.'},
   com:{team:'Commercial', roles:['com'], line:'Rates, quotes and budgets per measure, live margins, variations, additional costs and scheme settings.'},

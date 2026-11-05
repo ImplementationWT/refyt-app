@@ -70,4 +70,5 @@ export * from "./shell/sidebar-fold.js";
 export * from "./apps/director/review-nov-4.js";
 export * from "./apps/director/needs-you-and-task-calendar.js";
 export * from "./apps/director/palette-and-calendar.js";
+export * from "./apps/tasks/task-calendar-every-app.js";
 export * from "./mount.js";
