@@ -1,4 +1,4 @@
-/* Refyt · Piezas de v3.21 a v3.27 con la paleta nueva. Parte del original ("Refyt, demo v3.27.html"); los colores siguen el azul de REFYT y la paleta Delft, Carolina, Beige, Pistachio y Fern. */
+/* Refyt · Piezas de v3.21 a v3.28. Parte del original ("Refyt, demo v3.29.html"), con los mismos colores: el azul de REFYT para el encabezado, el menú y los botones; Delft, Carolina, Beige, Pistachio y Fern como acentos. */
 
 /* =================== v3.21 Resumen de cada app; v3.22 y v3.23 avance por equipo y supervisión =================== */
 .ov-k{display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.ov-k .stat{min-width:0 !important;box-sizing:border-box}
@@ -23,7 +23,7 @@
 .pg-n{color:var(--muted);font-size:12.5px}.op-h+.cstats.ov-k+.rf-ch{margin-bottom:16px}.ov-rs .pill{max-width:230px !important}
 .pg-df{display:grid !important;grid-template-columns:repeat(auto-fit,minmax(220px,280px));gap:12px;align-items:end;margin:0 0 16px}.pg-clr{padding-bottom:2px}
 .pg-det{margin:0 0 16px}.cstats.ov-k .stat.ds-on{outline:2px solid var(--b500);outline-offset:1px}
-.mon-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 16px;padding:10px 14px;border-radius:14px;background:var(--b25,#EEF2FB);border:1px solid var(--b100,#D1D9E2);color:var(--ink);font-size:13.5px}.mon-bar>span{flex:1;min-width:220px}.mon-bar>svg{flex:none;color:var(--b700)}
+.mon-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 16px;padding:10px 14px;border-radius:14px;background:var(--b25,#EEF2FB);border:1px solid var(--b100,#C9D3E6);color:var(--ink);font-size:13.5px}.mon-bar>span{flex:1;min-width:220px}.mon-bar>svg{flex:none;color:var(--b700)}
 
 /* =================== v3.24 menú plegable y cajón =================== */
 .sb-tg{align-self:flex-end;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin:-8px -2px 6px 0;border-radius:10px;color:var(--muted);flex:none}
@@ -64,7 +64,7 @@
 .bz-g .ov-card .ov-b{justify-content:center}.bz-g .dz{flex-direction:column;gap:22px;flex:1}.bz-g .dz svg{width:min(340px,86%)}.bz-g .dz-l{width:100%;max-width:440px;flex:none}.dz-i span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dz-i b{font-variant-numeric:tabular-nums}
 .hb{display:grid;grid-template-columns:minmax(180px,1.4fr) 2fr auto;align-items:center;gap:12px;padding:7px 6px;border-radius:8px;width:100%;text-align:left;color:inherit;font:inherit}button.hb:hover{background:var(--n50,#F1F3F5)}
 .hb-l{min-width:0}.hb-l b{display:block;font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hb-l small{display:block;color:var(--muted);font-size:12px}
-.hb-t{height:10px;border-radius:99px;background:var(--line);overflow:hidden}.hb-t i{display:block;height:100%;border-radius:99px;background:var(--b500,#1E3A8A)}.hb-t i.amb{background:#E08A00}.hb-t i.red{background:#DC2626}
+.hb-t{height:10px;border-radius:99px;background:var(--line);overflow:hidden}.hb-t i{display:block;height:100%;border-radius:99px;background:var(--b500,#2F5BD3)}.hb-t i.amb{background:#E08A00}.hb-t i.red{background:#DC2626}
 .hb-v{font-weight:700;font-variant-numeric:tabular-nums;font-size:13.5px;min-width:48px;text-align:right}
 .bz-s{padding:8px 0;border-top:1px solid var(--line)}.bz-s:first-child{border-top:0}.bz-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:2px 6px 4px}.bz-h small{color:var(--muted);font-size:12.5px}
 .bz-g,.pg-top{margin-bottom:16px}.pg-snap table td,.fin-sc table td{white-space:nowrap}.pg-snap tr.tot td{border-top:2px solid var(--line)}
@@ -88,85 +88,65 @@
 /* =================== v3.26 Necesita tu atención por tipo y calendario de tareas =================== */
 .ny-r{display:grid;grid-template-columns:96px minmax(0,1fr) auto 36px;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.ov-b>.ny-r:first-child{border-top:0}
 .ny-t{display:inline-flex;justify-content:center;align-items:center;height:26px;border-radius:7px;font-size:12.5px;font-weight:700;letter-spacing:.01em}
-.ny-ap .ny-t{background:#EAF3D6;color:#2E4F14;border:1px solid #D7E8B4}.ny-al .ny-t{background:#FBE1DE;color:#9B1C1C;border:1px solid #F3C2BC}
+.ny-ap .ny-t{background:#E3EAD2;color:#0A3323;border:1px solid #C9D6AC}.ny-al .ny-t{background:#FBE1DE;color:#9B1C1C;border:1px solid #F3C2BC}
 .ny-m{min-width:0}.ny-m b{display:block;font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ny-m small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ny-a{display:flex;gap:6px}.btn.ny-ok{background:#16306E !important;background-image:none !important;border-color:#16306E !important;color:#fff !important;box-shadow:none !important}.ny-ok:hover{background:#1E3A8A !important}
+.ny-a{display:flex;gap:6px}.btn.ny-ok{background:#0A3323 !important;background-image:none !important;border-color:#0A3323 !important;color:#fff !important;box-shadow:none !important}.ny-ok:hover{background:#105666 !important}
 .ny-al .ny-fix{color:#9B1C1C !important;border-color:#F3C2BC !important}.ny-al .ny-fix:hover{background:#FBE1DE !important}
-.ny-eye{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);color:#1E3A8A;background:#fff}.ny-eye:hover{background:#F5F3D8;border-color:#D7E8B4}
-.ny-k{display:inline-block;padding:0 7px;border-radius:6px;font-weight:600}.ny-k.ny-ap{background:#EAF3D6;color:#2E4F14}.ny-k.ny-al{background:#FBE1DE;color:#9B1C1C}
+.ny-eye{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);color:#105666;background:#fff}.ny-eye:hover{background:#F7F4D5;border-color:#C9D6AC}
+.ny-k{display:inline-block;padding:0 7px;border-radius:6px;font-weight:600}.ny-k.ny-ap{background:#E3EAD2;color:#0A3323}.ny-k.ny-al{background:#FBE1DE;color:#9B1C1C}
 .al-g{margin-bottom:4px}
 @media (min-width:1101px){.ov-g.ov-dir{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}}
 @media (max-width:760px){.ny-r{grid-template-columns:auto minmax(0,1fr) 36px;row-gap:8px}.ny-t{padding:0 10px}.ny-a{grid-column:1/-1;grid-row:2;justify-content:flex-end}.ny-eye{grid-column:3;grid-row:1}}
 .tk-bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .tk-cb{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 12px}.tk-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.tk-nav>b{font-size:16px;margin-right:6px}
 .tk-lg{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}.tk-lg span{display:inline-flex;align-items:center;gap:5px}.tk-lg i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.tk-lg i.xod,.tkc.xod,.tkw.xod{background:#FBE1DE;color:#7A1515;border-color:#F3C2BC}.tk-lg i.xtd,.tkc.xtd,.tkw.xtd{background:#FCEFD2;color:#6B4600;border-color:#F2D9A0}.tk-lg i.xop,.tkc.xop,.tkw.xop{background:#E4EDF5;color:#1D2A62;border-color:#C3D6E7}.tk-lg i.xmt,.tkc.xmt,.tkw.xmt{background:#EAF3D6;color:#2E4F14;border-color:#D7E8B4}.tk-lg i.xdn,.tkc.xdn,.tkw.xdn{background:#F1F2F4;color:#6B7280;border-color:#E2E5E9}
-.tk-mo{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}.tk-mh{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#F5F3D8}.tk-mh span{padding:8px 10px;font-size:12px;font-weight:700;color:#16306E;text-transform:uppercase;letter-spacing:.04em}
-.tk-mg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.tk-md{min-height:112px;padding:6px;border-top:1px solid var(--line);border-left:1px solid var(--line);display:flex;flex-direction:column;gap:4px;min-width:0}.tk-md:nth-child(7n+1){border-left:0}.tk-md>b{font-size:12.5px;color:var(--ink);padding:2px 4px}.tk-md.out{background:#FAFAFA}.tk-md.out>b{color:#A0A6AE}.tk-md.now>b{background:#16306E;color:#fff;border-radius:99px;align-self:flex-start;padding:2px 8px}
+.tk-lg i.xod,.tkc.xod,.tkw.xod{background:#FBE1DE;color:#7A1515;border-color:#F3C2BC}.tk-lg i.xtd,.tkc.xtd,.tkw.xtd{background:#FCEFD2;color:#6B4600;border-color:#F2D9A0}.tk-lg i.xop,.tkc.xop,.tkw.xop{background:#DCEBEE;color:#0B3F4B;border-color:#B5D3DA}.tk-lg i.xmt,.tkc.xmt,.tkw.xmt{background:#E3EAD2;color:#0A3323;border-color:#C9D6AC}.tk-lg i.xdn,.tkc.xdn,.tkw.xdn{background:#F1F2F4;color:#6B7280;border-color:#E2E5E9}
+.tk-mo{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}.tk-mh{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#F7F4D5}.tk-mh span{padding:8px 10px;font-size:12px;font-weight:700;color:#0A3323;text-transform:uppercase;letter-spacing:.04em}
+.tk-mg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.tk-md{min-height:112px;padding:6px;border-top:1px solid var(--line);border-left:1px solid var(--line);display:flex;flex-direction:column;gap:4px;min-width:0}.tk-md:nth-child(7n+1){border-left:0}.tk-md>b{font-size:12.5px;color:var(--ink);padding:2px 4px}.tk-md.out{background:#FAFAFA}.tk-md.out>b{color:#A0A6AE}.tk-md.now>b{background:#0A3323;color:#fff;border-radius:99px;align-self:flex-start;padding:2px 8px}
 .tkc{display:flex;align-items:center;gap:4px;width:100%;font:inherit;font-size:12px;font-weight:600;padding:3px 6px;border-radius:7px;border:1px solid;text-align:left;min-width:0}.tkc span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tkc i{font-style:normal;font-size:10px;opacity:.8;flex:none}.tkc.xdn span{text-decoration:line-through}
-.tk-more{font:inherit;font-size:12px;font-weight:600;color:#1E3A8A;text-align:left;padding:0 6px}
-.tk-wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.tk-wd{border:1px solid var(--line);border-radius:14px;background:#fff;min-height:260px;display:flex;flex-direction:column;min-width:0}.tk-wd.now{border-color:#1E3A8A;box-shadow:0 0 0 1px #1E3A8A inset}
-.tk-wh{padding:8px 10px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:6px;background:#F5F3D8;border-radius:14px 14px 0 0}.tk-wh small{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:11.5px}.tk-wh b{font-size:16px;color:#16306E}
+.tk-more{font:inherit;font-size:12px;font-weight:600;color:#105666;text-align:left;padding:0 6px}
+.tk-wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.tk-wd{border:1px solid var(--line);border-radius:14px;background:#fff;min-height:260px;display:flex;flex-direction:column;min-width:0}.tk-wd.now{border-color:#105666;box-shadow:0 0 0 1px #105666 inset}
+.tk-wh{padding:8px 10px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:6px;background:#F7F4D5;border-radius:14px 14px 0 0}.tk-wh small{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:11.5px}.tk-wh b{font-size:16px;color:#0A3323}
 .tk-wl{padding:8px;display:flex;flex-direction:column;gap:6px}.tkw{font:inherit;text-align:left;padding:8px;border-radius:10px;border:1px solid;min-width:0}.tkw b{display:block;font-size:12.5px;font-weight:600;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}.tkw small{display:block;font-size:11.5px;opacity:.85;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tkw.xdn b{text-decoration:line-through}.tk-e{color:#A0A6AE;font-size:12px;padding:4px}
 @media (max-width:1000px){.tk-wk{grid-template-columns:repeat(2,minmax(0,1fr))}.tk-md{min-height:84px}.tkc span{display:none}.tkc{justify-content:center}}
 @media (max-width:620px){.tk-wk{grid-template-columns:minmax(0,1fr)}.tk-wd{min-height:0}}
 
-/* =================== v3.27 paleta, un solo estilo de calendario =================== */
-/* Marca en el azul de siempre (#16306E, #1E3A8A). Para lo demás, la paleta nueva:
-   Delft blue #1D2A62, Carolina blue #87AECE, Beige #F5F3D8, Pistachio #AFD06E, Fern green #43711E. */
-:root,:root[data-theme="light"]{--bg:#FFFFFF;--n25:#FCFCF7;
- --p25:#F3F7FB;--p50:#E4EDF5;--p100:#C3D6E7;--p500:#3F6A92;--p700:#1D2A62;--o50:#E4EDF5;--o100:#C3D6E7;--o500:#3F6A92;
- --c25:#F5F9EC;--c50:#EAF3D6;--c100:#D7E8B4;--c500:#43711E;--c700:#2E4F14;
- --g25:#F5F9EC;--g50:#EAF3D6;--g100:#D7E8B4;--g200:#C3DC92;--g400:#AFD06E;--g500:#43711E;--g600:#365C18;--g700:#2E4F14;--on-g:#FFFFFF}
-html,body,.main,.shell{background:#FFFFFF}
-.top{background:#16306E !important}
-/* Menú: azul oscuro, el elemento actual en blanco */
-.oapp>.sb{background:#16306E !important;border-right:0 !important;color:#E3E9F5}
-.oapp>.sb .nav{color:#E3E9F5 !important;background:transparent !important}
-.oapp>.sb .nav .ni{background:rgba(255,255,255,.08) !important;color:#E3E9F5 !important}
-.oapp>.sb .nav:hover{background:rgba(255,255,255,.07) !important;color:#fff !important}
-.oapp>.sb .nav[aria-current="true"]{background:#FFFFFF !important;color:#16306E !important;box-shadow:0 6px 16px -10px rgba(0,0,0,.5)}
-.oapp>.sb .nav[aria-current="true"] .ni{background:#AFD06E !important;color:#1D2A62 !important}
-.oapp>.sb .sb-sec{color:#87AECE !important}
-.oapp>.sb .cnt,.oapp>.sb .cnt.soft{background:rgba(255,255,255,.14) !important;color:#fff !important}
-.oapp>.sb .nav[aria-current="true"] .cnt,.oapp>.sb .nav[aria-current="true"] .cnt.soft{background:#EAF3D6 !important;color:#16306E !important}
-.oapp>.sb .sb-tg{color:#C3D6E7}.oapp>.sb .sb-tg:hover{background:rgba(255,255,255,.08);color:#fff}
-.oapp.sbmini .sb .sb-sec{background:rgba(255,255,255,.14) !important}
-.oapp>.sb::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18)}
-/* Controles */
-.btn.pri{background:#1E3A8A !important;background-image:none !important;border-color:#1E3A8A !important;color:#fff !important;box-shadow:0 8px 16px -10px rgba(22,48,110,.7) !important}
-.btn.pri:hover{background:#16306E !important;border-color:#16306E !important}
-.btn.sec{color:#16306E}
-.seg2{background:#F5F3D8 !important}.seg2 button[aria-pressed="true"]{background:#FFFFFF !important;color:#16306E !important}
-.rf-mx thead th,.dbmx thead th{background:#FBFAEF}
-.lnk4,.ov-more{color:#1E3A8A}
-:focus-visible{outline-color:#1E3A8A}
-/* Cifras clave: la primera sólida y una forma suave de acento en cada una (Resumen y Avance) */
+/* =================== v3.27 y v3.28: el azul de REFYT, los acentos nuevos y un solo estilo de calendario (<style id="wt-accents">) =================== */
+/* Azul REFYT para el encabezado, el menú y los botones principales; acentos Delft blue #1D2A62, Carolina blue #87AECE,
+   Beige #F5F3D8, Pistachio #AFD06E y Fern green #43711B, sobre fondo blanco. El menú es blanco y el elemento actual va en azul (09-refyt-brand.css). */
+html,body,.main,.shell{background:#FFFFFF}:root,:root[data-theme="light"]{--bg:#FFFFFF}
+/* Key figures: the first one solid Delft blue, a soft accent shape on each */
 .ov-k .stat{position:relative;overflow:hidden}
-.ov-k .stat::after{content:"";position:absolute;right:-28px;bottom:-34px;width:104px;height:104px;border-radius:50%;background:#AFD06E;opacity:.28;pointer-events:none}
-.ov-k .stat:nth-child(2)::after{background:#87AECE;border-radius:38% 62% 55% 45%;opacity:.3}
+.ov-k .stat::after{content:"";position:absolute;right:-28px;bottom:-34px;width:104px;height:104px;border-radius:50%;background:#87AECE;opacity:.22;pointer-events:none}
+.ov-k .stat:nth-child(2)::after{background:#AFD06E;border-radius:38% 62% 55% 45%;opacity:.3}
 .ov-k .stat:nth-child(3)::after{background:#1D2A62;opacity:.1;border-radius:24px;transform:rotate(18deg)}
 .ov-k .stat:nth-child(4)::after{background:#F5F3D8;opacity:1;border-radius:50% 50% 12px 50%}
-.ov-k .stat.tk:first-child{background:#16306E !important;border-color:#16306E !important;color:#fff}
-.ov-k .stat.tk:first-child small,.ov-k .stat.tk:first-child .ss{color:#C3D6E7 !important}.ov-k .stat.tk:first-child b{color:#fff !important}
-.ov-k .stat.tk:first-child::after{background:#AFD06E;opacity:.35}
-/* Gráficos */
-.rf-bar1.a{background:#AFD06E !important}.rf-bar1.b,.rf-bar1.cur{background:#1E3A8A !important}
-.rf-chh i.a{background:#AFD06E !important}.rf-chh i.b{background:#1E3A8A !important}
-.hb-t i{background:#1E3A8A}
-/* Un solo estilo de calendario */
+.ov-k .stat.tk:first-child{background:#1D2A62 !important;border-color:#1D2A62 !important;color:#fff}
+.ov-k .stat.tk:first-child small,.ov-k .stat.tk:first-child .ss{color:#C6D8E8 !important}.ov-k .stat.tk:first-child b{color:#fff !important}
+.ov-k .stat.tk:first-child::after{background:#87AECE;opacity:.35}
+/* Controls and tables */
+.seg2{background:#F5F3D8 !important}.seg2 button[aria-pressed="true"]{background:#FFFFFF !important}
+.rf-mx thead th,.dbmx thead th{background:#FAF9EC}
+.pill.tg{background:#EEF5DD !important;color:#2F5212 !important}
+/* Charts */
+.rf-bar1.a{background:#87AECE !important}.rf-bar1.b,.rf-bar1.cur{background:#1E3A8A !important}
+.rf-chh i.a{background:#87AECE !important}.rf-chh i.b{background:#1E3A8A !important}
+.hb-t i{background:#1E3A8A}.hb-t i.amb{background:#E08A00}.hb-t i.red{background:#DC2626}
+/* Needs you now: approvals in Pistachio and Fern green, alerts in red */
+.ny-ap .ny-t,.ny-k.ny-ap{background:#EEF5DD !important;color:#2F5212 !important;border-color:#CFE3A6 !important}
+.btn.ny-ok{background:#1E3A8A !important;border-color:#1E3A8A !important}.btn.ny-ok:hover{background:#16306E !important}
+.ny-eye{color:#1E3A8A}.ny-eye:hover{background:#F5F3D8;border-color:#87AECE}
+/* One calendar style */
 .cal-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cal-lg{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto;font-size:12.5px;color:var(--muted)}
 .cal-lg .rf-chip{display:inline-block;width:12px;height:12px;padding:0;border-radius:4px;margin-left:8px;cursor:default}
-.rf-cal,.rf-tgw{border-color:#E2E6EE !important}
-.rf-mdh,.rf-tgh small{color:#16306E !important}
-.rf-cal .rf-mg{background:transparent}.rf-md.today{border-color:#16306E !important}.rf-md.today>small{background:#16306E;color:#fff !important;border-radius:99px;padding:0 7px;display:inline-block;align-self:flex-start;width:fit-content;max-width:max-content}
-.rf-md .rf-chip b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.rf-md .rf-chip small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rf-tgh .today b{background:#16306E !important}
-.rf-wd.today{border-color:#16306E !important;box-shadow:inset 0 0 0 1px #16306E}
-.rf-chip{border-left-color:#1E3A8A;background:#F3F5F9}
+.rf-md.today{border-color:#1E3A8A !important}.rf-md.today>small{background:#1E3A8A;color:#fff !important;border-radius:99px;padding:0 7px;display:inline-block;align-self:flex-start;width:fit-content;max-width:max-content}
+.rf-wd.today{border-color:#1E3A8A !important;box-shadow:inset 0 0 0 1px #1E3A8A}
+.rf-mdh{background:#FAF9EC}
 .rf-chip.xod{border-left-color:#B8322A !important;background:#FBE1DE !important;color:#7A1515}.rf-chip.xtd{border-left-color:#C98A12 !important;background:#FCEFD2 !important;color:#6B4600}
-.rf-chip.xop{border-left-color:#87AECE !important;background:#E4EDF5 !important;color:#1D2A62}.rf-chip.xmt{border-left-color:#43711E !important;background:#EAF3D6 !important;color:#2E4F14}
+.rf-chip.xop{border-left-color:#87AECE !important;background:#EAF1F8 !important;color:#1D2A62}.rf-chip.xmt{border-left-color:#AFD06E !important;background:#EEF5DD !important;color:#2F5212}
 .rf-chip.xdn{border-left-color:#B8BEC0 !important;background:#F1F2F4 !important;color:#6B7280}.rf-chip.xdn b{text-decoration:line-through}
 .rf-more{font:inherit;font-size:12px;font-weight:700;color:#1E3A8A;text-align:left;padding:2px 6px;background:none;border:0;cursor:pointer}
 .rf-md>.rf-chip,.rf-wd>.rf-chip{margin-top:4px;width:100%}
-.rf-tev{border-left-color:#1E3A8A}
+.rf-md .rf-chip b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.rf-md .rf-chip small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Workload */
+.wl-k i.ok,.wl.ok span{background:#C6D8E8}.wl-k i.low,.wl.low span{background:#D7E8B4}

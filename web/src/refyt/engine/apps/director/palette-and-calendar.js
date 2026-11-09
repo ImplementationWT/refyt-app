@@ -5,7 +5,7 @@ import {
   pName, plural, prOf, seg, setTkCal, sum, tkCal, tkList, tkOver, tkTone
 } from "../../index.js";
 /* =================== v3.27: the new palette, and one way to show a calendar =================== */
-/* Palette: REFYT navy #16306E and blue #1E3A8A for the brand; Delft blue #1D2A62, Carolina blue #87AECE, Beige #F5F3D8, Pistachio #AFD06E and Fern green #43711E for the rest, on a white background.
+/* Palette: REFYT navy #16306E and blue #1E3A8A for the brand; Delft blue #1D2A62, Carolina blue #87AECE, Beige #F5F3D8, Pistachio #AFD06E and Fern green #43711B for the rest, on a white background.
    Calendars: every calendar uses the same bar (List, Week, Month, then Previous, Today, Next) and the same month grid.
    Things with a time (meetings) use the hour grid in Week; things with only a date (tasks, assessment bookings) use the day list. */
 export const tkCalBar = vw => { const wk = vw === 'week', mo = vw === 'month';

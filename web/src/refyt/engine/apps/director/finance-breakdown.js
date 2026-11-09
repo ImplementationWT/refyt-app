@@ -3,7 +3,11 @@ import {
   A, DB, MEAS, MODALS, S, TODAY, VERSIONS, abrir, cell, clOfSc, esc, fPr, fSc, fm, go, grpH, mMoney,
   modal, pill, plural, prOf, rdiv, renderLayer, rowO, scOf, sum, th
 } from "../../index.js";
-export function cmp(rows){ const ss = fSc();
+/* v3.29 replaces the comparison; the original reassigns cmp. */
+var cmpW = null;
+export function cmp(rows){ return (cmpW || cmp0)(rows); }
+export const setCmp = f => { cmpW = f; };
+export function cmp0(rows){ const ss = fSc();
   return grpH('Compare schemes side by side', ss.length) + `<div class="el-wide"><div class="rf-mx rf-cmpt"><table><thead><tr><th>Scheme</th>${rows.map(([l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${ss.map(s => `<tr><td><button class="lnk4" data-act="ficha" data-v="${s.id}"><b>${esc(s.n)}</b></button><small class="mini" style="display:block">${esc((clOfSc(s) || {n:s.cl}).n)}</small></td>${rows.map(([, f]) => `<td>${f(s)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`; }
 A.fdd = el => { const [kind, v] = el.dataset.v.split('|'); S.modal = {k:'fdd', kind, v}; renderLayer(); };
 MODALS.fdd = m => { const ps = fPr(), pids = new Set(fPr(true).map(p => p.id));
