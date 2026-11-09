@@ -14,7 +14,7 @@ export const PDAYS = {'4w':28, q:91, y:365}, PLBL = {'4w':'last 4 weeks', q:'las
 export const inPer = d => d && dDiff(d) >= -PDAYS[DD().dr] && dDiff(d) <= 0;
 export const pName = k => PEO[k] ? PEO[k].n : '';
 export const roleP = r => ROLES[r] && PEO[ROLES[r][1]] ? PEO[ROLES[r][1]].n : RN(r);
-export const PAL = ['#1E3A8A', '#AFD06E', '#87AECE', '#43711E', '#1D2A62', '#D7E8B4', '#C3D6E7', '#64748B'];
+export const PAL = ['#1E3A8A', '#87AECE', '#AFD06E', '#43711B', '#1D2A62', '#C6D8E8', '#D7E8B4', '#64748B'];
 export function donut(segs, center, sub){ const tot = sum(segs, s => s.v) || 1, R = 46, C = 2 * Math.PI * R; let off = 0;
   const arcs = segs.filter(s => s.v > 0).map((s, i) => { const l = s.v / tot * C, a = `<circle r="${R}" cx="60" cy="60" fill="none" stroke="${s.c || PAL[i % PAL.length]}" stroke-width="18" stroke-dasharray="${l} ${C - l}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"></circle>`; off += l; return a; }).join('');
   return `<div class="dz"><svg viewBox="0 0 120 120" width="132" height="132" role="img" aria-label="${esc(center)}"><circle r="${R}" cx="60" cy="60" fill="none" stroke="var(--line)" stroke-width="18"></circle>${arcs}<text x="60" y="58" text-anchor="middle" class="dz-c">${center}</text><text x="60" y="74" text-anchor="middle" class="dz-s">${sub || ''}</text></svg><div class="dz-l">${segs.filter(s => s.v > 0).map((s, i) => `<${s.act ? `button data-act="${s.act}" data-v="${esc(s.v2 || '')}"` : 'div'} class="dz-i"><i style="background:${s.c || PAL[i % PAL.length]}"></i><span>${esc(s.l)}</span><b>${s.f ? s.f(s.v) : s.v}</b></${s.act ? 'button' : 'div'}>`).join('')}</div></div>`; }
@@ -161,7 +161,7 @@ MODALS.cxl = m => { const xs = fPr(true).filter(p => p.ph === 'Cancelled' && (!m
     if(a2 > 0 && b2 > a2) h = h.slice(0, a2) + ctB + h.slice(b2);
     const mt = `<section class="ov-card ov-wide fin-sc"><div class="ov-h"><div><h3>Spend by scheme and cost type, ${PLBL[DD().dr]}</h3><p>Which schemes, contracts and clients the money is going to.</p></div></div><div class="el-wide"><div class="rf-mx"><table><thead><tr><th>Scheme and client</th>${CTYPES.map(c => `<th>${c}</th>`).join('')}<th>Total</th></tr></thead><tbody>${ss.map(s => { const ls = lines.filter(l => l.sc === s.id); return `<tr><td><button class="lnk4" data-act="ficha" data-v="${s.id}"><b>${esc(s.n)}</b></button><small class="mini" style="display:block">${esc(s.cl)}</small></td>${CTYPES.map(c => { const v = sum(ls.filter(l => l.ct === c), l => l.v); return `<td>${v ? fk(v) : '<b class="z">-</b>'}</td>`; }).join('')}<td><b>${fk(sum(ls, l => l.v))}</b></td></tr>`; }).join('')}</tbody></table></div></div></section>`;
     const c1 = h.indexOf('<div class="gh">Compare schemes side by side');
-    h = c1 > 0 ? h.slice(0, c1) + mt + h.slice(c1) : h + mt;
+    /* v3.29: Spend by scheme and cost type removed at REFYT's request */ void mt; void c1;
     return h; }; }
 
 /* ---------- 10. Capacity and staffing: a workload view per person, like Monday’s ---------- */

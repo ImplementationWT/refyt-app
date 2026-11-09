@@ -1,0 +1,34 @@
+/* Refyt · v3.29: comparación de esquemas y días en cada fase (lista a la izquierda, detalle a la derecha), y etapas como gráfico de barras. Parte del original ("Refyt, demo v3.29.html", <style id="wt-v29">). */
+.cp{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;margin:4px 0 18px}
+.cp-l,.cp-d{border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px;min-width:0}
+.cp-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 2px 10px}.cp-h small{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.cp-h small b{color:#1E3A8A;text-transform:none;letter-spacing:0;font-size:13px}
+.cp-r{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cp-p{flex:1;min-width:0;display:grid;grid-template-columns:minmax(120px,1.3fr) minmax(80px,.7fr) minmax(120px,1.3fr) auto;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.cp-p:hover{border-color:#87AECE;background:#FBFCFE}.cp-r.on .cp-p{border-color:#1E3A8A;box-shadow:0 0 0 1px #1E3A8A inset;background:#F4F7FC}
+.cp-n,.cp-v{min-width:0}.cp-n b,.cp-v b{display:block;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cp-n small,.cp-v small{display:block;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp-v{text-align:right}.cp-v b{font-variant-numeric:tabular-nums}
+.cp-mg small{font-size:11.5px;color:var(--muted)}.cp-mb{position:relative;height:6px;border-radius:99px;background:#E6EBF3;margin:3px 0}.cp-mb i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:#87AECE}.cp-mb em{position:absolute;top:-3px;bottom:-3px;width:2px;background:#1D2A62;border-radius:2px}
+.cp-ml{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:var(--muted);white-space:nowrap}
+.cp-c{flex:none;width:22px;height:22px;border-radius:6px;border:1.5px solid #B9C4D6;background:#fff;display:inline-flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}.cp-c.on{background:#1E3A8A;border-color:#1E3A8A}
+.cp-dg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cp-k{border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0;background:#fff}.cp-k h4{margin:0 0 8px;font-size:13.5px;color:#1D2A62}
+.cp-k .dz{flex-direction:column;gap:10px}.cp-k .dz svg{width:min(170px,80%)}.cp-k .dz-l{min-width:0;width:100%}.cp-k .dz-i{font-size:12.5px;padding:2px 4px}
+.cp-pf{display:flex;align-items:flex-end;justify-content:center;gap:14px;height:170px;padding-top:10px}.cp-pf>div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:64px}
+.cp-pf span{width:52px;border-radius:10px 10px 4px 4px}.cp-pf span.f{background:#87AECE}.cp-pf span.a{background:#1E3A8A}.cp-pf span.t{background:repeating-linear-gradient(135deg,#C6D8E8 0 6px,#E6EEF6 6px 12px)}
+.cp-pf b{font-size:15px}.cp-pf small{font-size:11.5px;color:var(--muted);text-align:center}.cp-pf em{font-style:normal;font-weight:700;font-size:12.5px;padding:3px 8px;border-radius:99px;margin-bottom:60px}.cp-pf em.up{background:#EEF5DD;color:#2F5212}.cp-pf em.dn{background:#FBE1DE;color:#9B1C1C}
+.cp-ins .cp-rt{display:block;font-size:20px;margin:2px 0 6px}.cp-rt.tg{color:#43711B}.cp-rt.ta{color:#B26A00}.cp-rt.tred{color:#B8322A}.cp-rt.tk{color:#64748B}.cp-ins p{margin:0;font-size:13px;line-height:1.45}
+.cp-fgg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}.cp-fgg small{display:block;font-size:11.5px;color:var(--muted)}.cp-fgg b{display:block;font-size:13.5px}
+.cp-ac{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.cp-ac .btn{flex:1;justify-content:center}
+.cp-tb{border:1px solid var(--line);border-radius:18px;padding:14px;margin:-6px 0 18px;background:#fff}.cp-tbh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.cp-sub{font-size:13px;color:var(--muted);margin:0 0 10px}
+.cp-w b{font-size:13px}
+.cp-p.ad{grid-template-columns:minmax(110px,1.3fr) 48px 72px minmax(110px,1.2fr) auto}
+.cp-d .vb{gap:4px;padding-top:24px}.cp-d .vb-c{min-width:48px;padding:2px}.cp-d .vb-l{font-size:11px}.cp-d .vb-s{font-size:10.5px}.cp-d .vb-t{max-width:44px}
+.vb{display:flex;align-items:flex-start;gap:10px;padding:26px 4px 0;overflow-x:auto}
+.vb-c{flex:1 1 0;min-width:74px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;font:inherit;color:inherit;background:none;border:0;padding:4px;border-radius:10px;cursor:default}button.vb-c{cursor:pointer}button.vb-c:hover{background:#F4F7FC}
+.vb-n{position:absolute;left:0;right:0;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}.vb-t{position:relative;width:100%;max-width:64px;height:170px;display:flex;align-items:flex-end;background:linear-gradient(#F3F5F9,#F3F5F9) bottom/100% 1px no-repeat}
+.vb-t i{display:block;width:100%;border-radius:10px 10px 4px 4px;background:#1E3A8A}.vb-t i.amb{background:#E3A43A}.vb-t i.red{background:#D9483B}.vb-t em{position:absolute;left:-6px;right:-6px;height:2px;background:#1D2A62;border-radius:2px;opacity:.55}
+.vb-l{font-size:12px;font-weight:600;text-align:center;line-height:1.25;color:var(--ink);max-width:110px}.vb-s{font-size:11px;color:var(--muted)}
+.bz-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 6px}.bz-tab{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:#fff;color:inherit;cursor:pointer}.bz-tab small{font-size:11px;background:#F5F3D8;border-radius:99px;padding:0 6px}.bz-tab.on{background:#1E3A8A;border-color:#1E3A8A;color:#fff}.bz-tab.on small{background:rgba(255,255,255,.2)}
+@media (max-width:1180px){.cp{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:720px){.cp-p,.cp-p.ad{grid-template-columns:minmax(0,1fr) auto}.cp-mg,.cp-w{grid-column:1/-1}.cp-dg,.cp-fgg{grid-template-columns:minmax(0,1fr)}}

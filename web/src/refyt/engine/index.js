@@ -1,6 +1,6 @@
 // Refyt · motor de la interfaz aprobada por el cliente.
 //
-// Cada módulo es una parte de "Refyt, demo v3.27.html", con el mismo código. Todos comparten un
+// Cada módulo es una parte de "Refyt, demo v3.29.html", con el mismo código. Todos comparten un
 // mismo ámbito a través de este barril: cada módulo importa de aquí lo que usa, y el orden de
 // las líneas de abajo es el orden en que se evalúan (el mismo del original). No lo cambies sin
 // revisar los módulos que envuelven funciones de módulos anteriores.
@@ -71,4 +71,5 @@ export * from "./apps/director/review-nov-4.js";
 export * from "./apps/director/needs-you-and-task-calendar.js";
 export * from "./apps/director/palette-and-calendar.js";
 export * from "./apps/tasks/task-calendar-every-app.js";
+export * from "./apps/director/scheme-comparison.js";
 export * from "./mount.js";
