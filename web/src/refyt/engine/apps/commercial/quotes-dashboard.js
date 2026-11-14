@@ -4,6 +4,7 @@ import {
   mMoney, modal, oph, pIdx, pMoney, pc, pill, plural, prOf, qBar63, qQ63, quoPage3, render,
   renderLayer, scOf, setQuoPage3, stat, sum, toast
 } from "../../index.js";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 /* =================== v5.4: Quotes and budgets as a dashboard, with the quote file =================== */
 S.f.qsc = ''; S.f.qm = ''; S.f.qst = ''; S.f.qby = 'sc'; S.f.qdv = 'val';
 export const QC54 = {q:'#6366F1', b:'#F97316', ok:'#10B981', wait:'#F59E0B'};
@@ -59,9 +60,9 @@ MODALS.qf54 = m => { const p = prOf(m.pr), f = p.qf; if(!f) return '';
     img ? `<div class="q54-view"><img src="${f.url}" alt="Quote for ${esc(p.ad)}"></div>` : pdf ? `<div class="q54-view" id="qv54"><p class="hint">Opening the PDF...</p></div>` : `<div class="q54-view"><p class="hint">There is no preview for this type of file.</p></div>`,
     `<button class="btn sec lg" data-act="qfDel54">Remove</button><label class="btn sec lg q54-rep" data-act="qfLab54">${ico('upload', 15)}Replace<input type="file" accept="application/pdf,.pdf,image/*" data-in="qf54" data-k="${p.id}"></label><button class="btn pri lg" data-act="mclose">Close</button>`, 860); };
 export let PDFJS54 = null;
-export const loadPdf54 = () => PDFJS54 || (PDFJS54 = new Promise((ok, ko) => { if(window.pdfjsLib) return ok(window.pdfjsLib); const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-  s.onload = () => { const L = window.pdfjsLib; if(!L){ PDFJS54 = null; return ko(new Error('pdf.js')); } L.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; ok(L); };
-  s.onerror = () => { PDFJS54 = null; ko(new Error('pdf.js')); }; document.head.appendChild(s); }));
+/* Adaptación del repo: el original carga pdf.js 3.11 desde cdnjs, que la CSP de producción bloquea;
+   aquí pdf.js va en el bundle (otro chunk, solo al abrir un PDF) y su worker es un archivo de la app. */
+export const loadPdf54 = () => PDFJS54 || (PDFJS54 = import("pdfjs-dist").then(L => { L.GlobalWorkerOptions.workerSrc = pdfWorkerUrl; return L; }, e => { PDFJS54 = null; throw e; }));
 export async function qfDraw54(){ const box = document.getElementById('qv54'); if(!box || !S.modal || S.modal.k !== 'qf54') return; const f = prOf(S.modal.pr).qf; if(!f) return;
   try { const L = await loadPdf54(), bin = atob(f.url.split(',')[1]), u8 = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
     const doc = await L.getDocument({data:u8, isEvalSupported:false}).promise; if(!document.body.contains(box)) return; box.innerHTML = '';
