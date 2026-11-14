@@ -6,5 +6,5 @@ allowBuilds:
   # The mongod binary is downloaded lazily the first time the tests run,
   # so installs (including the Docker build stage) stay fast and offline-safe.
   mongodb-memory-server: false
-  # core-js (via jspdf → canvg) only prints a message on install; nothing to build.
+  # core-js (via jspdf 3 → canvg) only prints a message on install; nothing to build.
   core-js: false
