@@ -1,7 +1,7 @@
 // Refyt · arranque. Sustituye al final del original («STARTUP»): el componente React
 // RefytWorkspace pone el marcado (encabezado, vistas, capas) y llama a mount() al mostrarse y a
 // unmount() al salir, para que el motor dibuje en esos contenedores y no deje paneles abiertos.
-import { S, VIEWS, drawPop, drawSetPop, drawTour, drawVs, render, setAuth } from "./index.js";
+import { S, VIEWS, canOpen, drawPop, drawSetPop, drawTour, drawVs, render, setAuth } from "./index.js";
 
 let started = false;
 let lastUser = null;
@@ -16,7 +16,8 @@ function readHash() {
   const H = new URLSearchParams(location.hash.slice(1));
   const V = {home:'home', director:'dir', dir:'dir', commercial:'com', com:'com', accounts:'acc', acc:'acc', retrofit:'ret', ret:'ret', delivery:'del', del:'del', tasks:'tsk', tsk:'tsk', data:'db', db:'db'};
   const v = V[(H.get('view') || '').toLowerCase()], p = (H.get('page') || '').toLowerCase();
-  if(v){ S.view = v; if(v !== 'db' && p && (VIEWS[v].pages[p] || p === 'help')) S.page[v] = p; }
+  // Sesión real: un enlace a una pantalla que el rol no abre se ignora (canOpen, access.js).
+  if(v && canOpen(v, v !== 'db' && p && (VIEWS[v].pages[p] || p === 'help') ? p : S.page[v])){ S.view = v; if(v !== 'db' && p && (VIEWS[v].pages[p] || p === 'help')) S.page[v] = p; }
   if(H.get('embed') === '1') document.documentElement.classList.add('embed');
 }
 
@@ -35,7 +36,7 @@ export function mount(auth) {
     else if(firstTime) S.role = auth.roles[0] ?? 'dir';
   }
   if(!started){ readHash(); started = true; }
-  // render() itself moves to the first allowed app when the current one is not allowed.
+  // render() itself moves to the role's Overview when it may not open the current screen (access.js).
   render(true);
 }
 

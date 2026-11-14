@@ -1,7 +1,7 @@
 // Refyt · Piezas comunes de la interfaz.
 import {
-  $, APPN, APPT, GRAD, HOME, ME, MEAS, MON, PEO, PHS, S, TODAY, WHO, alerts, clamp, dDiff, daysIn, esc,
-  fmtDy, fromIso, ico, ini, late, norm, pc, render, seenSet
+  $, APPN, APPT, GRAD, HOME, ME, MEAS, MON, PEO, PHS, S, TODAY, WHO, alerts, canOpen, canOpenCard,
+  clamp, dDiff, daysIn, esc, firstScreen, fmtDy, fromIso, ico, ini, late, norm, pc, render, seenSet
 } from "../index.js";
 export const bd = n => n ? `<span class="bd">${n > 99 ? '99+' : n}</span>` : '';
 export const sbItem = (cur, act) => ([k, n, ic, c, soft]) => k === '-' ? `<div class="sb-sec">${n}</div>` : `<button class="nav" data-act="${act}" data-v="${k}" aria-current="${cur === k}"><span class="ni">${ico(ic, 17)}</span>${n}${c ? `<span class="cnt${soft === 1 ? ' soft' : soft === 2 ? ' amb' : ''}">${c}</span>` : ''}</button>`;
@@ -67,8 +67,8 @@ export function atnPage(app, titulo, sub){
     + (vs.length ? grpH('Seen', vs.length) + vs.map(a => rdiv(cell(esc(a.t), a.k, 3) + `<div class="mbc" style="flex:0 0 auto"><button class="btn sec sm" data-act="alunseen" data-v="${a.id}">Show again</button></div>`)).join('') : '');
 }
 export const SHEETS = {}, MODALS = {}, A = {}, IN = {};
-export const go = (view, page) => { S.view = view; if(page){ S.page[view] = page; S.fi[view] = null; } S.modal = null; render(true); };
-export const abrir = (app, id, tab = 'res', hl = null) => { if(window.__ab4) app = window.__ab4(app, id); S.view = app; if(S.page[app] === 'help') S.page[app] = HOME[app]; S.fi[app] = id; S.ft = tab; S.hl = hl; S.modal = null; render(true); scrollHL(); };
+export const go = (view, page) => { if(!canOpen(view, page || S.page[view])){ firstScreen(); S.modal = null; render(true); return; } S.view = view; if(page){ S.page[view] = page; S.fi[view] = null; } S.modal = null; render(true); };
+export const abrir = (app, id, tab = 'res', hl = null) => { if(window.__ab4) app = window.__ab4(app, id); if(!canOpenCard(app)){ firstScreen(); S.modal = null; render(true); return; } S.view = app; if(S.page[app] === 'help') S.page[app] = HOME[app]; S.fi[app] = id; S.ft = tab; S.hl = hl; S.modal = null; render(true); scrollHL(); };
 export const scrollHL = () => requestAnimationFrame(() => requestAnimationFrame(() => { const e = document.querySelector('.hl2'); if(e) e.scrollIntoView({block:'center', behavior:'smooth'}); }));
 export const phTag = p => pill(PHS[p.ph], p.ph);
 export const mTags = p => p.ms.map(x => pill(MEAS[x.m].t, MEAS[x.m].s)).join('');

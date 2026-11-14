@@ -29,8 +29,29 @@ export default defineConfig({
     }
   },
   test: {
-    environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
-    css: false
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "app",
+          environment: "jsdom",
+          setupFiles: ["./src/test/setup.ts"],
+          css: false,
+          exclude: ["src/test/refyt-engine/**", "node_modules/**"]
+        }
+      },
+      {
+        // The real Refyt engine: native import, because its modules call functions declared in
+        // later modules of the same cycle (hoisted in the browser, not by Vite's module runner).
+        extends: true,
+        test: {
+          name: "engine",
+          environment: "jsdom",
+          include: ["src/test/refyt-engine/**/*.test.ts"],
+          execArgv: ["--import", "./src/test/refyt-engine/loader.mjs"],
+          experimental: { viteModuleRunner: false }
+        }
+      }
+    ]
   }
 });
