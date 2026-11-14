@@ -199,7 +199,7 @@ describe("Refyt", () => {
     renderApp("/");
 
     await waitFor(() => expect(engine.mount).toHaveBeenCalled());
-    expect(engine.mount).toHaveBeenLastCalledWith({ userId: "u1", apps: ["ret", "del"], roles: ["ass", "sit"], viewAs: false });
+    expect(engine.mount).toHaveBeenLastCalledWith({ userId: "u1", apps: ["ret", "del"], roles: ["ass", "sit"], viewAs: false, admin: [] });
   });
 
   it("says so when the user has no Refyt role", async () => {

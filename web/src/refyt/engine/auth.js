@@ -2,11 +2,12 @@
 // permisos refyt.*), qué roles de Refyt tiene y si puede ver Refyt como cualquier rol
 // (refyt.view_as, como el selector «Viewing as» de la demo).
 
-/** apps: null mientras no hay sesión (la demo sin restricciones). */
-export const AUTH = { apps: null, roles: [], viewAs: true };
+/** apps: null mientras no hay sesión (la demo sin restricciones). admin: rutas de la administración real. */
+export const AUTH = { apps: null, roles: [], viewAs: true, admin: [] };
 
-export function setAuth({ apps, roles, viewAs }) {
+export function setAuth({ apps, roles, viewAs, admin = [] }) {
   AUTH.apps = apps;
   AUTH.roles = roles;
   AUTH.viewAs = viewAs;
+  AUTH.admin = admin;
 }

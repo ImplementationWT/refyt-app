@@ -8,7 +8,7 @@ beforeAll(async () => {
   window.matchMedia ??= (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as never;
   document.body.innerHTML = `<header class="top"><b id="emp"></b><nav id="appsw"></nav><div id="tools"></div></header><div id="main">${["home", "dir", "com", "acc", "ret", "del", "tsk"].map((v) => `<section class="view" id="v-${v}" hidden><div class="oapp" id="a-${v}"></div></section>`).join("")}<section class="view" id="v-db" hidden><div id="dbview"></div></section></div><div id="layer"></div><div id="toast"></div>`;
   engine = (await import("../../refyt/engine/index.js")) as Engine;
-  engine.mount({ userId: "u-sad", apps: ["ret"], roles: ["sad"], viewAs: false });
+  engine.mount({ userId: "u-sad", apps: ["ret"], roles: ["sad"], viewAs: false, admin: [] });
 }, 60_000);
 
 describe("My tasks in the team apps", () => {

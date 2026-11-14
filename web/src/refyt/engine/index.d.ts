@@ -9,6 +9,8 @@ export interface RefytAuth {
   roles: string[];
   /** refyt.view_as: puede ver Refyt como cualquier rol. */
   viewAs: boolean;
+  /** Pantallas de la administración real que puede abrir (/users, /roles), según sus permisos. */
+  admin: string[];
 }
 
 /** Dibuja Refyt en los contenedores de RefytWorkspace (#appsw, #tools, #main, #layer, #toast). */

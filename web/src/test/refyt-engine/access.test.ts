@@ -6,9 +6,9 @@ type Engine = typeof import("../../refyt/engine/index.js") & Record<string, any>
 let engine: Engine;
 
 const VIEWS = ["home", "dir", "com", "acc", "ret", "del", "tsk"];
-const ASSESSOR = { userId: "u-ass", apps: ["ret"], roles: ["ass"], viewAs: false };
-const COMMERCIAL = { userId: "u-com", apps: ["com"], roles: ["com"], viewAs: false };
-const ADMIN = { userId: "u-adm", apps: ["dir", "com", "acc", "ret", "del"], roles: ["dir"], viewAs: true };
+const ASSESSOR = { userId: "u-ass", apps: ["ret"], roles: ["ass"], viewAs: false, admin: [] };
+const COMMERCIAL = { userId: "u-com", apps: ["com"], roles: ["com"], viewAs: false, admin: [] };
+const ADMIN = { userId: "u-adm", apps: ["dir", "com", "acc", "ret", "del"], roles: ["dir"], viewAs: true, admin: ["/users", "/roles"] };
 
 /** The containers RefytWorkspace renders for the engine. */
 function markup() {
@@ -85,5 +85,28 @@ describe("Refyt access by role (real session)", () => {
     expect(engine.canOpen("acc", "inv")).toBe(true);
     expect(engine.canOpen("db", "")).toBe(true);
     expect(engine.canMoney("dir")).toBe(true);
+  });
+});
+
+describe("the demo's in-memory administration (real session)", () => {
+  it("is out of every menu and blocked by direct link, also for the Director", () => {
+    engine.mount(ADMIN);
+    for (const k of ["usr", "tms", "prm"]) {
+      expect(engine.ITEMS4.filter((it: { k: string }) => it.k === k).some((it: unknown) => engine.canNav(it))).toBe(false);
+      expect(engine.canOpen("dir", k)).toBe(false);
+    }
+    engine.go("dir", "usr");
+    expect(`${engine.S.view}:${engine.S.page[engine.S.view]}`).toBe("dir:ovw");
+    expect(engine.canOpen("dir", "req")).toBe(true);
+  });
+
+  it("is replaced in Settings by the real administration the user may open", () => {
+    engine.S.pop = "set5";
+    engine.drawPop();
+    const pop = document.getElementById("rfpop")!;
+    expect([...pop.querySelectorAll('[data-act="realAdm"]')].map((b) => (b as HTMLElement).dataset.v)).toEqual(["/users", "/roles"]);
+    expect([...pop.querySelectorAll('[data-act="setGo5"]')].map((b) => (b as HTMLElement).dataset.v)).not.toContain("dir:usr");
+    engine.S.pop = null;
+    engine.drawPop();
   });
 });

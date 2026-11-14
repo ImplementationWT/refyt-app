@@ -38,6 +38,9 @@ export function refytAuth(session: Session): RefytAuth {
       .filter(([permission]) => has.has(permission))
       .map(([, app]) => app),
     roles: session.user.roles.map((role) => REFYT_ROLES[role.key]).filter((code): code is string => Boolean(code)),
-    viewAs: has.has("refyt.view_as")
+    viewAs: has.has("refyt.view_as"),
+    admin: [has.has("users.read") ? "/users" : null, has.has("roles.read") ? "/roles" : null].filter(
+      (path): path is string => Boolean(path)
+    )
   };
 }
