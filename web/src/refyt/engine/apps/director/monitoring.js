@@ -8,7 +8,7 @@ import {
 /* =================== v3.23: the Director monitors the teams =================== */
 /* A Director who opens a team app sees it as the team sees it, to monitor: no personal tasks,
    no approvals that belong to the team, no action buttons on the Overview. */
-export const MONI = app => S.role === 'dir' && app !== 'dir' && ['com', 'acc', 'ret', 'del'].includes(app);
+export const MONI = app => false && app !== 'dir' && ['com', 'acc', 'ret', 'del'].includes(app);
 export const monBar = app => MONI(app) ? `<div class="mon-bar">${ico('eye', 15)}<span><b>Monitoring ${APPN[app]} as Director.</b> You see what the team sees; the actions are theirs. Your decisions are in the Director app.</span>${S.trail ? '' : nx('monBack', '', 'Back to Director', 'sec')}</div>` : '';
 A.monBack = () => { S.trail = null; S.page.dir = 'ovw'; S.fi.dir = null; go('dir', 'ovw'); };
 export const ovRO = h => h.replace(/<div class="ov-ra">[\s\S]*?<\/div>/g, '');

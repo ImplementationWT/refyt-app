@@ -13,7 +13,7 @@ const VIEWS = ["home", "dir", "com", "acc", "ret", "del", "tsk"] as const;
 const EngineMarkup = memo(function EngineMarkup() {
   return (
     <>
-      <RefytHeader>
+      <RefytHeader brand="engine">
         <nav className="appsw" id="appsw" aria-label="Apps" />
         <div className="tools" id="tools" />
       </RefytHeader>

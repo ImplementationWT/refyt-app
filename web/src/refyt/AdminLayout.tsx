@@ -24,7 +24,7 @@ export function AdminLayout() {
 
   return (
     <div className="shell rf-admin">
-      <RefytHeader homeLink>
+      <RefytHeader brand="link">
         <nav className="appsw" aria-label="Apps">
           <button type="button" className="rf-hb rf-menu" aria-label="Menu" onClick={() => setMenuOpen((value) => !value)}>
             <List size={17} aria-hidden />

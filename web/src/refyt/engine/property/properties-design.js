@@ -1,0 +1,21 @@
+// Refyt · v5.32: Properties en el nuevo diseño: cifras clave, colores por fase, cabeceras de grupo.
+import {
+  DB, OPENP, TODAY, VERSIONS, gKey64, ico, late, pIdx, pMoney, plural, scOf, stat, wrapRender
+} from "../index.js";
+/* =================== v5.32: Properties in the new design: key figures, phase colours, group headers =================== */
+export const PHC82 = {'A':['#E2E8F0', '#334155', '#64748B'], 'B':['#E0E7FF', '#3730A3', '#6366F1'], 'C':['#EDE9FE', '#5B21B6', '#8B5CF6'], 'D':['#FEF3C7', '#92400E', '#F59E0B'], 'E':['#CFFAFE', '#155E75', '#06B6D4'], 'F':['#DCFCE7', '#166534', '#10B981'], 'P':['#D1FAE5', '#065F46', '#059669'], 'X':['#F1F5F9', '#64748B', '#94A3B8']};
+export const phK82 = t => { t = (t || '').trim(); return /^[A-F]\./.test(t) ? t[0] : /^Paid/.test(t) ? 'P' : /^Cancel/.test(t) ? 'X' : ''; };
+export function props82(){ const op = [...document.querySelectorAll('.op')].find(x => x.offsetParent); if(!op) return; const h1 = op.querySelector('.op-h h1'); if(!h1 || h1.textContent.trim() !== 'Properties' || !op.querySelector(':scope > .gh')) return;
+  op.querySelectorAll(':scope > .gh').forEach(g => { if(g.dataset.p82) return; g.dataset.p82 = '1'; const k = phK82(g.firstChild ? g.firstChild.textContent : g.textContent); if(k){ g.classList.add('gh82'); g.style.setProperty('--ph', PHC82[k][2]); g.insertAdjacentHTML('afterbegin', `<i class="gh82-d"></i>`); } });
+  op.querySelectorAll('.lst64 .pill').forEach(p => { const k = phK82(p.textContent); if(k && !p.dataset.p82){ p.dataset.p82 = '1'; p.style.setProperty('background', PHC82[k][0], 'important'); p.style.setProperty('color', PHC82[k][1], 'important'); p.classList.add('ph82'); } });
+  if(!op.querySelector('.p82-k')){ const ps = DB.pr.filter(p => p.ph !== 'Cancelled'), open = ps.filter(p => OPENP.includes(p.ph)), lt = open.filter(p => late(p)), below = ps.filter(p => pIdx(p.ph) >= 2 && OPENP.includes(p.ph) && pMoney(p).mgp < scOf(p.sc).set.mg), inst = ps.filter(p => p.ph === 'E. Install');
+    op.querySelector('.op-h').insertAdjacentHTML('afterend', `<div class="cstats ov-k m59-k p82-k">${stat('tk', 'Open properties', open.length, `of ${plural(ps.length, 'property', 'properties')}`)}${stat(lt.length ? 'ta' : 'tg', 'Over the phase limit', lt.length, lt.length ? 'need a push' : 'all on time')}${stat(below.length ? 'tred' : 'tg', 'Margin below target', below.length, below.length ? 'forecast under target' : 'all on or above')}${stat('tb', 'In install', inst.length, 'phase E right now')}</div>`); } }
+{ wrapRender(r82 => (...x) => { const o = r82(...x); try { props82(); } catch(e) { console.warn(e); } return o; }); }
+VERSIONS.forEach(v => { if(v.current){ v.current = false; if(v.v === 'v5.31') v.url = 'https://claude.ai/artifact/PZFm6zJyRUkWdGfWHH8qD8'; } });
+VERSIONS.push({v:'v5.32', date:TODAY, major:false, current:true, url:null, title:'Properties in the new design', sum:'Properties keeps its list, groups and search, and adds key figures (open, over the phase limit, margin below target, in install), a colour per phase on the labels and group headers.', steps:[]});
+
+/* v5.33: card headers of the Director reports get the icon tile */
+export function dir83(){ const op = [...document.querySelectorAll('.op')].find(x => x.offsetParent); if(!op || !/^dir:d/.test(gKey64())) return; op.querySelectorAll('.ov-card .ov-h h3').forEach(h => { if(h.querySelector('.hm81-i')) return; const t = h.textContent; h.insertAdjacentHTML('afterbegin', `<span class="hm81-i">${ico(/wait/i.test(t) ? 'clock' : /won|money|owed|spend|margin/i.test(t) ? 'money' : /stage|days/i.test(t) ? 'chart' : 'grid', 16, 2.2)}</span>`); h.style.display = 'flex'; h.style.alignItems = 'center'; h.style.gap = '8px'; }); }
+{ wrapRender(r83 => (...x) => { const o = r83(...x); try { dir83(); } catch(e) {} return o; }); }
+VERSIONS.forEach(v => { if(v.current){ v.current = false; if(v.v === 'v5.32') v.url = 'https://claude.ai/artifact/7vvQZufW2V5VBHzHRtCyhJ'; } });
+VERSIONS.push({v:'v5.33', date:TODAY, major:false, current:true, url:null, title:'Director reports in the new design', sum:'Business overview and the other Director reports keep every chart and list, with the card style, icons in the headers, and the app colours: indigo bars with the current period in solid indigo, orange where a stage is over its limit, and a brighter palette in the donuts.', steps:[]});

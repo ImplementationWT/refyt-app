@@ -23,14 +23,16 @@ Commercial, Accounts, Retrofit y Delivery) en `/`. El menú de usuario del encab
 la administración: Users (`/users`), Roles (`/roles`), Integrations (`/integrations`) y Feedback (`/feedback`), según los
 permisos de cada persona. La migración 6 pasa a inglés los textos que ya estaban guardados en la base.
 
-El diseño aprobado por el cliente (`Refyt, demo v3.20.html`) manda en toda la app:
+El diseño aprobado por el cliente manda en toda la app. La versión vigente es la v5.44, guardada
+tal cual en `artifact/app.html`:
 
 ```text
 web/src/refyt/
   styles/        CSS de Refyt partido por áreas, en el mismo orden que el original
-                 (00 protege del reset de Tailwind; 10 son las piezas nuevas: login,
-                 menú de usuario, administración)
-  engine/        La lógica de Refyt en módulos (datos, cálculos, apps, reuniones, tour…).
+                 (00 protege del reset de Tailwind; 11-app.css son las piezas propias del
+                 repo: login, menú de usuario, administración, y va siempre al final)
+  engine/        La lógica de Refyt en módulos (datos, cálculos, apps, reuniones, tour…),
+                 con una capa por versión del original (v3.30 a v5.44) en su módulo.
                  index.js es el barril: fija el orden de evaluación, no lo reordenes.
   assets/        Logotipo REFYT
   fonts.ts       Sora, Manrope, Figtree y Fraunces servidas desde la app
@@ -57,6 +59,15 @@ web/src/refyt/
   `/feedback`, le pone estado (New, In progress, Fixed, Won't fix) y una nota interna, y puede
   apagar o encender el módulo con el interruptor de esa pantalla: apagado, la opción desaparece
   del menú y la API rechaza los envíos (`409 feedback_disabled`); lo ya recibido se conserva.
+- **Un solo espacio de trabajo (v4.0 en adelante).** El menú y las secciones del encabezado
+  muestran lo que puede abrir el rol con el que se ve Refyt; ese rol es siempre uno de los del
+  usuario (salvo `refyt.view_as`). Por eso `allowed()` ya no filtra por app.
+- **Reasignaciones del original.** Donde el HTML reasigna una función (`render = …`), el módulo que
+  la declara expone `wrapX` (envuelve la anterior) o `setX` (la reemplaza) y las capas los usan.
+- **Exportar a PDF** usa `jspdf` (dependencia de `web/`). La vista previa de PDF de Quotes carga
+  pdf.js desde cdnjs; con la CSP de producción no carga y muestra el aviso del original.
+- `node scripts/refyt-pack.mjs` reconstruye el HTML desde el repo (`tmp-artifacts/`, no se sube)
+  para compararlo con el original.
 - El CSS de Refyt va en la capa `refyt`, entre la base y las utilidades de Tailwind.
 - La CSP permite atributos `style` en línea (Refyt los usa al dibujar); los scripts siguen
   limitados a la propia app.

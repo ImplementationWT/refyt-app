@@ -68,7 +68,7 @@ export function atnPage(app, titulo, sub){
 }
 export const SHEETS = {}, MODALS = {}, A = {}, IN = {};
 export const go = (view, page) => { S.view = view; if(page){ S.page[view] = page; S.fi[view] = null; } S.modal = null; render(true); };
-export const abrir = (app, id, tab = 'res', hl = null) => { S.view = app; if(S.page[app] === 'help') S.page[app] = HOME[app]; S.fi[app] = id; S.ft = tab; S.hl = hl; S.modal = null; render(true); scrollHL(); };
+export const abrir = (app, id, tab = 'res', hl = null) => { if(window.__ab4) app = window.__ab4(app, id); S.view = app; if(S.page[app] === 'help') S.page[app] = HOME[app]; S.fi[app] = id; S.ft = tab; S.hl = hl; S.modal = null; render(true); scrollHL(); };
 export const scrollHL = () => requestAnimationFrame(() => requestAnimationFrame(() => { const e = document.querySelector('.hl2'); if(e) e.scrollIntoView({block:'center', behavior:'smooth'}); }));
 export const phTag = p => pill(PHS[p.ph], p.ph);
 export const mTags = p => p.ms.map(x => pill(MEAS[x.m].t, MEAS[x.m].s)).join('');

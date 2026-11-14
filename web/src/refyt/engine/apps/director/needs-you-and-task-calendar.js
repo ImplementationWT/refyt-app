@@ -34,7 +34,7 @@ MODALS.alv = m => { const a = (typeof pend === 'function' ? pend('dir') : []).fi
   ['alseen', 'tkNudge', 'prOpen', 'gogo'].forEach(wrapClose); const oa = A.alView; A.alView = el => { const a = (pend('dir') || []).find(x => x.id === el.dataset.v); if(a) wrapClose(a.fix[1]); oa(el); }; }
 
 /* ---------- 2. My tasks: three filters, and a calendar ---------- */
-export const TKV = [['mine', 'My tasks'], ['all', 'All team tasks'], ['mt', 'Meeting action points']];
+export const TKV = [['mine', 'My tasks'], ['mt', 'Meeting action points']];
 export const tkIsMt = k => !!(k.src && mtOf(k.src));
 export const tkList = () => { const v = S.f.tkv3 || 'mine'; return DB.tk.filter(k => !tkArch(k) && (v === 'mine' ? k.who === ME() : v === 'mt' ? tkIsMt(k) : true)); };
 A.tkv3 = el => { S.f.tkv3 = el.dataset.v; render(); };

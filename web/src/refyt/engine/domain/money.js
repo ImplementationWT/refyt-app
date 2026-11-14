@@ -30,5 +30,5 @@ export const late = p => { const l = LIMIT[p.ph]; if(!l) return null; const d = 
 export const grpPct = p => { const xs = Object.values(p.g).filter(s => s !== 'Not applicable'); return xs.length ? Math.round(xs.filter(s => s === 'Complete').length / xs.length * 100) : 0; };
 export const holdOpen = p => tyOf(p) === 'Redbridge' && ((p.g.stl && ['Not started', 'In progress', 'Waiting on decision', 'Blocked'].includes(p.g.stl) && p.g.stl !== 'Not applicable') || p.g.ewi === 'Blocked');
 export const MONEY = ['dir', 'com', 'acc'];
-export const canMoney = app => MONEY.includes(app);
+export const canMoney = app => window.__canMoney ? window.__canMoney() : MONEY.includes(app);
 export let DB = genDB();

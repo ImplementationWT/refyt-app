@@ -15,13 +15,11 @@ export const LAPPS = {
   del:{team:'Delivery', roles:['inc', 'oap', 'pap', 'sit', 'hse'], line:'Phases D, E and F: preparation, install, purchasing, close out, health and safety and site forms.'},
   tsk:{team:'Everyone', roles:[], line:'Tasks from meetings and jobs, with the Monday and Thursday team meetings.'},
 };
-export const allowed = app => {
-  if(app === 'db' || app === 'home') return true;
-  // Sesión real: solo las apps que dan los permisos del usuario (refyt.director, refyt.delivery…).
-  if(AUTH.apps && app !== 'tsk' && !AUTH.apps.includes(app)) return false;
-  if(AUTH.apps && !AUTH.viewAs) return true;
-  return S.role === 'dir' || app === 'tsk' || (LAPPS[app] && LAPPS[app].roles.includes(S.role));
-};
+/* Desde v4.0 hay un solo espacio de trabajo: el original abre todas las apps (allowed = app => true)
+   y el menú muestra lo que el rol puede abrir (canNav), con pantallas que viven en otra app
+   (por ejemplo All properties en Director). Sesión real: el rol es uno de los del usuario
+   (mount.js y setRole, salvo refyt.view_as) y sin ninguna app de Refyt no se abre nada. */
+export const allowed = app => !AUTH.apps || AUTH.apps.length > 0;
 export const WAITR = {dir:['dir'], com:['com'], ret:['aap', 'dap'], del:['oap', 'pap']};
 export const nWait = app => approvals().filter(a => (WAITR[app] || []).includes(a.role)).length;
 export const later = t => `<span class="rf-later" title="Integration to scope after the six apps">${t}: Later</span>`;

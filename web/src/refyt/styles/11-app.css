@@ -27,15 +27,17 @@
 .rf-umh b{display:block; font-size:14px; color:#0F172A}
 .rf-umh small{display:block; font-size:12px; color:#334155}
 @media (max-width: 900px){ .rf-umn{display:none} .rf-umb{padding:0 6px 0 4px} }
-/* Encabezado alineado: todos los controles de la derecha miden 34px y quedan a 8px entre sí. */
+/* Encabezado alineado: todos los controles de la derecha miden 34px y quedan a 8px entre sí
+   (el encabezado de v5 separa sus partes 14px). */
 .top .tourb{height:34px}
-.top > .rf-um{margin-left:-14px}
+.top > .rf-um{margin-left:-6px}
 .rf-umb{height:34px; padding:0 9px 0 3px}
 .rf-umb > .rf-uav{width:26px; height:26px; border-radius:8px; font-size:10.5px}
 .rf-umn b{font-size:12.5px} .rf-umn small{font-size:11px}
 
 /* ---------- Encabezado de la administración ---------- */
-.top .brand a{display:flex; align-items:center; gap:11px; color:inherit; text-decoration:none; border-radius:10px}
+/* La marca REFYT de v5 (.v5-brand) es aquí un enlace a Refyt: blanca y sin subrayado, como el botón. */
+.top .brand a.v5-brand{color:#fff; text-decoration:none}
 .rf-appdd.static{cursor:default}
 .rf-appdd.static:hover{background:transparent}
 a.rf-hb{text-decoration:none}

@@ -1,11 +1,11 @@
 // Refyt · Compras: comprometido al aprobar, real al facturar.
 import {
   A, CTYPES, DB, IN, ME, MEAS, MODALS, OPENP, OST, S, SUPS, TODAY, btns, cbx, cell, esc, fm, fmtDy,
-  ico, mfoot, mlab, modal, mseg, norm, numIn, nx, oph, pill, prOf, rdiv, refocus, render, renderLayer,
-  scOf, seg, sum, th, toast
+  ico, mfoot, mlab, modal, mseg, norm, numIn, nx, oph, ordBar57, pill, prOf, rdiv, refocus, render,
+  renderLayer, scOf, seg, sum, th, toast
 } from "../../index.js";
-export function ordPage(){ const st = S.f.ost || 'open', q = norm(S.f.oq), xs = DB.or.filter(o => (st === 'all' || (st === 'open' ? o.st !== 'Invoiced' && o.st !== 'Rejected' : o.st === st)) && (!q || norm(o.id + o.sup + o.ct + o.al.map(a => a.pr ? prOf(a.pr).ad : '').join(' ')).includes(q)));
-  return oph('Orders', 'One list of every order: requested, rejected, ordered, delivered, invoiced. Open a line for its properties and measures.', nx('orNew', '', 'Raise an order')) + `<div class="rf-bar"><div class="isearch" style="flex:1;min-width:240px">${ico('search', 18)}<input type="search" data-in="f" data-k="oq" placeholder="Search a supplier, property or order" value="${esc(S.f.oq || '')}"></div>${seg('ost', st, [['open', 'Open'], ...OST.map(s => [s, s, DB.or.filter(o => o.st === s).length]), ['all', 'All']])}</div>`
+export function ordPage(){ const st = S.f.ost || 'all', q = norm(S.f.oq), xs = DB.or.filter(o => (!S.f.oct || o.ct === S.f.oct) && (st === 'all' || (st === 'open' ? o.st !== 'Invoiced' && o.st !== 'Rejected' : o.st === st)) && (!q || norm(o.id + o.sup + o.ct + o.al.map(a => a.pr ? prOf(a.pr).ad : '').join(' ')).includes(q)));
+  return oph('Orders', 'One list of every order: requested, rejected, ordered, delivered, invoiced. Open a line for its properties and measures.', nx('orNew', '', 'Raise an order')) + `${ordBar57(st)}`
     + th(cell('Order', 'Supplier', 2) + cell('For', 'Measure and cost type', 2.4) + cell('Amount', '') + cell('Status', 'Approved by') + '<div class="mbc" style="flex:0 0 190px"><b></b><small>Next step</small></div>') + xs.map(o => rdiv(cell(o.id, o.sup, 2) + cell(o.al.length > 1 ? `Split across ${o.al.length} properties` : esc(prOf(o.al[0].pr).ad), o.al.length > 1 ? o.al.map(a => `${prOf(a.pr).id} ${fm(a.a)}`).join(', ') : `${MEAS[o.al[0].m].s}, ${o.ct}`, 2.4) + cell(fm(o.amt), fmtDy(o.on)) + `<div class="mbc"><b>${pill(o.st === 'Invoiced' ? 'tg' : o.st === 'Requested' ? 'ta' : o.st === 'Rejected' ? 'tred' : 'tb', o.st)}</b><small>${o.st === 'Requested' ? 'In the Approvals inbox' : o.inv || ''}</small></div>` + btns(o.st === 'Ordered' ? nx('orDel', o.id, 'Delivered', 'sec') : o.st === 'Delivered' ? nx('orInv', o.id, 'Invoice matched', 'sec') : ''), S.hl === o.id, o.id)).join(''); }
 A.ost = el => { S.f.ost = el.dataset.v; render(); };
 A.orDel = el => { const o = DB.or.find(x => x.id === el.dataset.v); o.st = 'Delivered'; render(); toast('Delivered to site.'); };

@@ -9,7 +9,7 @@ export const tourMin = () => sum(TS(), s => s.min);
 export const tourTop = () => (document.querySelector('.top') || {getBoundingClientRect:() => ({bottom:0})}).getBoundingClientRect().bottom + 8;
 export const tourPos = () => S.tour.x == null ? '' : ` style="left:${S.tour.x}px; top:${S.tour.y}px; right:auto; bottom:auto"`;
 export function tourClamp(){ const p = document.querySelector('#tourp .tp'); if(!p || S.tour.x == null) return; const r = p.getBoundingClientRect(); S.tour.x = clamp(S.tour.x, 8, Math.max(8, innerWidth - r.width - 8)); S.tour.y = clamp(S.tour.y, tourTop(), Math.max(tourTop(), innerHeight - r.height - 8)); Object.assign(p.style, {left:S.tour.x + 'px', top:S.tour.y + 'px', right:'auto', bottom:'auto'}); }
-export function drawTour(){
+function drawTour0(){
   drawVs(); let el = document.getElementById('tourp'); if(!el){ el = document.createElement('div'); el.id = 'tourp'; document.body.appendChild(el); }
   const T = S.tour; if(!T.open){ el.innerHTML = ''; return; } const s = TS()[T.i];
   const ctl = `<button class="ib" data-act="tourmin" aria-label="${T.min ? 'Expand' : 'Collapse'}">${ico(T.min ? 'up' : 'minus', 15)}</button><button class="ib" data-act="tourx" aria-label="Close">${ico('x', 15)}</button>`, drag = 'title="Drag to move it; double click to put it back"';
@@ -37,3 +37,8 @@ A.vsTour = el => { const v = VERSIONS.find(x => x.v === el.dataset.v); S.vs.open
 A.vsel = () => { S.vs.open = !S.vs.open; drawVs(); };
 A.vsx = () => { S.vs.open = false; drawVs(); };
 document.addEventListener('click', e => { if(S.vs.open && !e.target.closest('.vs-pan') && !e.target.closest('.vsb')){ S.vs.open = false; drawVs(); } });
+
+/* Later versions wrap or replace drawTour (the original reassigns it). Kept as var: no temporal dead zone. */
+var drawTourW = null;
+export function drawTour(...x){ return (drawTourW || drawTour0)(...x); }
+export const wrapDrawTour = w => { drawTourW = w(drawTourW || drawTour0); };

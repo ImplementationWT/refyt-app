@@ -1,12 +1,12 @@
 // Refyt · Director: alta guiada y checklists heredados.
 import {
   A, ADOCS, ATABS, CBK, CLTYPES, DB, DITEMS, EVID, HAND, HSD, IN, ME, MEAS, MODALS, OPENP, PH, PROGS,
-  PTYPE, RATE, REGIONS, S, SETS, TODAY, VERSIONS, abrir, addCl, addDays, alerts0, btns, canMoney, cbx,
-  cell, cloTab, crumb, dDiff, esc, fld, fm, fmtD, fmtDy, go, grpH, his, hisList, ico, insTab, invTab,
-  kv, lateTag, later, lockCard, mTags, meaTab, mfoot, mlab, modal, monTab, numIn, nx, oph, pIdx,
-  pMoney, phGate, phTag, pill, plural, prOf, prSum, prsOf, ptOf, rdiv, ready, refocus, render6,
-  renderLayer, retTab, rowO, sameNote, scFicha0, scMoney, scOf, stat, sum, tabOf, tabsBar, tcell, th,
-  toast, tpClone, tpOf, updTab
+  PTYPE, RATE, REGIONS, S, SETS, TODAY, VERSIONS, abrir, addCl, addDays, alerts0, btns, canMoney,
+  cbx, cell, cloTab, crumb, dDiff, esc, fld, fm, fmtD, fmtDy, go, grpH, his, hisList, ico, insTab,
+  invTab, kv, lateTag, later, lockCard, mTags, meaTab, mfoot, mlab, modal, monTab, nextPh52, numIn,
+  nx, oph, pIdx, pMoney, phGate, phTag, pill, plural, prOf, prSum, prsOf, ptOf, rdiv, ready, refocus,
+  render6, renderLayer, retTab, rowO, rsdTab, sameNote, scFicha0, scMoney, scOf, shareBar4, stat,
+  sum, tabOf, tabsBar, tcell, th, toast, tpClone, tpOf, updTab
 } from "../../index.js";
 export function defChk(){ return {ev:[...EVID], docs:[...ADOCS], d:DITEMS.map(x => x[0]), hand:[...HAND]}; }
 export const CHKG = [['ev', 'RdSAP evidence', () => EVID, x => x], ['docs', 'Assessment documents', () => ADOCS, x => x], ['d', 'Phase D, before install', () => DITEMS.map(x => x[0]), x => (DITEMS.find(y => y[0] === x) || ['', x])[1]], ['hand', 'Handover pack', () => HAND, x => x]];
@@ -17,7 +17,7 @@ export function applyChk(p){ const e = effChk(p); DITEMS.forEach(([k]) => { p.dn
 DB.sc.forEach(s => { s.chk = s.chk || defChk(); s.trig = s.trig || 'cs_final'; });
 DB.pr.forEach(p => { p.chk = p.chk || {}; p.dna0 = {...p.dna}; applyChk(p); });
 export const chkChips = (sel, all, lbl, act, key, base) => `<div class="rf-chips">${all.map(x => { const on = sel.includes(x), ch = base && base.includes(x) !== on; return `<button type="button" class="rf-chip2${on ? ' on' : ''}${ch ? ' ch' : ''}" data-act="${act}" data-v="${key}|${x}" title="${ch ? 'Changed on this property' : ''}">${on ? ico('check', 12, 2.6) : ''}${esc(lbl(x))}</button>`; }).join('')}</div>`;
-export function chkTab(app, p){ const s = scOf(p.sc), e = effChk(p), ed = ['dir', 'ret', 'del'].includes(app) && OPENP.includes(p.ph);
+function chkTab0(app, p){ const s = scOf(p.sc), e = effChk(p), ed = ['dir', 'ret', 'del'].includes(app) && OPENP.includes(p.ph);
   return `<p class="hint" style="margin-top:0">Inherited from <b>${esc(s.n)}</b>. Change them here for this property only; changes on the scheme apply to every property except what was changed here.</p>` + CHKG.map(([g, n, all, lbl]) => { const own = !!(p.chk || {})[g]; return `<section class="rsec"><div class="rs-h"><h3>${n}</h3><p>${own ? 'Changed on this property' : 'As the scheme'}</p></div>${ed ? chkChips(e[g], all(), lbl, 'pchk', `${p.id}|${g}`, s.chk[g]) : `<div class="rf-chips">${e[g].map(x => `<span class="rf-chip2 on">${esc(lbl(x))}</span>`).join('')}</div>`}${own && ed ? `<button class="btn sec sm" data-act="pchkReset" data-v="${p.id}|${g}">Reset to the scheme</button>` : ''}</section>`; }).join(''); }
 A.pchk = el => { const [id, g, x] = el.dataset.v.split('|'), p = prOf(id), s = scOf(p.sc), cur = [...effChk(p)[g]], on = cur.includes(x), nx2 = on ? cur.filter(y => y !== x) : [...cur, x];
   p.chk = p.chk || {}; if(nx2.length === s.chk[g].length && nx2.every(y => s.chk[g].includes(y))) delete p.chk[g]; else p.chk[g] = nx2; applyChk(p); his(p, `Checklist changed on this property: ${on ? 'removed' : 'added'} ${(CHKG.find(c => c[0] === g)[3])(x)}`, ME()); render(); };
@@ -103,12 +103,12 @@ function scFicha20(app, s){ let h = scFicha0(app, s); if(S.ft !== 'set' || !['di
 A.scTrig = el => { const [id, tk] = el.dataset.v.split('|'), s = scOf(id), old = s.trig; s.trig = tk; s.log.push([TODAY, ME(), 'payment trigger', TRIGS[old || 'cs_final'][0], TRIGS[tk][0]]); render(); toast(`Payment trigger set: ${TRIGS[tk][0].toLowerCase()}.`); };
 /* Property card: the Checklists tab */
 ['dir', 'ret', 'del'].forEach(a => { const t = ATABS[a]; if(!t.some(x => x[0] === 'chk')) t.splice(t.findIndex(x => x[0] === 'upd'), 0, ['chk', 'Checklists']); });
-export function prFicha(app, p){ const tabs = (ATABS[app] || ATABS.dir).map(x => x[0] === 'upd' && (p.th || []).length ? ['upd', `Updates (${p.th.length})`] : x[0] === 'chk' && Object.keys(p.chk || {}).length ? ['chk', 'Checklists, changed'] : x), t = tabOf(tabs), sc = scOf(p.sc);
-  let body = {res:prSum, mea:meaTab, ret:retTab, ins:insTab, clo:cloTab, mon:monTab, inv:invTab, upd:updTab, chk:chkTab, his:(a, x) => hisList(x.his)}[t](app, p);
+function prFicha0(app, p){ const tabs = (ATABS[app] || ATABS.dir).map(x => x[0] === 'upd' && (p.th || []).length ? ['upd', `Updates (${p.th.length})`] : x[0] === 'chk' && Object.keys(p.chk || {}).length ? ['chk', 'Checklists, changed'] : x), t = tabOf(tabs), sc = scOf(p.sc);
+  let body = {res:prSum, mea:meaTab, ret:retTab, ins:insTab, clo:cloTab, mon:monTab, inv:invTab, upd:updTab, chk:chkTab, rsd:rsdTab, his:(a, x) => hisList(x.his)}[t](window.__eapp ? window.__eapp(app) : app, p);
   if(!canMoney(app) && ['res', 'mea'].includes(t)) body += lockCard();
-  const g = phGate(p), canMove = (app === 'ret' && ['A. Job received', 'B. Assess and design'].includes(p.ph)) || (app === 'del' && ['D. Prepare to install', 'E. Install'].includes(p.ph));
-  const acts = (canMove ? `<button class="btn ${g.ok ? 'pri' : 'sec'}" data-act="phNext" data-v="${p.id}" ${g.ok ? '' : 'disabled title="' + esc(g.miss.join('; ')) + '"'}>${ico(g.ok ? 'send' : 'lock', 15)}Move to ${PH[pIdx(p.ph) + 1].slice(3).toLowerCase()}</button>` : '') + `<button class="btn sec" data-act="postOpen" data-v="${p.id}">Post an update</button>` + (OPENP.includes(p.ph) && ['del', 'ret', 'com', 'dir'].includes(app) ? `<button class="btn sec" data-act="cnOpen" data-v="${p.id}">Cancel job</button>` : '');
-  return crumb('fichaback', 'Back', esc(p.ad)) + sameNote(app, p) + oph(esc(p.ad), `${p.id}, ${p.pc}, ${sc.n}. Customer ${esc(p.res)}. Client reference ${p.ref}${p.ht ? `, ${p.ht} house` : ''}.`, acts) + `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 14px">${phTag(p)}${mTags(p)}${lateTag(p)}${p.ph === 'D. Prepare to install' && ready(p) ? pill('tg', 'Ready to install') : ''}</div>` + tabsBar(tabs) + body; }
+  const g = phGate(p), canMove = OPENP.includes(p.ph);
+  const acts = (canMove ? `<button class="btn ${g.ok ? 'pri' : 'sec warn'} ph52-btn" data-act="phNext" data-v="${p.id}" title="${g.ok ? 'Everything for this status is done' : esc('Still missing: ' + g.miss.join('; '))}">${ico(g.ok ? 'send' : 'alert', 15)}Move to ${nextPh52(p)}</button>` : '') + `<button class="btn sec" data-act="postOpen" data-v="${p.id}">Post an update</button>` + (OPENP.includes(p.ph) && ['del', 'ret', 'com', 'dir'].includes(app) ? `<button class="btn sec" data-act="cnOpen" data-v="${p.id}">Cancel job</button>` : '');
+  return crumb('fichaback', 'Back', esc(p.ad)) + sameNote(app, p) + oph(esc(p.ad), `${p.id}, ${p.pc}, ${sc.n}. Customer ${esc(p.res)}. Client reference ${p.ref}${p.ht ? `, ${p.ht} house` : ''}.`, acts) + `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 14px">${phTag(p)}${mTags(p)}${lateTag(p)}${p.ph === 'D. Prepare to install' && ready(p) ? pill('tg', 'Ready to install') : ''}</div>` + shareBar4(p) + tabsBar(tabs) + body; }
 VERSIONS.forEach(v => { if(v.current){ v.current = false; v.url = 'https://claude.ai/artifact/9962Wj8bLY9HbAnhNnBFFq'; } });
 VERSIONS.push({v:'v3.17', date:TODAY, major:false, current:true, url:null, title:'Templates, guided new schemes and inherited checklists', sum:'Templates have set payment triggers that create the invoice as pending, statuses you drag into order, measures you can add, and prices with a unit. A new scheme is created step by step from its template. Checklists come from the scheme, can be changed per property, and scheme changes reach every property.', steps:[
   {t:'Templates and the guided new scheme', min:1, dolor:'Before, triggers were free text, statuses could not be reordered and prices had no unit.', show:['Payment trigger from set options; when met, the invoice is created as pending.', 'Statuses dragged into order; measures added with a priced unit.', 'Use template walks through each part before creating the scheme.'], say:'Every scheme starts checked.', go:() => { S.role = 'dir'; S.f.wz = null; S.f.tpe = 'TP-1'; go('dir', 'nsc'); S.f.tpe = 'TP-1'; render(); }},
@@ -124,3 +124,11 @@ export function scFicha(app, s){ return (scFichaW || scFicha20)(app, s); }
 export const wrapRender = w => { renderW = w(renderW || render20); };
 export const wrapAlerts = w => { alertsW = w(alertsW || alerts20); };
 export const wrapScFicha = w => { scFichaW = w(scFichaW || scFicha20); };
+
+/* Later versions wrap or replace prFicha, chkTab (the original reassigns them). Kept as var: no temporal dead zone. */
+var prFichaW = null;
+export function prFicha(...x){ return (prFichaW || prFicha0)(...x); }
+export const wrapPrFicha = w => { prFichaW = w(prFichaW || prFicha0); };
+var chkTabW = null;
+export function chkTab(...x){ return (chkTabW || chkTab0)(...x); }
+export const setChkTab = f => { chkTabW = f; };

@@ -27,9 +27,9 @@ export function render0(top){
   requestAnimationFrame(flyScroll);
 }
 export let lastLayer = '';
-export function renderLayer(){ let h = ''; if(S.modal){ const f = MODALS[S.modal.k]; if(f) h = f(S.modal); } const lk = S.modal ? S.modal.k + '|' + (S.modal.id || '') : ''; $('#layer').classList.toggle('still', lk !== '' && lk === lastLayer); lastLayer = lk; $('#layer').innerHTML = h; }
+function renderLayer0(){ let h = ''; if(S.modal){ const f = MODALS[S.modal.k]; if(f) h = f(S.modal); } const lk = S.modal ? S.modal.k + '|' + (S.modal.id || '') : ''; $('#layer').classList.toggle('still', lk !== '' && lk === lastLayer); lastLayer = lk; $('#layer').innerHTML = h; }
 /* Typing in a text field never rebuilds the window: only the state is saved and the buttons and notes that depend on it are refreshed */
-export function patchLayer(){ if(!S.modal) return; const f = MODALS[S.modal.k]; if(!f) return; const tmp = document.createElement('div'); tmp.innerHTML = f(S.modal);
+function patchLayer0(){ if(!S.modal) return; const f = MODALS[S.modal.k]; if(!f) return; const tmp = document.createElement('div'); tmp.innerHTML = f(S.modal);
   const nf = tmp.querySelector('.md-f'), of = document.querySelector('#layer .md-f'); if(nf && of) of.innerHTML = nf.innerHTML;
   tmp.querySelectorAll('.md-b button[data-act]').forEach(nb => { const ob = document.querySelector(`#layer .md-b button[data-act="${nb.dataset.act}"]${nb.dataset.v ? `[data-v="${nb.dataset.v}"]` : ''}`); if(ob){ ob.disabled = nb.disabled; } }); }
 export function refocus(fn3){ const a = document.activeElement, d = a && a.dataset && a.dataset.in ? {...a.dataset} : null; let pos = null; try { pos = a.selectionStart; } catch(e) {}
@@ -40,3 +40,11 @@ A.theme = () => { const n = isDark() ? 'light' : 'dark'; document.documentElemen
 export function sizeKb(){ document.querySelectorAll('.um-kb').forEach(kb => { kb.style.height = 'auto'; const cols = [...kb.querySelectorAll('.um-kc')]; if(!cols.length) return;
   const mxh = Math.max(...cols.map(c => c.querySelector('.um-kch').offsetHeight + c.querySelector('.um-kcb').scrollHeight + 26)), avail = innerHeight - kb.getBoundingClientRect().top - 18; kb.style.height = Math.max(300, Math.min(mxh, avail)) + 'px'; }); }
 addEventListener('resize', () => { sizeKb(); if(S.view === 'db') dbLines(); });
+
+/* Later versions wrap or replace renderLayer, patchLayer (the original reassigns them). Kept as var: no temporal dead zone. */
+var renderLayerW = null;
+export function renderLayer(...x){ return (renderLayerW || renderLayer0)(...x); }
+export const wrapRenderLayer = w => { renderLayerW = w(renderLayerW || renderLayer0); };
+var patchLayerW = null;
+export function patchLayer(...x){ return (patchLayerW || patchLayer0)(...x); }
+export const wrapPatchLayer = w => { patchLayerW = w(patchLayerW || patchLayer0); };

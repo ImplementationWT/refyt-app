@@ -1,14 +1,14 @@
 // Refyt · Director: dashboards.
 import {
   A, APPS, CTYPES, DB, HSD, IN, LIMIT, MEAS, MSH, OPENP, PEO, PH, PROGS, RN, S, VIEWS, cbx, cell,
-  chart, cmp, dDiff, daysIn, empty, esc, fk, fm, fmtDy, go, grpH, late, lateTag, mMoney, mgTag, num,
-  oph, pIdx, pMoney, pageAct, pc, pill, plural, prOf, prsOf, ptOf, rating, rdiv, ready, render, rowO,
-  sbItem, scMoney, scOf, seg, stat, sum, tcell, th
+  chart, cmp, dBar65, dDiff, daysIn, empty, esc, fk, fm, fmtDy, go, grpH, late, lateTag, mMoney,
+  mgTag, norm, num, oph, pIdx, pMoney, pageAct, pc, pill, plural, prOf, prsOf, ptOf, rating, rdiv,
+  ready, render, rowO, sbItem, scMoney, scOf, seg, stat, sum, tcell, th
 } from "../../index.js";
-S.f.d = {pg:'', sc:'', tm:'', per:'', m:'', dr:'q', tr:'week'};
+S.f.d = {pg:'', sc:'', tm:'', per:'', m:'', dr:'4w', tr:'week'};
 export const DD = () => S.f.d;
 export const fSc = () => DB.sc.filter(s => (!DD().pg || s.prog === DD().pg) && (!DD().sc || s.id === DD().sc));
-export const fPr = (all) => DB.pr.filter(p => (all || p.ph !== 'Cancelled') && fSc().some(s => s.id === p.sc) && (!DD().m || p.ms.some(x => x.m === DD().m)));
+export const fPr = (all) => DB.pr.filter(p => (all || p.ph !== 'Cancelled') && fSc().some(s => s.id === p.sc) && (!DD().m || p.ms.some(x => x.m === DD().m)) && (!S.f.dq || norm(`${p.ad} ${p.id} ${p.pc}`).includes(norm(S.f.dq))));
 export const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
 export const DTEAM = {ret:['A. Job received', 'B. Assess and design'], com:['C. Client approval'], del:['D. Prepare to install', 'E. Install', 'F. Close out'], acc:['Paid'], dir:PH};
 export const PWHO = {afa:'ass', xen:'ass', ram:'aap', ahm:'dsg', dre:'inc', akr:'sit', lan:'acc', tom:'com', yah:'dir', sar:'sad', hse:'hse'};
@@ -16,8 +16,8 @@ IN.df = t => { S.f.d[{dfpg:'pg', dfsc:'sc', dftm:'tm', dfper:'per', dfm:'m'}[t.d
 A.ddr = el => { S.f.d.dr = el.dataset.v; render(); }; A.dtr = el => { S.f.d.tr = el.dataset.v; render(); };
 A.dReset = () => { Object.assign(S.f.d, {pg:'', sc:'', tm:'', per:'', m:''}); render(); };
 export function dFilters(){ const d = DD();
-  return `<div class="rf-df">${cbx('Programme', 'dfpg', [['', 'All programmes'], ...PROGS.map(p => [p.id, p.n])], d.pg, 'df')}${cbx('Scheme', 'dfsc', [['', 'All schemes'], ...DB.sc.filter(s => !d.pg || s.prog === d.pg).map(s => [s.id, s.n])], d.sc, 'df')}${cbx('Team', 'dftm', [['', 'All teams'], ...APPS.filter(a => a[0] !== 'tsk').map(([k, n]) => [k, n])], d.tm, 'df')}${cbx('Person', 'dfper', [['', 'Everyone'], ...Object.entries(PEO).map(([k, p]) => [k, p.n, p.r])], d.per, 'df')}${cbx('Measure', 'dfm', [['', 'All measures'], ...Object.entries(MEAS).map(([k, m]) => [k, m.n])], d.m, 'df')}</div>`
-    + `<div class="rf-bar">${seg('ddr', d.dr, [['4w', 'Last 4 weeks'], ['q', 'This quarter'], ['y', 'Last 12 months']])}<span class="rf-tl">Trend by</span>${seg('dtr', d.tr, [['week', 'Week'], ['month', 'Month'], ['quarter', 'Quarter']])}${d.pg || d.sc || d.tm || d.per || d.m ? `<button class="btn sec sm" data-act="dReset">Clear filters</button>` : ''}</div>`; }
+  return dBar65()
+    + `<div class="rf-bar">${seg('ddr', d.dr, [['4w', 'Last 4 weeks'], ['y', 'Last 12 months']])}<span class="rf-tl">Trend by</span>${seg('dtr', d.tr, [['week', 'Week'], ['month', 'Month']])}</div>`; }
 export function buckets(){ const d = DD(), win = {'4w':4, q:13, y:52}[d.dr], per = {week:1, month:4.33, quarter:13}[d.tr], n = Math.max(2, Math.min(13, Math.round(win / per)));
   const lab = i => { const back = n - 1 - i; return d.tr === 'week' ? 'W' + (44 - back) : d.tr === 'month' ? MSH[((9 - back) % 12 + 12) % 12] : `Q${((3 - back) % 4 + 4) % 4 + 1}`; };
   return {n, lab:Array.from({length:n}, (_, i) => lab(i)), per}; }

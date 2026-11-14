@@ -36,7 +36,7 @@ A.postOk = () => { const m = S.modal, p = prOf(m.pr), post = {id:'UP-' + Date.no
   if(m.task){ const k = {id:'TK-' + (++DB.seq.tk), t:m.tt.trim(), desc:m.t.trim(), who:m.to[0], r:roleOfP(m.to[0]), due:m.d, src:'Job', pr:p.id, done:false, doneOn:null}; DB.tk.push(k); post.tk = k.id; }
   p.th = p.th || []; p.th.push(post); his(p, `${PEO[ME()].n} posted an update to ${m.to.map(k => PEO[k].n).join(', ')}`, ME()); S.modal = null;
   auto(p, S.view, `notified ${m.to.map(k => PEO[k].n).join(', ')}${post.tk ? ` and added the task to ${PEO[m.to[0]].n}’s My tasks` : ''}`); };
-export function updTab(app, p){ const th = (p.th || []).slice().reverse();
+function updTab0(app, p){ const th = (p.th || []).slice().reverse();
   return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap"><p class="hint" style="margin:0">Posts about this property between the teams. A post can create the task for the person who must act.</p>${nx('postOpen', p.id, 'Post an update')}</div>`
     + (th.length ? th.map(u => { const k = u.tk && DB.tk.find(x => x.id === u.tk); return `<div class="rf-post">${av(u.by, 30)}<div><div class="rf-ph2"><b>${PEO[u.by].n}</b><small>${PEO[u.by].r}, ${fmtDy(u.on)}${u.from ? `, about ${u.from.toLowerCase()}` : ''}</small></div><p>${esc(u.t)}</p><div class="rf-pt">${u.to.map(x => `<span>@${PEO[x].n}</span>`).join('')}${k ? `<button class="rf-chipb" data-act="tkView" data-v="${k.id}">Task: ${esc(k.t)}, ${k.done ? 'done' : 'due ' + fmtDy(k.due)}</button>` : ''}</div></div></div>`; }).join('') : empty('No updates yet.')); }
 Object.keys(ATABS).forEach(a => { const t = ATABS[a]; if(!t.some(x => x[0] === 'upd')) t.splice(t.length - 1, 0, ['upd', 'Updates']); });
@@ -47,3 +47,8 @@ VERSIONS.forEach(v => { if(v.current){ v.current = false; v.url = 'https://claud
 VERSIONS.push({v:'v3.8', date:TODAY, major:false, current:true, url:null, title:'Director: Alerts and Approvals, and every alert ends in a decision', sum:'Director separates Approvals from Alerts. Each alert explains what is happening, what blocks it and who should act, and lets the director ask that person, post an update or accept it with a reason. Every property has an Updates thread.', steps:[
   {t:'Alerts that end in a decision', min:1, dolor:'Before, an alert led to a page with nothing to decide.', show:['2 Saxton Street: 22 days in close out because invoice INV-3302 is overdue with Medway Council.', 'Ask Accounts to chase the payment: the post creates Lana’s task.', 'Or accept the alert with a reason, kept on the property’s history.'], say:'Every alert ends in a decision or an instruction.', go:() => { S.role = 'dir'; go('dir', 'dec'); }},
 ]});
+
+/* Later versions wrap or replace updTab (the original reassigns it). Kept as var: no temporal dead zone. */
+var updTabW = null;
+export function updTab(...x){ return (updTabW || updTab0)(...x); }
+export const setUpdTab = f => { updTabW = f; };

@@ -17,6 +17,7 @@ function readHash() {
   const V = {home:'home', director:'dir', dir:'dir', commercial:'com', com:'com', accounts:'acc', acc:'acc', retrofit:'ret', ret:'ret', delivery:'del', del:'del', tasks:'tsk', tsk:'tsk', data:'db', db:'db'};
   const v = V[(H.get('view') || '').toLowerCase()], p = (H.get('page') || '').toLowerCase();
   if(v){ S.view = v; if(v !== 'db' && p && (VIEWS[v].pages[p] || p === 'help')) S.page[v] = p; }
+  if(H.get('embed') === '1') document.documentElement.classList.add('embed');
 }
 
 /**
@@ -38,11 +39,12 @@ export function mount(auth) {
   render(true);
 }
 
-/** Closes the floating panels the engine appends to <body> (tour, versions, menus, tooltip). */
+/** Closes the floating panels the engine appends to <body> (tour, versions, menus, tooltips, the v5 tour button). */
 export function unmount() {
   S.tour.open = false; S.vs.open = false; S.pop = null; S.modal = null; S.f.fs = false; S.setPop = false;
   drawTour(); drawVs(); drawPop(); drawSetPop();
   document.body.classList.remove('rf-fsb');
   document.querySelectorAll('.oapp.sbopen').forEach(o => o.classList.remove('sbopen'));
-  for (const id of ['tourp', 'vsel', 'rfpop', 'rftt', 'setpop']) document.getElementById(id)?.remove();
+  document.body.classList.remove('dnd70-on');
+  for (const id of ['tourp', 'vsel', 'rfpop', 'rftt', 'setpop', 'tip54', 'v5-fab']) document.getElementById(id)?.remove();
 }

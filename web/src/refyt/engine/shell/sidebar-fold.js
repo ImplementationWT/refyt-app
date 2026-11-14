@@ -15,7 +15,7 @@ A.sbMin = () => { S.sbMin[S.view] = !sbMini(S.view); render(); };
 ['dir', 'com', 'acc', 'ret', 'del'].forEach(a => { const o = VIEWS[a].side; VIEWS[a].side = () => {
   const h = o().replace(/<button class="nav"([^>]*)>(<span class="ni">[\s\S]*?<\/span>)([^<]+)/g, (m, at, ic, l) => `<button class="nav"${at} title="${esc(l.trim())}">${ic}<span class="nl">${l}</span>`);
   const mini = sbMini(a);
-  return h.replace('<aside class="sb">', `<aside class="sb"><button class="sb-tg" data-act="sbMin" title="${mini ? 'Open the menu' : 'Fold the menu'}" aria-label="${mini ? 'Open the menu' : 'Fold the menu'}" aria-expanded="${!mini}">${ico('chev', 16)}<span class="nl">Fold the menu</span></button>`); }; });
+  return h.replace('<aside class="sb">', `<aside class="sb"><button class="sb-tg" data-act="sbMin" title="${mini ? 'Open the menu' : 'Fold the menu'}" aria-label="${mini ? 'Open the menu' : 'Fold the menu'}" aria-expanded="${!mini}">${ico('chev', 16)}<span class="nl">Collapse</span></button>`); }; });
 wrapRender(r0 => (...x) => { const app = S.view, sb = document.querySelector(`#a-${app} .sb`), y = sb ? sb.scrollTop : 0;
     r0(...x);
     const el = document.querySelector(`#a-${S.view}`); if(el) el.classList.toggle('sbmini', sbMini(S.view));

@@ -69,7 +69,7 @@ export function pgRet(){ const ps = fPr(), as = ps.filter(p => p.b.vis), rvp = p
     chart(tvals(Math.max(1, Math.round(as.length / 3)), 'rass', b.n).map(Math.round), b.lab, prgF, `Assessments completed by ${DD().tr}, against plan`, Array(b.n).fill(plan), ['Completed', 'Plan']),
     stuck,
     [prgView('ret', 'ret:bk', 'Bookings', 'Each assessor’s calendar, by week or month.'), prgView('ret', 'ret:rq', 'Review queue', 'Everything waiting for review, with its documents.'), prgView('ret', 'ret:pk', 'Survey pack', 'What each client has received.')],
-    [['dir:dprod', 'Team productivity'], ['dir:dqual', 'Quality and compliance']]); }
+    [['dir:dqual', 'Quality and compliance']]); }
 
 export function pgDel(){ const ps = fPr(), dn = ps.filter(p => ['F. Close out', 'Paid'].includes(p.ph)), rd = ps.filter(p => p.ph === 'D. Prepare to install' && ready(p)), ho = ps.filter(p => p.ph === 'E. Install' && holdOpen(p));
   const def = ps.filter(p => ['D. Prepare to install', 'E. Install', 'F. Close out'].includes(p.ph)), lt = def.filter(p => late(p)), b = buckets(), plan = prgPlan('del');

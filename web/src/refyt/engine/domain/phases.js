@@ -5,7 +5,7 @@ import {
   pIdx, prOf, ptOf, ready, render, renderLayer, toast, tyOf
 } from "../index.js";
 export const bDone = p => p.b.rev === 'Approved' && docsOf(p).every(n => p.b.docs.includes(n)) && p.b.mod && p.ms.every(x => x.dsg && x.dap) && p.b.ts;
-export function phGate(p){ const miss = [];
+function phGate0(p){ const miss = [];
   if(p.ph === 'A. Job received' && !p.b.bk) miss.push('Assessment booked');
   if(p.ph === 'B. Assess and design'){ if(p.b.rev !== 'Approved') miss.push(p.b.rev === 'Pending' ? 'Assessment review waiting' : 'Assessment visit and review'); if(!docsOf(p).every(n => p.b.docs.includes(n))) miss.push(`${docsOf(p).filter(n => !p.b.docs.includes(n)).length} assessment documents`); if(!p.b.mod) miss.push('Modelling'); if(p.ms.some(x => !x.dsg)) miss.push('Design for every measure'); else if(p.ms.some(x => !x.dap)) miss.push('Design review'); if(!p.b.ts) miss.push('Technical survey'); }
   if(p.ph === 'C. Client approval' && !p.quoteOk) miss.push(`Client approval in ${ptOf(p).sys === 'PAS Hub' ? 'the PO' : ptOf(p).sys}`);
@@ -31,3 +31,9 @@ A.hSet = el => { const [id, i] = el.dataset.v.split('|'), p = prOf(id), h = HAND
 A.cnOpen = el => { S.modal = {k:'cn', id:el.dataset.v, why:'', note:''}; renderLayer(); };
 MODALS.cn = m => { const p = prOf(m.id); return modal('Cancel the job', `${esc(p.ad)}, in ${p.ph}. The reason and the phase are recorded; work already done is flagged as abortive work to invoice.`, mlab('Reason', true) + mseg('why', m.why, CANCEL) + area('Note', 'm', 'note', m.note, 'e.g. The customer no longer wants solar'), mfoot('Cancel the job', 'cnOk', !!m.why), 560); };
 A.cnOk = () => { const m = S.modal, p = prOf(m.id), at = p.ph, ab = pIdx(at) >= 1; p.cancel = {why:m.why, at, abort:ab}; p.ph = 'Cancelled'; p.phOn = TODAY; his(p, `Cancelled at ${at}: ${m.why.toLowerCase()}.${ab ? ' Work done flagged as abortive work.' : ''}`); S.modal = null; render(); toast(ab ? 'Cancelled. An abortive work line is ready for Commercial to invoice.' : 'Cancelled.'); };
+
+/* Later versions wrap or replace phGate (the original reassigns it). Kept as var: no temporal dead zone. */
+var phGateW = null;
+export function phGate(...x){ return (phGateW || phGate0)(...x); }
+export const wrapPhGate = w => { phGateW = w(phGateW || phGate0); };
+export const setPhGate = f => { phGateW = f; };
