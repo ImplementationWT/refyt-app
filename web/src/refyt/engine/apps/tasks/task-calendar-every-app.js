@@ -1,7 +1,8 @@
 // Refyt · v3.28: My tasks como calendario en todas las apps (Commercial, Accounts, Retrofit y Delivery),
 // con My tasks y Meeting action points; y la entrada v3.28 del historial de versiones.
 import {
-  DB, ME, S, TKV, TODAY, VERSIONS, VIEWS, go, seg, teamOf, tkArch, tkCal, tkCalBar, tkIsMt
+  DB, LAPPS, ME, S, TKV, TK_KEEP, TODAY, VERSIONS, VIEWS, go, seg, teamOf, tkArch, tkCal, tkCalBar,
+  tkIsMt
 } from "../../index.js";
 
 /* Blue stays the brand: header, menu, main buttons. Accents: Delft blue #1D2A62, Carolina blue #87AECE, Beige #F5F3D8,
@@ -26,3 +27,10 @@ VERSIONS.push({v:'v3.28', date:TODAY, major:false, current:true, url:null, title
   {t:'My tasks, the same in every app', min:.5, dolor:'Before, only the Director had the calendar and the three filters.', show:['My tasks, All team tasks and Meeting action points in every app; All team tasks shows that app’s team.', 'List, Week and Month, like Meetings.'], say:'One way to see tasks, wherever you are.', go:() => { S.role = 'inc'; S.trail = null; S.f.tkv3 = 'all'; S.f.tkvw = 'week'; go('del', 'tasks'); }},
 ]});
 
+/* Adaptación del repo (venía de main, antes de que el original trajera este bloque v3.28): en My tasks
+   de Commercial, Accounts, Retrofit y Delivery, la descripción dice lo que muestran los filtros de
+   la v5.44 (My tasks y Meeting action points) y, como en el Director, se avisa del archivado automático. */
+['com', 'acc', 'ret', 'del'].forEach(a => { const f = VIEWS[a].pages.tasks; if(!f) return;
+  VIEWS[a].pages.tasks = (...x) => { const h = f(...x);
+    return h.replace(`${LAPPS[a].team}: tasks from the Monday and Thursday meetings and from jobs.`, `${LAPPS[a].team}: your tasks and the meeting action points, as a list or on a calendar.`)
+      .replace(/(<button class="rf-dtg"[\s\S]*?<\/button>)/, `$1<small class="tk-arch">Done tasks are cleared automatically ${TK_KEEP} days after they are completed.</small>`); }; });
