@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Refyt, demo</title>
+<title>REFYT, demo</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11910,6 +11910,598 @@ function dist95(segs, big, sub){ const n = 18, tot = sum(segs, s => s[1]) || 1, 
   return `<div class="d95"><svg viewBox="0 0 320 166" class="d95-s" role="img" aria-label="${esc(segs.map(s => `${s[0]} ${s[1]}`).join(', '))}">${bars}<text x="${cx}" y="${cy - 34}" text-anchor="middle" class="d95-t">Total tasks</text><text x="${cx}" y="${cy - 2}" text-anchor="middle" class="d95-b">${big}</text><text x="${cx}" y="${cy + 10}" text-anchor="middle" class="d95-u">${esc(sub || '')}</text></svg><div class="d95-l">${segs.map(([nm, v, c]) => `<div style="--c:${c}"><small>${esc(nm)}</small><b>${num(v)}<i>tasks</i></b></div>`).join('')}</div></div>`; }
 VERSIONS.forEach(v => { if(v.current){ v.current = false; if(v.v === 'v5.43') v.url = 'https://claude.ai/artifact/6JZX4eL1eB3GUUjoRdWpGW'; } });
 VERSIONS.push({v:'v5.44', date:TODAY, major:false, current:true, url:null, title:'Overall completion as a segmented half circle', sum:'Capacity and staffing shows overall completion as a half circle of blocks split into completed, upcoming and overdue, with the total in the middle and the three counts underneath.', steps:[]});
+/* =================== v5.45: Install tracker, Programme of works and Complaints, filled in the app and downloaded as the Excel files REFYT already uses =================== */
+const V45 = {sel:new Set(), ed:null, dr:null, drag:null, refocus:null};
+const EON45 = p => ['SC-01', 'SC-02', 'SC-03', 'SC-04'].includes(p.sc);
+const wd45 = (s, n) => { let d = s, k = 0; const st = n < 0 ? -1 : 1; while(k < Math.abs(n)){ d = addDays(d, st); const w = fromIso(d).getDay(); if(w !== 0 && w !== 6) k++; } return d; };
+const nwd45 = (s, e) => { if(!s || !e) return null; let n = 0, d = s; for(let i = 0; i < 400 && d <= e; i++){ const w = fromIso(d).getDay(); if(w !== 0 && w !== 6) n++; d = addDays(d, 1); } return n; };
+const sh45 = s => s ? `${MSH[fromIso(s).getMonth()]} ${fromIso(s).getDate()}` : '';
+
+/* ---------- More E.ON jobs, so the tracker and the programme look like a real month (fictitious addresses and residents) ---------- */
+(() => { if(DB.pr.some(p => p.id === 'PR-2101')) return;
+  const src = {C:'PR-2006', D:'PR-2002', E:'PR-2004', F:'PR-2005', X:'PR-2012'}, PHN = {C:'C. Client approval', D:'D. Prepare to install', E:'E. Install', F:'F. Close out', X:'Cancelled'};
+  [['14 Hollywood Lane', 'ME2 3AQ', 'SC-01', 'E', ['SPV', 'LI', 'DMEV'], 'Mark Ellison'], ['77 Barnsole Road', 'ME7 2JG', 'SC-01', 'E', ['SPV'], 'Priya Shah'], ['5 Cliffe Road', 'ME2 3DL', 'SC-01', 'D', ['SPV', 'DMEV'], 'Owen Talbot'],
+   ['39 Kingswood Road', 'ME7 1DZ', 'SC-01', 'D', ['SPV', 'LI', 'DMEV'], 'Grace Mensah'], ['18 Lumsden Close', 'ME4 6UP', 'SC-01', 'C', ['SPV'], 'Tom Harding'], ['62 Rock Avenue', 'ME7 5PX', 'SC-01', 'F', ['SPV', 'LI'], 'Helen Ward'],
+   ['11 Northdown Hill', 'CT10 3HT', 'SC-02', 'E', ['SPV', 'CWI', 'DMEV'], 'Ali Rahman'], ['8 Ethelbert Road', 'CT9 1RX', 'SC-02', 'E', ['SPV'], 'Joan Pritchard'], ['25 Grange Road', 'CT11 9NA', 'SC-02', 'D', ['SPV'], 'Leo Martins'],
+   ['3 Dumpton Park Drive', 'CT10 1RJ', 'SC-02', 'C', ['LI', 'DMEV'], 'Nadia Kowalska'], ['46 Pegwell Road', 'CT11 0JL', 'SC-02', 'F', ['SPV'], 'Ruth Okafor'], ['90 Station Road', 'CT7 9RA', 'SC-02', 'X', ['SPV'], 'Ian Doyle']
+  ].forEach(([ad, pc, sc, ph, ms, res], i) => { const b = DB.pr.find(p => p.id === src[ph]); if(!b) return; const p = JSON.parse(JSON.stringify(b)), r = RATE['E.ON'] || {};
+    Object.assign(p, {id:'PR-' + (2101 + i), ad, pc, sc, res, ref:'EON-' + (49120 + i * 7), ph:PHN[ph], phOn:addDays(TODAY, -(3 + i % 6)), his:[[addDays(TODAY, -70 + i), `Job received from ${scOf(sc).cl}, reference EON-${49120 + i * 7}`, 'sar']],
+      ms:ms.map(m => ({m, q:r[m] || 1500, b:Math.round((r[m] || 1500) * .74), dsg:ph !== 'C', dap:ph !== 'C', ip:ph === 'F' ? 100 : ph === 'E' ? 55 : 0})), cancel:ph === 'X' ? {why:'Roof not suitable for panels', at:'D. Prepare to install', abort:true} : null});
+    DB.pr.push(p); }); })();
+
+/* ---------- Installation tasks: the rows of the Programme of works, and the installation columns of the tracker ---------- */
+const PST45 = ['Not started', 'Scheduled', 'In progress', 'On hold', 'Complete', 'Cancelled'];
+const PSTC45 = {'Not started':'nb', 'Scheduled':'bc', 'In progress':'ap', 'On hold':'bk', 'Complete':'ok', 'Cancelled':'na'};
+const XST45 = {'Not started':'Not Started', 'Scheduled':'Scheduled', 'In progress':'In Progress', 'On hold':'On Hold', 'Complete':'Complete', 'Cancelled':'Cancelled'};
+const ENAB45 = ['DPI', 'Scaffold erect', 'Scaffold dismantle', 'Roof repair'];
+const PMEAS45 = ['DPI', 'Scaffold erect', 'Ventilation', 'Loft insulation', 'Cavity wall insulation', 'External wall insulation', 'Solar PV', 'Storage heaters', 'Roof repair', 'Scaffold dismantle', 'Other'];
+const INST45 = ['Medway Electrical Ltd', 'Brightline Electrical', 'Kent Solar Fitters'];
+const trk45 = () => DB.pr.filter(p => EON45(p) && (pIdx(p.ph) >= 2 || p.ph === 'Cancelled') && !(p.ph === 'Cancelled' && p.cancel && p.cancel.at && pIdx(p.cancel.at) < 2));
+const prOf45 = id => DB.pr.find(p => p.id === id);
+DB.pow = DB.pow || [];
+DB.itr = DB.itr || {};
+DB.cmp45 = DB.cmp45 || [];
+(() => { if(DB.pow.length) return; let n = 1;
+  const plan = p => { const has = m => p.ms.some(x => x.m === m), t = [];
+    if(has('SPV')) t.push(['DPI', 0, 0]); if(has('SPV') || has('EWI')) t.push(['Scaffold erect', 2, 2]); if(has('DMEV')) t.push(['Ventilation', 3, 3]); if(has('LI')) t.push(['Loft insulation', 3, 3]);
+    if(has('CWI')) t.push(['Cavity wall insulation', 4, 4]); if(has('EWI')) t.push(['External wall insulation', 4, 12]); if(has('SPV')) t.push(['Solar PV', 4, 6]); if(has('SPV') || has('EWI')) t.push(['Scaffold dismantle', has('EWI') ? 15 : 9, has('EWI') ? 15 : 9]); return t; };
+  trk45().forEach((p, k) => { const ph = p.ph, base = ph === 'D. Prepare to install' ? wd45(TODAY, 3 + k % 5 * 2) : ph === 'E. Install' ? wd45(TODAY, -6 + k % 3) : ['F. Close out', 'Paid'].includes(ph) ? wd45(TODAY, -38 - k * 2) : ph === 'Cancelled' ? wd45(TODAY, -12) : null;
+    const preOnly = ph === 'D. Prepare to install' && k % 3 === 2;
+    plan(p).forEach(([m, a, b]) => { const dated = base && !(preOnly && !ENAB45.includes(m));
+      const s = dated ? wd45(base, a) : null, e = dated ? wd45(base, b) : null;
+      let st = 'Not started'; if(ph === 'Cancelled') st = 'Cancelled'; else if(['F. Close out', 'Paid'].includes(ph)) st = 'Complete'; else if(s){ st = e < TODAY ? 'Complete' : s <= TODAY ? 'In progress' : 'Scheduled'; }
+      DB.pow.push({id:'PW-' + (n++), pr:p.id, m, s, e, st, by:m === 'Solar PV' ? INST45[k % 3] : '', nt:''}); }); }); })();
+const tasks45 = p => DB.pow.filter(t => t.pr === p.id);
+const instT45 = p => tasks45(p).filter(t => !ENAB45.includes(t.m));
+const taskOf45 = (p, m) => tasks45(p).find(t => m === 'Other' ? ['External wall insulation', 'Storage heaters', 'Other'].includes(t.m) : t.m === m);
+
+/* ---------- The tracker's columns, in the spreadsheet's groups ---------- */
+const hasM45 = m => p => p.ms.some(x => x.m === m);
+const spv45 = hasM45('SPV'), li45 = hasM45('LI');
+const FLD45 = [
+  ['roof', 'Roof condition', 'txt', null, 'pre', 'SPV Preinstall Checks'], ['scf', 'Scaffold access', 'txt', null, 'pre', 'SPV Preinstall Checks'], ['inv', 'Space for inverter', 'txt', null, 'pre', 'SPV Preinstall Checks', spv45],
+  ['base', 'Basement', 'ch', ['Yes', 'No'], 'pre', 'SPV Preinstall Checks'], ['elec', 'Electrical comments', 'txt', null, 'pre', 'SPV Preinstall Checks', spv45], ['pan', 'Number of panels', 'txt', null, 'pre', 'SPV Preinstall Checks', spv45],
+  ['invm', 'Inverter', 'txt', null, 'pre', 'SPV Preinstall Checks', spv45], ['dc', 'Notes and DC run', 'txt', null, 'pre', 'SPV Preinstall Checks', spv45], ['asb', 'Asbestos', 'txt', null, 'pre', 'SPV Preinstall Checks'],
+  ['scl', 'Scaffold location', 'ch', ['Front', 'Rear', 'Side'], 'pre', 'Install Checks'], ['pav', 'Pavement licence', 'ch', ['Yes', 'No', 'Not required'], 'pre', 'Install Checks'], ['lift', 'Extra lift', 'ch', ['Yes', 'No', 'Not required'], 'pre', 'Install Checks'],
+  ['sto', 'Storeys', 'ch', ['1', '2', '3', '4+'], 'pre', 'Install Checks'], ['rear', 'Extra rear required', 'ch', ['Yes', 'No'], 'pre', 'Install Checks'], ['sat', 'Satellite dish', 'ch', ['None', 'Present, not interacting', 'May interact'], 'pre', 'Install Checks'],
+  ['qch', 'Quote changes', 'txt', null, 'pre', 'Install Checks'],
+  ['con', 'Construction approval', 'yn', null, 'en', 'Enabling'], ['quo', 'Quote approved', 'yn', null, 'en', 'Enabling'], ['bat', 'Fully approved and batched', 'yn', null, 'en', 'Enabling'],
+  ['dpi', 'DPI', 'pow', 'DPI', 'en', 'Enabling'], ['scon', 'Scaffold on', 'pow', 'Scaffold erect', 'en', 'Enabling'], ['dyn', 'Dynamics notified', 'st', null, 'en', 'Enabling'], ['cal', 'Booking calendar', 'st', null, 'en', 'Enabling'],
+  ['mat', 'Materials booked', 'date', null, 'en', 'Enabling'], ['iaa', 'IAA notified', 'st', null, 'en', 'Enabling'], ['mould', 'Mould removal', 'st', null, 'en', 'Enabling'],
+  ['vent', 'Ventilation install', 'pow', 'Ventilation', 'ins', 'Installation'], ['loft', 'Loft install', 'pow', 'Loft insulation', 'ins', 'Installation'], ['spv', 'SPV install', 'pow', 'Solar PV', 'ins', 'Installation'],
+  ['cav', 'Cavity install', 'pow', 'Cavity wall insulation', 'ins', 'Installation'], ['oth', 'Other install', 'pow', 'Other', 'ins', 'Installation'], ['dynu', 'Dynamics updated', 'st', null, 'ins', 'Installation'], ['waste', 'Waste collection', 'st', null, 'ins', 'Installation'],
+  ['fin', 'Final inspection and sign off', 'date', null, 'cmp', 'Completion'], ['scoff', 'Scaffold off', 'pow', 'Scaffold dismantle', 'cmp', 'Completion'],
+  ['lph', 'Loft photo docs', 'st', null, 'cmp', 'Loft Handover', li45], ['libg', 'Loft IBG', 'st', null, 'cmp', 'Loft Handover', li45],
+  ['sph', 'SPV photo docs', 'st', null, 'cmp', 'SPV Handover', spv45], ['sibg', 'SPV IBG', 'st', null, 'cmp', 'SPV Handover', spv45], ['mcs', 'MCS application', 'st', null, 'cmp', 'SPV Handover', spv45], ['eic', 'EIC and BN', 'st', null, 'cmp', 'SPV Handover', spv45],
+  ['arr', 'Solar array certificate', 'st', null, 'cmp', 'SPV Handover', spv45], ['comm', 'Commissioning reports', 'st', null, 'cmp', 'SPV Handover', spv45], ['nic', 'NICEIC regs', 'st', null, 'cmp', 'SPV Handover', spv45],
+].map(([k, n, kind, o, b, xg, app]) => ({k, n, kind, o, b, xg, app}));
+const FK45 = Object.fromEntries(FLD45.map(f => [f.k, f]));
+const BLK45 = [['pre', 'Pre-install checks', 'search'], ['en', 'Enabling', 'flag'], ['ins', 'Installation', 'tool'], ['cmp', 'Completion and handover', 'award']];
+const STV45 = ['Done', 'Pending', 'Missing', 'N/A'];
+const IT45 = p => DB.itr[p.id] || (DB.itr[p.id] = {notes:[], his:[], hold:''});
+const app45 = (p, f) => f.kind === 'pow' ? !!taskOf45(p, f.o) : (!f.app || f.app(p));
+const val45 = (p, f) => f.kind === 'pow' ? taskOf45(p, f.o) : IT45(p)[f.k];
+const done45 = (p, f) => { const v = val45(p, f); if(f.kind === 'pow') return !!v && v.st === 'Complete'; if(f.kind === 'st') return v === 'Done' || v === 'N/A'; if(f.kind === 'yn') return v === 'Yes'; return v != null && v !== ''; };
+const pct45 = (p, b) => { const fs = FLD45.filter(f => f.b === b && app45(p, f)); return fs.length ? Math.round(fs.filter(f => done45(p, f)).length / fs.length * 100) : null; };
+
+/* seed the tracker with values that match each job's phase */
+(() => { const R = ['Concrete tiles, good condition, felt present', 'Pan tiles, rafters look good, felt present', 'Flat tiles, no felt, check flashing', 'Slate roof, sound, one cracked tile at the rear'], E = ['TN-C-S earthing, space for the DPI', 'Old board, space for the PV board and DPI', 'TT system, meter under the stairs'];
+  trk45().forEach((p, k) => { const it = IT45(p), i = pIdx(p.ph), late = ['F. Close out', 'Paid'].includes(p.ph), ins = p.ph === 'E. Install', can = p.ph === 'Cancelled', d = i >= 3 || late || can, sp = spv45(p), ts = instT45(p), allDone = ts.length && ts.every(t => t.st === 'Complete');
+    Object.assign(it, {roof:R[k % 4], scf:k % 3 ? 'Access via the alley' : 'Front access, no issues', base:k % 4 === 1 ? 'Yes' : 'No', asb:k % 5 === 2 ? 'Cement pipes may contain asbestos, do not touch' : 'None found on survey'});
+    if(sp) Object.assign(it, {inv:k % 3 === 1 ? 'Tight, may need an external enclosure' : 'Plenty of space', elec:E[k % 3], pan:`${k % 2 ? 'Front' : 'Rear'} ${5 + k % 4}`, invm:k % 2 ? 'Fox ESS 3.68kW hybrid' : 'F Series 3kW string', dc:'DC run through the loft, out at the soffit, in conduit to the inverter'});
+    if(d) Object.assign(it, {scl:['Front', 'Rear', 'Side'][k % 3], pav:k % 3 === 0 ? 'Yes' : 'Not required', lift:k % 4 === 3 ? 'Yes' : 'Not required', sto:k % 6 === 4 ? '3' : '2', rear:'No', sat:k % 5 === 1 ? 'May interact' : 'None', qch:k % 4 === 3 ? 'One lift added' : 'No change'});
+    Object.assign(it, {con:'Yes', quo:d ? 'Yes' : k % 2 ? 'Yes' : '', bat:d ? 'Yes' : ''});
+    if(d && !can) Object.assign(it, {dyn:ins || late ? 'Done' : 'Pending', cal:'Done', mat:ins || late ? addDays(TODAY, -9 - k % 4) : k % 2 ? addDays(TODAY, 2) : '', iaa:ins || late ? 'Done' : 'Pending', mould:k % 6 === 1 ? 'Pending' : 'N/A'});
+    if(ins || late) Object.assign(it, {dynu:allDone || late ? 'Done' : 'Pending', waste:late ? 'Done' : 'Pending'});
+    if(late) Object.assign(it, {fin:addDays(TODAY, -24 - k % 5), lph:'Done', libg:'Done', sph:'Done', sibg:'Done', mcs:'Done', eic:k % 2 ? 'Missing' : 'Done', arr:'Done', comm:'Done', nic:k % 3 ? 'Done' : 'Pending'});
+    else if(allDone) Object.assign(it, {lph:'Pending', libg:'Pending', sph:'Pending', sibg:'Pending', mcs:'Pending', eic:'Pending', arr:'Pending', comm:'Pending', nic:'Pending'});
+    if(p.id === 'PR-2105') it.hold = 'Customer wants a site visit before accepting the scope.';
+    if(p.id === 'PR-2101') it.notes.push({on:addDays(TODAY, -2), by:'dre', t:'Customer asked to keep the side gate closed for the dog.'});
+    if(p.id === 'PR-2004') it.notes.push({on:addDays(TODAY, -1), by:'dre', t:'Inverter commissioning failed on the first attempt; installer back on Thursday.'});
+    if(p.id === 'PR-2108') it.notes.push({on:addDays(TODAY, -4), by:'akr', t:'Make sure we have the right flashing, there is no felt.'}); }); })();
+(() => { if(DB.cmp45.length) return; const c = (id, on, stage, ty, pr, own, iss, act, aon, ron, st) => ({id, on:addDays(TODAY, on), stage, ty, pr, own, iss, act, aon:aon == null ? '' : addDays(TODAY, aon), ron:ron == null ? '' : addDays(TODAY, ron), st});
+  DB.cmp45.push(c('CP-1', -26, 'Mid install', 'Roof issue', 'PR-2004', 'dre', 'Supporting beam in the loft is bowing', 'Go back to reinforce it before the panels go on', -20, null, 'Open'),
+    c('CP-2', -17, 'Post install', 'Scaffold issue', 'PR-2111', 'akr', 'Scaffold left a mark on the front paving', 'Clean and photograph', -15, -12, 'Closed'),
+    c('CP-3', -9, 'Post install', 'Install issue', 'PR-2005', 'dre', 'dMEV in the bathroom is noisy', 'Installer to return and check the fan', -6, null, 'Open'),
+    c('CP-4', -3, 'Pre install', 'Customer service', 'PR-2103', 'tom', 'Customer says nobody confirmed the install date', 'Call the customer and confirm by email', -2, null, 'Open')); })();
+
+/* ---------- Bands: where each job sits, worked out from its data instead of moving rows by hand ---------- */
+const BANDS45 = ['Pending approval', 'Pre installation', 'Jobs on hold', 'Booked installation', 'Install in progress', 'Completed installation', 'Submitted jobs', 'Cancelled'];
+const BNDC45 = {'Pending approval':'nb', 'Pre installation':'bc', 'Jobs on hold':'bk', 'Booked installation':'ap', 'Install in progress':'rq', 'Completed installation':'ok', 'Submitted jobs':'ok', 'Cancelled':'na'};
+const band45 = p => { if(p.ph === 'Cancelled') return 'Cancelled'; if(IT45(p).hold) return 'Jobs on hold'; if(pIdx(p.ph) <= 2) return 'Pending approval'; if(['F. Close out', 'Paid'].includes(p.ph)) return 'Submitted jobs';
+  const ts = instT45(p); if(!ts.length || ts.every(t => !t.s)) return 'Pre installation'; if(ts.every(t => t.st === 'Complete')) return 'Completed installation'; if(ts.some(t => ['In progress', 'Complete'].includes(t.st))) return 'Install in progress'; return 'Booked installation'; };
+const council45 = p => scOf(p.sc).n.replace(/^E\.ON\s*/, '');
+const delMon45 = p => { const t = instT45(p).filter(x => x.s).sort((a, b) => a.s < b.s ? -1 : 1)[0]; return t ? MSH[fromIso(t.s).getMonth()] : ''; };
+const mPills45 = p => p.ms.map(x => `<span class="v45-m">${esc(MEAS[x.m].s)}</span>`).join('');
+const bPill45 = b => `<span class="v45-st ${BNDC45[b]}">${esc(b)}</span>`;
+
+/* ---------- One cell: shows the value and opens its editor ---------- */
+const STC45 = {Done:['ok', CHK55], Pending:['bk', ''], Missing:['bl', ''], 'N/A':['na', '']};
+function cellIn45(p, f){ if(!app45(p, f)) return '<span class="v45-na">n/a</span>'; const v = val45(p, f);
+  if(f.kind === 'pow'){ const t = v; return t.s ? `<span class="v45-pw"><b>${sh45(t.s)}${t.e && t.e !== t.s ? `<i>to ${sh45(t.e)}</i>` : ''}</b><span class="v45-st ${PSTC45[t.st]}">${esc(t.st)}</span></span>` : `<span class="v45-st ${PSTC45[t.st]}">${t.st === 'Not started' ? 'Not booked' : esc(t.st)}</span>`; }
+  if(v == null || v === '') return '<span class="v45-e">Add</span>';
+  if(f.kind === 'st'){ const [c, ic] = STC45[v] || ['nb', '']; return `<span class="v45-st ${c}">${ic}${esc(v)}</span>`; }
+  if(f.kind === 'yn') return `<span class="v45-st ${v === 'Yes' ? 'ok' : 'bl'}">${v === 'Yes' ? CHK55 : ''}${esc(v)}</span>`;
+  if(f.kind === 'date') return `<span class="v45-dt">${ico('cal', 13, 2)}${sh45(v)}</span>`;
+  if(f.kind === 'ch') return `<span class="v45-ch">${esc(v)}</span>`;
+  return `<span class="v45-tx" title="${esc(v)}">${esc(v)}</span>`; }
+const cell45 = (p, f, r, c) => app45(p, f) ? `<button type="button" class="v45-c" data-act="v45ed" data-p="${p.id}" data-f="${f.k}" data-r="${r}" data-c="${c}" aria-label="${esc(f.n)}, ${esc(p.ad)}">${cellIn45(p, f)}</button>` : cellIn45(p, f);
+const bar45 = (v, act, id, b) => v == null ? '<span class="v45-na">n/a</span>' : `<button type="button" class="v45-pb" data-act="${act}" data-v="${id}" data-b="${b}" title="${v}% done"><span><i style="width:${v}%;background:${v === 100 ? '#16A34A' : v >= 50 ? '#2F5BD3' : '#F59E0B'}"></i></span><b>${v}%</b></button>`;
+
+/* ---------- Install tracker ---------- */
+VIEWS.del.pages.itr = () => { const all = trk45(), q = norm(S.f.v45q), sc = S.f.v45s || 'all', bd = S.f.v45b || 'all', bk = S.f.v45k || 'sum';
+  const base = all.filter(p => (sc === 'all' || p.sc === sc) && (!q || norm(`${p.ad} ${p.pc} ${p.id} ${p.ref} ${p.res}`).includes(q))), xs = base.filter(p => bd === 'all' || band45(p) === bd);
+  const cnt = b => base.filter(p => band45(p) === b).length, fs = bk === 'sum' ? [] : FLD45.filter(f => f.b === bk && xs.some(p => app45(p, f)));
+  const hand = all.filter(p => ['Completed installation', 'Submitted jobs'].includes(band45(p))).reduce((t, p) => t + FLD45.filter(f => f.b === 'cmp' && f.kind === 'st' && app45(p, f) && ['Pending', 'Missing', undefined, ''].includes(val45(p, f))).length, 0);
+  const head = `<tr><th>Property</th><th>Scheme</th>${bk === 'sum' ? `<th>Measures</th><th>Install</th>${BLK45.map(([, n]) => `<th>${esc(n)}</th>`).join('')}<th>Latest note</th>` : fs.map(f => `<th>${esc(f.n)}</th>`).join('')}</tr>`;
+  let r = 0; const row = p => { r++; const it = IT45(p), nt = it.notes[it.notes.length - 1], t1 = instT45(p).filter(t => t.s).sort((a, b) => a.s < b.s ? -1 : 1)[0];
+    return `<tr${V45.sel.has(p.id) ? ' class="v45-on"' : ''}><td class="rd55-pr"><span class="v45-pr"><input type="checkbox" data-v45sel="${p.id}" aria-label="Select ${esc(p.ad)}"${V45.sel.has(p.id) ? ' checked' : ''}><span><button class="rd55-pn" data-act="v45dr" data-v="${p.id}">${esc(p.ad)}</button><small>${esc(p.ref)}, ${esc(p.pc || '')}</small></span></span></td><td>${scPill55(p.sc)}</td>`
+      + (bk === 'sum' ? `<td><span class="v45-ms">${mPills45(p)}</span></td><td>${t1 ? `<span class="v45-dt">${ico('cal', 13, 2)}${sh45(t1.s)}</span>` : '<span class="v45-na">Not booked</span>'}</td>${BLK45.map(([b]) => `<td>${bar45(pct45(p, b), 'v45dr', p.id, b)}</td>`).join('')}<td class="v45-nt">${nt ? `<span title="${esc(nt.t)}">${esc(nt.t)}</span><small>${esc((PEO[nt.by] || {}).n || '')}, ${sh45(nt.on)}</small>` : '<span class="v45-na">No notes</span>'}</td>`
+        : fs.map((f, c) => `<td>${cell45(p, f, r, c)}</td>`).join('')) + '</tr>'; };
+  const ncol = bk === 'sum' ? 9 : fs.length + 2;
+  const body = BANDS45.map(b => { const ps = xs.filter(p => band45(p) === b); return ps.length ? `<tr class="v45-band"><td colspan="${ncol}"><span>${bPill45(b)}<small>${ps.length}</small></span></td></tr>` + ps.map(row).join('') : ''; }).join('');
+  const nSel = [...V45.sel].filter(id => xs.some(p => p.id === id)).length;
+  return trBar() + oph('Install tracker', 'Every E.ON job from approval to handover, with the columns of the install tracker spreadsheet. Fill it in here; download it as Excel when you need to send it.', `<button class="btn sec" data-act="v45dl" data-v="itrb">${ico('file', 15)}Blank template</button><button class="btn pri" data-act="v45dl" data-v="itr">${ico('down', 15)}Download Excel</button>`)
+    + `<div class="cstats">${stat('tb', 'Jobs in the tracker', all.filter(p => p.ph !== 'Cancelled').length)}${stat('ta', 'Booked or installing', all.filter(p => ['Booked installation', 'Install in progress'].includes(band45(p))).length)}${stat('tred', 'Handover items open', hand, 'pending or missing')}${stat('tv', 'Open complaints', DB.cmp45.filter(c => c.st === 'Open').length, 'see Complaints', 'v45go', 'cmp')}</div>`
+    + `<div class="v45-row">${seg('v45b', bd, [['all', 'All', base.length], ...BANDS45.filter(cnt).map(b => [b, b, cnt(b)])])}</div>`
+    + `<div class="v45-row">${seg('v45k', bk, [['sum', 'Summary'], ...BLK45.map(([k, n]) => [k, n])])}</div>`
+    + `<div class="v45-fb"><label class="v45-q">${ico('search', 16)}<input id="v45q" data-v45in="v45q" value="${esc(S.f.v45q || '')}" placeholder="Search a property, postcode, reference or resident"></label><select data-v45in="v45s" aria-label="Scheme"><option value="all">All E.ON schemes</option>${DB.sc.filter(s => EON45({sc:s.id})).map(s => `<option value="${s.id}"${sc === s.id ? ' selected' : ''}>${esc(s.n)}</option>`).join('')}</select></div>`
+    + (nSel ? `<div class="v45-bulk" role="region" aria-label="Selected jobs"><b>${nSel} selected</b><button class="btn pri sm" data-act="v45bulk">${ico('edit', 14)}Set a field for all</button><button class="btn sec sm" data-act="v45unsel">Clear selection</button><small>Pick a column and a value; every selected job gets it at once.</small></div>` : '')
+    + `<p class="v45-hint">${bk === 'sum' ? 'Click a bar to open the job at that group, or pick a group above to fill its columns like a spreadsheet.' : 'Click a cell to fill it. Arrow keys move between cells and Enter opens one.'}</p>`
+    + `<section class="rd55"><div class="rd55-w"><table class="rd55-t v45-t"><thead>${head}</thead><tbody>${body || `<tr><td colspan="${ncol}">${empty('No jobs match these filters.')}</td></tr>`}</tbody></table></div></section>`; };
+
+/* ---------- Programme of works ---------- */
+const DW45 = 30;
+const win45 = () => { const m = S.f.v45m || TODAY.slice(0, 7), [y, mo] = m.split('-').map(Number), a = `${m}-01`, b = iso(new Date(y, mo, 0)); return {m, a, b, n:dDiff(b) - dDiff(a) + 1, y, mo}; };
+VIEWS.del.pages.pow = () => { const W = win45(), q = norm(S.f.v45pq), sc = S.f.v45ps || 'all', st = S.f.v45pst || 'all';
+  const ps = trk45().filter(p => (sc === 'all' || p.sc === sc) && (!q || norm(`${p.ad} ${p.pc} ${p.ref}`).includes(q)));
+  const inWin = t => t.s && t.s <= W.b && (t.e || t.s) >= W.a, ts = DB.pow.filter(t => ps.some(p => p.id === t.pr)), tm = ts.filter(inWin);
+  const vis = t => (st === 'all' || t.st === st) && (inWin(t) || !t.s);
+  const groups = ps.map(p => [p, tasks45(p).filter(vis)]).filter(([, x]) => x.length && x.some(t => inWin(t) || !t.s)).sort((a, b) => { const f = g => (g[0].ph === 'Cancelled' ? 'Z' : '') + ((g[1].find(t => t.s) || {}).s || '9999'); return f(a) < f(b) ? -1 : 1; });
+  const days = Array.from({length:W.n}, (_, i) => addDays(W.a, i)), wk = d => [0, 6].includes(fromIso(d).getDay());
+  const grid = `<span class="v45-wk">${days.map((d, i) => wk(d) ? `<i style="left:${i * DW45}px"></i>` : '').join('')}${TODAY >= W.a && TODAY <= W.b ? `<em class="v45-now" style="left:${(dDiff(TODAY) - dDiff(W.a)) * DW45 + DW45 / 2}px"></em>` : ''}</span>`;
+  const barH = t => { if(!t.s) return '<span class="v45-ns">Not scheduled, click to add dates</span>'; const s = t.s < W.a ? W.a : t.s, e = (t.e || t.s) > W.b ? W.b : (t.e || t.s), l = (dDiff(s) - dDiff(W.a)) * DW45, w = (dDiff(e) - dDiff(s) + 1) * DW45;
+    return `<span class="v45-bar s-${PSTC45[t.st]}" data-v45bar="${t.id}" style="left:${l + 2}px;width:${w - 4}px" title="${esc(t.m)}: ${sh45(t.s)} to ${sh45(t.e || t.s)}, ${t.st}. Drag to move, drag the right edge to change the end.">${t.s < W.a ? '‹' : ''}${w > 60 ? esc(t.m) : ''}<i data-v45end="${t.id}"></i></span>`; };
+  const trow = t => `<tr><td class="v45-gm"><button class="v45-gl" data-act="v45tk" data-v="${t.id}">${esc(t.m)}</button>${t.by ? `<small>${esc(t.by)}</small>` : ''}</td><td>${t.s ? sh45(t.s) : '–'}</td><td>${t.e ? sh45(t.e) : '–'}</td><td>${nwd45(t.s, t.e) ?? '–'}</td><td><button class="v45-c" data-act="v45tk" data-v="${t.id}"><span class="v45-st ${PSTC45[t.st]}">${esc(t.st)}</span></button></td><td class="v45-tl"><div class="v45-tr" style="width:${W.n * DW45}px">${grid}${barH(t)}</div></td></tr>`;
+  const hdr = `<tr><th class="v45-gm">Measure</th><th>Start</th><th>End</th><th title="Working days">Days</th><th>Status</th><th class="v45-tl"><div class="v45-days" style="width:${W.n * DW45}px">${days.map(d => `<span class="${wk(d) ? 'we' : ''}${d === TODAY ? ' td' : ''}"><small>${DSH[fromIso(d).getDay()][0]}</small>${fromIso(d).getDate()}</span>`).join('')}</div></th></tr>`;
+  const body = groups.map(([p, x]) => `<tr class="v45-band"><td colspan="6"><span><button class="rd55-pn" data-act="v45dr" data-v="${p.id}">${esc(p.ad)}</button>${scPill55(p.sc)}${bPill45(band45(p))}<button class="v45-add" data-act="v45add" data-v="${p.id}">${ico('plus', 13)}Add a task</button></span></td></tr>` + x.map(trow).join('')).join('');
+  const prev = iso(new Date(W.y, W.mo - 2, 1)).slice(0, 7), next = iso(new Date(W.y, W.mo, 1)).slice(0, 7);
+  return trBar() + oph('Programme of works', 'Every measure per property on a calendar: drag a bar to move it, drag its right edge to change the end, or click it to change dates and status. The installation columns of the Install tracker read the same dates.', `<button class="btn sec" data-act="v45dl" data-v="powb">${ico('file', 15)}Blank template</button><button class="btn pri" data-act="v45dl" data-v="pow">${ico('down', 15)}Download Excel</button>`)
+    + `<div class="v45-meta"><span class="v45-mn"><button class="ib" data-act="v45mon" data-v="${prev}" aria-label="Previous month">${ico('back', 15)}</button><b>${MONTHS45[W.mo - 1]} ${W.y}</b><button class="ib" data-act="v45mon" data-v="${next}" aria-label="Next month"><span style="display:inline-flex;transform:rotate(180deg)">${ico('back', 15)}</span></button></span><span><small>Prepared by</small><b>${esc((PEO[ME()] || {}).n || 'You')}</b></span><span><small>Date</small><b>${fmtDy(TODAY)}</b></span></div>`
+    + `<div class="cstats">${stat('tb', 'Tasks this month', tm.length)}${stat('ta', 'Scheduled', tm.filter(t => t.st === 'Scheduled').length)}${stat('tv', 'In progress', tm.filter(t => t.st === 'In progress').length)}${stat('tg', 'Complete', tm.filter(t => t.st === 'Complete').length)}${stat('tred', 'On hold', ts.filter(t => t.st === 'On hold').length)}</div>`
+    + `<div class="v45-row">${seg('v45pst', st, [['all', 'All'], ...PST45.map(s => [s, s, ts.filter(t => t.st === s && (inWin(t) || !t.s)).length])])}</div>`
+    + `<div class="v45-fb"><label class="v45-q">${ico('search', 16)}<input id="v45pq" data-v45in="v45pq" value="${esc(S.f.v45pq || '')}" placeholder="Search a property, postcode or reference"></label><select data-v45in="v45ps" aria-label="Scheme"><option value="all">All E.ON schemes</option>${DB.sc.filter(s => EON45({sc:s.id})).map(s => `<option value="${s.id}"${sc === s.id ? ' selected' : ''}>${esc(s.n)}</option>`).join('')}</select></div>`
+    + `<div class="v45-leg">${PST45.map(s => `<span><i class="s-${PSTC45[s]}"></i>${s}</span>`).join('')}<span><i class="we"></i>Weekend</span></div>`
+    + `<section class="rd55"><div class="rd55-w v45-gw"><table class="rd55-t v45-g"><thead>${hdr}</thead><tbody>${body || `<tr><td colspan="6">${empty('No tasks this month with these filters.')}</td></tr>`}</tbody></table></div></section>`; };
+const MONTHS45 = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/* ---------- Complaints ---------- */
+const CSTG45 = ['Pre install', 'Mid install', 'Post install'], CTY45 = ['Roof issue', 'Install issue', 'Scaffold issue', 'Customer service', 'Other'];
+const dOpen45 = c => dDiff(c.ron || TODAY) - dDiff(c.on);
+VIEWS.del.pages.cmp = () => { const sg = S.f.v45cs || 'Open', xs = DB.cmp45.filter(c => sg === 'all' || c.st === sg).sort((a, b) => a.on < b.on ? 1 : -1), op = DB.cmp45.filter(c => c.st === 'Open');
+  const row = c => { const p = prOf45(c.pr) || {ad:'', id:''}, d = dOpen45(c); return `<tr><td>${sh45(c.on)}</td><td class="rd55-pr"><button class="rd55-pn" data-act="v45cm" data-v="${c.id}">${esc(p.ad)}</button><small>${esc(p.ref || '')}</small></td><td><span class="v45-ch">${esc(c.stage)}</span></td><td>${esc(c.ty)}</td><td>${esc((PEO[c.own] || {}).n || '')}</td><td class="v45-nt"><span title="${esc(c.iss)}">${esc(c.iss)}</span></td><td class="v45-nt"><span title="${esc(c.act)}">${esc(c.act || '')}</span></td><td>${c.aon ? sh45(c.aon) : '–'}</td><td>${c.ron ? sh45(c.ron) : '–'}</td><td><span class="v45-st ${c.st === 'Open' ? 'bk' : 'ok'}">${c.st === 'Closed' ? CHK55 : ''}${c.st}</span></td><td><b class="${c.st === 'Open' && d > 14 ? 'v45-red' : ''}">${d}</b></td></tr>`; };
+  return trBar() + oph('Complaints', 'Issues raised before, during or after an install, with who owns them and how long they have been open. Days open counts by itself.', `<button class="btn pri" data-act="v45cm" data-v="">${ico('plus', 15)}Log a complaint</button>`)
+    + `<div class="cstats">${stat('tred', 'Open', op.length)}${stat('ta', 'Open over 14 days', op.filter(c => dOpen45(c) > 14).length)}${stat('tg', 'Closed', DB.cmp45.filter(c => c.st === 'Closed').length)}${stat('tb', 'Average days open', op.length ? Math.round(sum(op, dOpen45) / op.length) : 0)}</div>`
+    + `<div class="v45-row">${seg('v45cs', sg, [['Open', 'Open', op.length], ['Closed', 'Closed', DB.cmp45.length - op.length], ['all', 'All', DB.cmp45.length]])}</div>`
+    + `<section class="rd55"><div class="rd55-w"><table class="rd55-t v45-cmt"><thead><tr><th>Date</th><th>Property</th><th>Stage</th><th>Type</th><th>Owner</th><th>Issue</th><th>Action</th><th>Action date</th><th>Resolved</th><th>Status</th><th>Days open</th></tr></thead><tbody>${xs.map(row).join('') || `<tr><td colspan="11">${empty('No complaints here.')}</td></tr>`}</tbody></table></div></section>`; };
+
+/* ---------- Menu, help and actions ---------- */
+{ const g = SEC5.find(s => s.k === 'del').groups[0][1], r = [...DEL4, 'dir'], add = [mk('itr', 'Install tracker', 'checks', () => 'del:itr', r, {c:() => trk45().filter(p => ['Booked installation', 'Install in progress'].includes(band45(p))).length}), mk('pow', 'Programme of works', 'cal', () => 'del:pow', r), mk('cmp', 'Complaints', 'alert', () => 'del:cmp', r, {c:() => DB.cmp45.filter(c => c.st === 'Open').length, soft:2})];
+  g.splice(0, 0, add[0], add[1]); g.splice(g.findIndex(x => x.k === 'clo') + 1, 0, add[2]); add.forEach(x => ITEMS4.push({...x, sec:'Delivery'})); }
+if(HELP.del && HELP.del.views) HELP.del.views.unshift(
+  HV('itr', 'Install tracker', 'checks', 'The install tracker spreadsheet, filled in the app.', ['As install coordinator I fill pre-install checks, enabling, installation and handover per job, and download the same Excel when I need to send it.', 'As install coordinator I select several jobs and set a column for all of them at once, for example Fully approved and batched.', 'As director I see where every job sits, from Pending approval to Submitted, without anyone moving rows by hand.']),
+  HV('pow', 'Programme of works', 'cal', 'Each measure per property on a monthly calendar.', ['As install coordinator I drag a bar to reschedule a measure, and the Install tracker shows the new date.', 'As install coordinator I download the programme of works as the Excel E.ON receives, prepared by me and dated today.']),
+  HV('cmp', 'Complaints', 'alert', 'Complaints with their owner and days open.', ['As install coordinator I log a complaint on the property, give it an owner and an action, and see how many days it has been open.']));
+
+const MON45 = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+A.v45b = el => { S.f.v45b = el.dataset.v; render(); };
+A.v45k = el => { S.f.v45k = el.dataset.v; render(); };
+A.v45pst = el => { S.f.v45pst = el.dataset.v; render(); };
+A.v45cs = el => { S.f.v45cs = el.dataset.v; render(); };
+A.v45mon = el => { S.f.v45m = el.dataset.v; render(); };
+A.v45go = el => go('del', el.dataset.v);
+A.v45unsel = () => { V45.sel.clear(); render(); };
+A.v45dr = el => { V45.ed = null; V45.dr = {k:'itr', id:el.dataset.v, b:el.dataset.b || ''}; draw45(); };
+A.v45drx = () => { V45.dr = null; V45.ed = null; draw45(); };
+A.v45op = el => { V45.dr = null; V45.ed = null; draw45(); abrir(S.view, el.dataset.v, 'ins'); };
+A.v45cm = el => { V45.ed = null; V45.dr = {k:'cmp', id:el.dataset.v || null}; draw45(); };
+const rect45 = el => el.getBoundingClientRect();
+A.v45ed = el => { V45.ed = {ids:[el.dataset.p], f:el.dataset.f, at:rect45(el)}; draw45(); };
+A.v45tk = el => { V45.ed = {task:el.dataset.v, at:rect45(el)}; draw45(); };
+A.v45add = el => { V45.ed = {add:el.dataset.v, at:rect45(el)}; draw45(); };
+A.v45bulk = el => { V45.ed = {pick:true, at:rect45(el)}; draw45(); };
+A.v45bf = el => { const ids = [...V45.sel]; V45.ed = {ids, f:el.dataset.v, at:V45.ed.at}; draw45(); };
+A.v45edx = () => { V45.ed = null; draw45(); };
+A.v45hold = el => { const p = prOf45(el.dataset.v), it = IT45(p); if(it.hold){ it.hold = ''; log45(p, 'Hold', 'Released'); toast(`${p.ad} is off hold.`); } else { const r = (document.getElementById('v45hr') || {}).value || ''; if(r.trim().length < 3) return toast('Write why the job is on hold.'); it.hold = r.trim(); log45(p, 'Hold', it.hold); toast(`${p.ad} is on hold.`); } render(); };
+A.v45note = el => { const p = prOf45(el.dataset.v), t = ((document.getElementById('v45nt') || {}).value || '').trim(); if(t.length < 2) return; IT45(p).notes.push({on:TODAY, by:ME(), t}); toast('Note added.'); render(); };
+const log45 = (p, f, v) => IT45(p).his.push({on:TODAY, by:ME(), f, v:String(v)});
+const fmtV45 = (f, v) => f.kind === 'date' ? (v ? fmtDy(v) : 'cleared') : (v === '' || v == null ? 'cleared' : v);
+function set45(ids, fk, v){ const f = FK45[fk]; let n = 0; ids.forEach(id => { const p = prOf45(id); if(!p || !app45(p, f)) return; n++;
+    if(f.kind === 'pow'){ const t = taskOf45(p, f.o); Object.assign(t, v); log45(p, f.n, `${t.st}${t.s ? ', ' + sh45(t.s) + (t.e && t.e !== t.s ? ' to ' + sh45(t.e) : '') : ''}`); } else { IT45(p)[fk] = v; log45(p, f.n, fmtV45(f, v)); } });
+  V45.ed = null; if(ids.length > 1) V45.sel.clear(); render(); toast(ids.length > 1 ? `${f.n} set on ${n} ${n === 1 ? 'job' : 'jobs'}.` : `${f.n} saved.`); }
+A.v45set = el => { const e = V45.ed, v = el.dataset.v; if(e.task) return saveTask45({st:v}); const f = FK45[e.f]; set45(e.ids, e.f, f.kind === 'pow' ? {st:v} : v); };
+A.v45today = () => { const i = document.getElementById('v45d1'); if(i) i.value = TODAY; };
+A.v45save = () => { const e = V45.ed, g = id => (document.getElementById(id) || {}).value;
+  if(e.add){ const m = V45.ed.m || g('v45am'); if(!m) return toast('Pick a measure.'); const s = g('v45d1') || null, en = g('v45d2') || s; DB.pow.push({id:'PW-' + (DB.pow.length + 100), pr:e.add, m, s, e:en, st:s ? 'Scheduled' : 'Not started', by:'', nt:''}); log45(prOf45(e.add), m, 'Task added'); V45.ed = null; render(); return toast(`${m} added to the programme.`); }
+  if(e.task) return saveTask45({s:g('v45d1') || null, e:g('v45d2') || g('v45d1') || null, by:g('v45by') || '', nt:g('v45tn') || ''});
+  const f = FK45[e.f]; if(f.kind === 'pow') return set45(e.ids, e.f, {s:g('v45d1') || null, e:g('v45d2') || g('v45d1') || null, by:g('v45by') ?? undefined}); set45(e.ids, e.f, f.kind === 'date' ? g('v45d1') || '' : (g('v45tx') || '').trim()); };
+function saveTask45(v){ const t = DB.pow.find(x => x.id === V45.ed.task); if(v.by === undefined) delete v.by; if(v.e && v.s && v.e < v.s) return toast('The end date is before the start.'); Object.assign(t, v); if(v.s && t.st === 'Not started') t.st = 'Scheduled'; log45(prOf45(t.pr), t.m, `${t.st}${t.s ? ', ' + sh45(t.s) : ''}`); V45.ed = null; render(); toast(`${t.m} saved.`); }
+A.v45del = () => { const t = DB.pow.find(x => x.id === V45.ed.task); DB.pow.splice(DB.pow.indexOf(t), 1); log45(prOf45(t.pr), t.m, 'Task removed'); V45.ed = null; render(); toast(`${t.m} removed from the programme.`); };
+A.v45am = el => { V45.ed.m = el.dataset.v; draw45(); };
+A.v45cmsave = () => { const g = id => (document.getElementById(id) || {}).value || '', d = V45.dr, x = d.f || {};
+  if(!g('v45cpr') || g('v45ciss').trim().length < 3 || !x.stage || !x.ty) return toast('Pick the property, the stage and the type, and describe the issue.');
+  const c = d.id ? DB.cmp45.find(c => c.id === d.id) : {id:'CP-' + (DB.cmp45.length + 1), on:TODAY}; Object.assign(c, {pr:g('v45cpr'), stage:x.stage, ty:x.ty, own:g('v45cow'), iss:g('v45ciss').trim(), act:g('v45cact').trim(), aon:g('v45caon'), ron:g('v45cron'), st:x.st || 'Open'});
+  if(c.st === 'Closed' && !c.ron) c.ron = TODAY; if(!d.id) DB.cmp45.push(c); log45(prOf45(c.pr), 'Complaint', `${c.ty}, ${c.st}`); V45.dr = null; render(); toast(d.id ? 'Complaint saved.' : 'Complaint logged.'); };
+A.v45cf = el => { const d = V45.dr; d.f = d.f || {}; d.f[el.dataset.k] = el.dataset.v; keep45(); draw45(); };
+const keep45 = () => { const d = V45.dr; if(!d) return; d.keep = {}; document.querySelectorAll('#v45dr [id^="v45c"]').forEach(i => d.keep[i.id] = i.value); };
+
+/* inputs: search, scheme filters and the row checkboxes */
+document.addEventListener('input', e => { const k = e.target.dataset && e.target.dataset.v45in; if(!k || e.target.tagName === 'SELECT') return; S.f[k] = e.target.value; V45.refocus = {id:e.target.id, pos:e.target.selectionStart}; render(); });
+document.addEventListener('change', e => { const d = e.target.dataset || {}; if(d.v45in && e.target.tagName === 'SELECT'){ S.f[d.v45in] = e.target.value; render(); } if(d.v45sel){ V45.sel[e.target.checked ? 'add' : 'delete'](d.v45sel); render(); } });
+/* arrow keys between cells, Escape closes */
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && (V45.ed || V45.dr)){ e.stopImmediatePropagation(); if(V45.ed) V45.ed = null; else V45.dr = null; draw45(); return; }
+  const c = e.target.closest && e.target.closest('.v45-t .v45-c'); if(!c || !/^Arrow/.test(e.key)) return; e.preventDefault(); let r = +c.dataset.r, k = +c.dataset.c;
+  if(e.key === 'ArrowDown') r++; if(e.key === 'ArrowUp') r--; if(e.key === 'ArrowRight') k++; if(e.key === 'ArrowLeft') k--; const n = document.querySelector(`.v45-t .v45-c[data-r="${r}"][data-c="${k}"]`); if(n) n.focus(); }, true);
+addEventListener('mousedown', e => { if(V45.ed && !e.target.closest('#v45pop') && !e.target.closest('[data-act^="v45"]') && !e.target.closest('[data-v45bar]')){ V45.ed = null; draw45(); } }, true);
+
+/* drag a bar to move it, or its right edge to change the end */
+addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('[data-v45bar]'); if(!b) return; const t = DB.pow.find(x => x.id === b.dataset.v45bar); if(!t) return; e.preventDefault();
+  V45.drag = {t, b, x0:e.clientX, l0:parseFloat(b.style.left), w0:parseFloat(b.style.width), end:!!e.target.dataset.v45end, dd:0}; b.setPointerCapture && b.setPointerCapture(e.pointerId); b.classList.add('drag'); });
+addEventListener('pointermove', e => { const d = V45.drag; if(!d) return; d.dd = Math.round((e.clientX - d.x0) / DW45); if(d.end) d.b.style.width = Math.max(DW45 - 4, d.w0 + d.dd * DW45) + 'px'; else d.b.style.left = d.l0 + d.dd * DW45 + 'px'; });
+addEventListener('pointerup', e => { const d = V45.drag; if(!d) return; V45.drag = null; d.b.classList.remove('drag'); const t = d.t;
+  if(!d.dd){ V45.ed = {task:t.id, at:rect45(d.b)}; return draw45(); }
+  if(d.end){ const ne = addDays(t.e || t.s, d.dd); t.e = ne < t.s ? t.s : ne; } else { t.s = addDays(t.s, d.dd); t.e = addDays(t.e || t.s, d.dd); }
+  if(t.st === 'Not started') t.st = 'Scheduled'; log45(prOf45(t.pr), t.m, `Moved to ${sh45(t.s)}${t.e !== t.s ? ' to ' + sh45(t.e) : ''}`); render(); toast(`${t.m}: ${sh45(t.s)}${t.e !== t.s ? ' to ' + sh45(t.e) : ''}.`); });
+
+/* ---------- The popover editor and the side panel ---------- */
+const chips45 = (vals, cur, act = 'v45set', attr = '') => `<div class="v45-chips">${vals.map(v => `<button type="button" data-act="${act}" data-v="${esc(v)}"${attr} aria-pressed="${cur === v}">${esc(v)}</button>`).join('')}</div>`;
+function edHTML45(){ const e = V45.ed;
+  if(e.pick){ const bk = S.f.v45k && S.f.v45k !== 'sum' ? S.f.v45k : null; const fs = FLD45.filter(f => !bk || f.b === bk);
+    return `<header><b>Set a field for ${V45.sel.size} jobs</b><button class="ib" data-act="v45edx" aria-label="Close">${ico('x', 15)}</button></header>${BLK45.filter(([k]) => fs.some(f => f.b === k)).map(([k, n]) => `<small class="v45-pg">${esc(n)}</small><div class="v45-chips">${fs.filter(f => f.b === k).map(f => `<button type="button" data-act="v45bf" data-v="${f.k}">${esc(f.n)}</button>`).join('')}</div>`).join('')}`; }
+  if(e.add){ return `<header><b>Add a task</b><button class="ib" data-act="v45edx" aria-label="Close">${ico('x', 15)}</button></header><p class="v45-sub">${esc(prOf45(e.add).ad)}</p><small class="v45-pg">Measure</small>${chips45(PMEAS45, e.m, 'v45am')}<div class="v45-2"><label><small>Start</small><input type="date" id="v45d1"></label><label><small>End</small><input type="date" id="v45d2"></label></div><footer><button class="btn sec sm" data-act="v45edx">Cancel</button><button class="btn pri sm" data-act="v45save">Add to the programme</button></footer>`; }
+  if(e.task){ const t = DB.pow.find(x => x.id === e.task), p = prOf45(t.pr);
+    return `<header><b>${esc(t.m)}</b><button class="ib" data-act="v45edx" aria-label="Close">${ico('x', 15)}</button></header><p class="v45-sub">${esc(p.ad)}</p><small class="v45-pg">Status</small>${chips45(PST45, t.st)}<div class="v45-2"><label><small>Start</small><input type="date" id="v45d1" value="${t.s || ''}"></label><label><small>End</small><input type="date" id="v45d2" value="${t.e || ''}"></label></div>`
+      + `<label class="v45-f"><small>Installer</small><input id="v45by" list="v45ins" value="${esc(t.by || '')}" placeholder="Who does it"><datalist id="v45ins">${INST45.map(x => `<option value="${esc(x)}">`).join('')}</datalist></label><label class="v45-f"><small>Notes</small><input id="v45tn" value="${esc(t.nt || '')}" placeholder="Shown in the Notes column of the Excel"></label>`
+      + `<footer><button class="btn sec sm v45-del" data-act="v45del">Remove</button><button class="btn pri sm" data-act="v45save">Save dates</button></footer>`; }
+  const f = FK45[e.f], one = e.ids.length === 1 ? prOf45(e.ids[0]) : null, v = one ? val45(one, f) : null;
+  const h = `<header><b>${esc(f.n)}</b><button class="ib" data-act="v45edx" aria-label="Close">${ico('x', 15)}</button></header><p class="v45-sub">${one ? esc(one.ad) : `${e.ids.length} selected jobs; jobs where it does not apply are skipped`}</p>`;
+  if(f.kind === 'st') return h + chips45(STV45, v) + `<button class="v45-clr" data-act="v45set" data-v="">Clear</button>`;
+  if(f.kind === 'yn') return h + chips45(['Yes', 'No'], v) + `<button class="v45-clr" data-act="v45set" data-v="">Clear</button>`;
+  if(f.kind === 'ch') return h + chips45(f.o, v) + `<button class="v45-clr" data-act="v45set" data-v="">Clear</button>`;
+  if(f.kind === 'date') return h + `<div class="v45-2"><label><small>Date</small><input type="date" id="v45d1" value="${v || ''}"></label><button class="btn sec sm" data-act="v45today">Today</button></div><footer><button class="btn sec sm" data-act="v45set" data-v="">Clear</button><button class="btn pri sm" data-act="v45save">Save</button></footer>`;
+  if(f.kind === 'txt') return h + `<textarea id="v45tx" rows="3" placeholder="Type here">${esc(v || '')}</textarea><footer><span class="v45-k">Ctrl + Enter saves</span><button class="btn pri sm" data-act="v45save">Save</button></footer>`;
+  const t = v || {}; return h + `<small class="v45-pg">Status</small>${chips45(PST45, one ? t.st : null)}<div class="v45-2"><label><small>Start</small><input type="date" id="v45d1" value="${t.s || ''}"></label><label><small>End</small><input type="date" id="v45d2" value="${t.e || ''}"></label></div>${f.k === 'spv' ? `<label class="v45-f"><small>Installer</small><input id="v45by" list="v45ins" value="${esc(t.by || '')}"><datalist id="v45ins">${INST45.map(x => `<option value="${esc(x)}">`).join('')}</datalist></label>` : ''}<p class="v45-sub">Same dates as the Programme of works.</p><footer><button class="btn sec sm" data-act="v45go" data-v="pow">Open the programme</button><button class="btn pri sm" data-act="v45save">Save dates</button></footer>`; }
+function drHTML45(){ const d = V45.dr;
+  if(d.k === 'cmp'){ const c = d.id ? DB.cmp45.find(x => x.id === d.id) : null, f = d.f || (d.f = c ? {stage:c.stage, ty:c.ty, st:c.st} : {st:'Open'}), k = d.keep || {}, val = (id, v) => esc(k[id] ?? v ?? '');
+    const ps = trk45().filter(p => p.ph !== 'Cancelled'), own = Object.entries(PEO).filter(([, p]) => ['del', 'dir', 'com', 'mob'].includes(p.ar));
+    return `<header><div><small>${c ? c.id : 'New'}</small><h2>${c ? 'Complaint' : 'Log a complaint'}</h2></div><button class="ib" data-act="v45drx" aria-label="Close">${ico('x', 17)}</button></header><div class="v45-db">`
+      + `<label class="v45-f"><small>Property <em class="req">*</em></small><select id="v45cpr"><option value="">Choose a property...</option>${ps.map(p => `<option value="${p.id}"${(k.v45cpr ?? (c && c.pr)) === p.id ? ' selected' : ''}>${esc(p.ad)}, ${esc(p.pc)}</option>`).join('')}</select></label>`
+      + `<small class="v45-pg">Stage <em class="req">*</em></small>${chips45(CSTG45, f.stage, 'v45cf', ' data-k="stage"')}<small class="v45-pg">Type <em class="req">*</em></small>${chips45(CTY45, f.ty, 'v45cf', ' data-k="ty"')}`
+      + `<label class="v45-f"><small>Owner</small><select id="v45cow">${own.map(([id, p]) => `<option value="${id}"${(k.v45cow ?? (c ? c.own : 'dre')) === id ? ' selected' : ''}>${esc(p.n)}, ${esc(p.r)}</option>`).join('')}</select></label>`
+      + `<label class="v45-f"><small>Issue <em class="req">*</em></small><textarea id="v45ciss" rows="3">${val('v45ciss', c && c.iss)}</textarea></label><label class="v45-f"><small>Action</small><textarea id="v45cact" rows="2">${val('v45cact', c && c.act)}</textarea></label>`
+      + `<div class="v45-2"><label><small>Action date</small><input type="date" id="v45caon" value="${val('v45caon', c && c.aon)}"></label><label><small>Resolved on</small><input type="date" id="v45cron" value="${val('v45cron', c && c.ron)}"></label></div><small class="v45-pg">Status</small>${chips45(['Open', 'Closed'], f.st, 'v45cf', ' data-k="st"')}`
+      + `</div><footer><button class="btn sec" data-act="v45drx">Cancel</button><button class="btn pri" data-act="v45cmsave">${c ? 'Save' : 'Log the complaint'}</button></footer>`; }
+  const p = prOf45(d.id), it = IT45(p), b = band45(p);
+  return `<header><div><small>${esc(p.ref)}, ${esc(p.pc)}</small><h2>${esc(p.ad)}</h2><span class="v45-hb">${scPill55(p.sc)}${bPill45(b)}<span class="v45-ms">${mPills45(p)}</span></span></div><button class="ib" data-act="v45drx" aria-label="Close">${ico('x', 17)}</button></header><div class="v45-db">`
+    + `<div class="v45-acts"><button class="btn sec sm" data-act="v45op" data-v="${p.id}">${ico('home', 14)}Open the property</button><button class="btn sec sm" data-act="v45go" data-v="pow">${ico('cal', 14)}Programme of works</button></div>`
+    + (it.hold ? `<div class="v45-hold">${ico('alert', 15)}<span><b>On hold</b>${esc(it.hold)}</span><button class="btn sec sm" data-act="v45hold" data-v="${p.id}">Release</button></div>` : '')
+    + BLK45.map(([k, n, ic]) => { const fs = FLD45.filter(f => f.b === k && app45(p, f)), pc0 = pct45(p, k); if(!fs.length) return '';
+      return `<section class="v45-sec${d.b === k ? ' hl' : ''}" id="v45s-${k}"><h3><span class="oi2">${ico(ic, 16)}</span>${esc(n)}<em>${pc0}%</em><span class="v45-sb"><i style="width:${pc0}%"></i></span></h3>${fs.map(f => `<div class="v45-fr"><span>${esc(f.n)}</span>${cell45(p, f, 0, 0)}</div>`).join('')}</section>`; }).join('')
+    + `<section class="v45-sec"><h3><span class="oi2">${ico('msg', 16)}</span>Notes<em>${it.notes.length}</em></h3>${it.notes.slice().reverse().map(x => `<div class="v45-n"><b>${esc((PEO[x.by] || {}).n || '')}</b><small>${fmtDy(x.on)}</small><p>${esc(x.t)}</p></div>`).join('') || '<p class="v45-sub">No notes yet.</p>'}<textarea id="v45nt" rows="2" placeholder="Add a note for the team, it is kept with its date and author"></textarea><div class="v45-acts"><button class="btn pri sm" data-act="v45note" data-v="${p.id}">Add the note</button></div></section>`
+    + (!it.hold && !['Cancelled', 'Submitted jobs'].includes(b) ? `<section class="v45-sec"><h3><span class="oi2">${ico('alert', 16)}</span>Put on hold</h3><input id="v45hr" placeholder="Why, for example: customer wants a site visit first"><div class="v45-acts"><button class="btn sec sm" data-act="v45hold" data-v="${p.id}">Put on hold</button></div></section>` : '')
+    + `<section class="v45-sec"><h3><span class="oi2">${ico('history', 16)}</span>Changes</h3>${it.his.slice(-6).reverse().map(h => `<div class="v45-hi"><b>${esc(h.f)}</b> ${esc(h.v)}<small>${esc((PEO[h.by] || {}).n || '')}, ${fmtDy(h.on)}</small></div>`).join('') || '<p class="v45-sub">Nothing changed in this demo session yet.</p>'}</section></div>`; }
+function draw45(){ let dr = document.getElementById('v45dr');
+  if(V45.dr && (V45.dr.k === 'cmp' || prOf45(V45.dr.id))){ if(!dr){ dr = document.createElement('div'); dr.id = 'v45dr'; document.body.appendChild(dr); } const sc = dr.querySelector('.v45-db'), top = sc ? sc.scrollTop : 0, isNew = dr.dataset.k !== `${V45.dr.k}${V45.dr.id}`;
+    const ih = drHTML45(), as = dr.querySelector('.v45-pan'); if(isNew || !as) dr.innerHTML = `<div class="v45-scrim" data-act="v45drx"></div><aside class="v45-pan" role="dialog" aria-modal="true" aria-label="Details">${ih}</aside>`; else if(dr._h !== ih) as.innerHTML = ih; dr._h = ih; dr.dataset.k = `${V45.dr.k}${V45.dr.id}`;
+    const nb = dr.querySelector('.v45-db'); if(nb){ if(!isNew) nb.scrollTop = top; else if(V45.dr.b){ const s = dr.querySelector('#v45s-' + V45.dr.b); if(s) nb.scrollTop = s.offsetTop - 12; } } }
+  else if(dr) dr.remove();
+  let w = document.getElementById('v45pop'); if(!V45.ed){ if(w) w.remove(); return; } if(!w){ w = document.createElement('div'); w.id = 'v45pop'; document.body.appendChild(w); }
+  w.innerHTML = `<div class="v45-pop" role="dialog" aria-label="Edit">${edHTML45()}</div>`; const p = w.firstChild, a = V45.ed.at || {left:innerWidth / 2 - 160, bottom:120, top:120}, h = p.offsetHeight, wd = p.offsetWidth;
+  p.style.left = Math.max(8, Math.min(a.left, innerWidth - wd - 8)) + 'px'; p.style.top = (a.bottom + 6 + h > innerHeight - 8 ? Math.max(8, a.top - h - 6) : a.bottom + 6) + 'px';
+  const fi = p.querySelector('textarea, input[type="date"], [aria-pressed="true"], .v45-chips button'); if(fi) fi.focus(); }
+document.addEventListener('keydown', e => { if(e.target.id === 'v45tx' && e.key === 'Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); A.v45save(); } if(e.target.closest && e.target.closest('#v45pop') && e.key === 'Enter' && e.target.tagName === 'INPUT'){ e.preventDefault(); A.v45save(); } });
+
+/* ---------- Excel: the same files REFYT already sends, built from the app ---------- */
+let XL45 = null;
+const xl45 = () => XL45 || (XL45 = new Promise((ok, ko) => { if(window.ExcelJS) return ok(window.ExcelJS); const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'; s.onload = () => window.ExcelJS ? ok(window.ExcelJS) : ko(new Error('ExcelJS')); s.onerror = () => { XL45 = null; ko(new Error('load')); }; document.head.appendChild(s); }));
+const xd45 = s => { if(!s) return null; const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+const col45 = n => { let s = ''; while(n > 0){ const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); } return s; };
+const fill45 = argb => ({type:'pattern', pattern:'solid', fgColor:{argb}});
+const HDR45 = c => { c.font = {name:'Arial', bold:true, color:{argb:'FFFFFFFF'}, size:10}; c.fill = fill45('FF1F3864'); c.alignment = {vertical:'middle', horizontal:'center', wrapText:true}; c.border = {bottom:{style:'thin', color:{argb:'FF0F1F3D'}}}; };
+const XV45 = {Done:'DONE', Pending:'PENDING', Missing:'MISSING', 'N/A':'N/A', Yes:'Y', No:'N'};
+function powBook45(X, blank){ const W = win45(), wb = new X.Workbook(), ws = wb.addWorksheet(`Programme ${MON45[W.mo]} ${W.y}`), days = Array.from({length:W.n}, (_, i) => addDays(W.a, i)), C0 = 9, CL = col45(C0 + days.length - 1);
+  ws.properties.defaultRowHeight = 16; ws.getCell('A1').value = 'Refyt/EON GFS - Programme of works'; ws.getCell('A1').font = {name:'Arial', bold:true, size:14, color:{argb:'FF1F3864'}};
+  [['A2', 'Month:'], ['D2', 'Prepared by:'], ['F2', 'Date']].forEach(([a, v]) => { ws.getCell(a).value = v; ws.getCell(a).font = {name:'Arial', bold:true, size:10}; });
+  ws.getCell('B2').value = xd45(W.a); ws.getCell('B2').numFmt = 'mmm-yy'; ws.getCell('E2').value = (PEO[ME()] || {}).n || ''; ws.getCell('G2').value = xd45(TODAY); ws.getCell('G2').numFmt = 'dd/mm/yyyy'; ['E2', 'G2'].forEach(a => { ws.getCell(a).fill = fill45('FFFFF9E5'); ws.getCell(a).font = {name:'Arial', size:10}; });
+  ws.getCell(3, C0).value = `${MONTHS45[W.mo - 1]} ${W.y}`; ws.getCell(3, C0).font = {name:'Arial', bold:true, size:10};
+  days.forEach((d, i) => { const c4 = ws.getCell(4, C0 + i); c4.value = DSH[fromIso(d).getDay()][0]; c4.font = {name:'Arial', size:8, color:{argb:'FF64748B'}}; c4.alignment = {horizontal:'center'}; const c5 = ws.getCell(5, C0 + i); c5.value = xd45(d); c5.numFmt = 'd'; HDR45(c5); ws.getColumn(C0 + i).width = 3.6; });
+  ['Property', 'Measure', 'Start Date', 'End Date', 'Duration (days)', 'Status', 'Notes'].forEach((h, i) => HDR45(ws.getCell(5, i + 1))); ws.getRow(5).height = 30;
+  [38, 26, 12, 12, 10, 13, 40, 2].forEach((w, i) => ws.getColumn(i + 1).width = w);
+  const rows = blank ? [] : trk45().flatMap(p => tasks45(p).filter(t => !t.s || (t.s <= W.b && (t.e || t.s) >= W.a)).map(t => [p, t])).sort((a, b) => ((a[1].s || '9') < (b[1].s || '9') ? -1 : 1)).sort((a, b) => a[0].ad === b[0].ad ? 0 : trk45().indexOf(a[0]) - trk45().indexOf(b[0]));
+  const order = []; rows.forEach(([p]) => { if(!order.includes(p)) order.push(p); }); const sorted = order.flatMap(p => rows.filter(r => r[0] === p));
+  const last = Math.max(160, 6 + sorted.length + 40);
+  for(let r = 6; r <= last; r++){ const x = sorted[r - 6]; const row = ws.getRow(r);
+    if(x){ const [p, t] = x; row.getCell(1).value = `${p.ad} - ${p.pc}`; row.getCell(2).value = t.m; row.getCell(3).value = xd45(t.s); row.getCell(4).value = xd45(t.e); row.getCell(6).value = XST45[t.st]; row.getCell(7).value = [t.by, t.nt].filter(Boolean).join('. ') || null; }
+    row.getCell(5).value = {formula:`IF(AND(C${r}<>"",D${r}<>""),NETWORKDAYS(C${r},D${r}),"")`}; [1, 2, 3, 4, 6, 7].forEach(c => { const cl = row.getCell(c); cl.fill = fill45('FFFFF9E5'); cl.font = {name:'Arial', size:10}; if(c === 3 || c === 4) cl.numFmt = 'dd/mm/yy'; }); row.getCell(5).font = {name:'Arial', size:10}; row.getCell(5).alignment = {horizontal:'center'}; }
+  ws.dataValidations.add(`F6:F${last}`, {type:'list', allowBlank:true, formulae:['"Not Started,Scheduled,In Progress,On Hold,Complete,Cancelled"']});
+  ws.dataValidations.add(`B6:B${last}`, {type:'list', allowBlank:true, showErrorMessage:false, formulae:[`"${PMEAS45.join(',')}"`]});
+  ws.dataValidations.add(`C6:D${last}`, {type:'date', operator:'greaterThan', allowBlank:true, showErrorMessage:true, errorTitle:'Date', error:'Type a date, for example 20/11/2026.', formulae:[new Date(Date.UTC(2020, 0, 1))]});
+  const cf = (f, argb) => ({type:'expression', formulae:[f], style:{fill:{type:'pattern', pattern:'solid', bgColor:{argb}}}}), on = `AND($C6<>"",I$5>=$C6,I$5<=IF($D6="",$C6,$D6)`;
+  ws.addConditionalFormatting({ref:`F6:F${last}`, rules:[cf('$F6="Complete"', 'FFE2EFDA'), cf('$F6="In Progress"', 'FFDDEBF7'), cf('$F6="On Hold"', 'FFFFF2CC'), cf('$F6="Cancelled"', 'FFEDEDED')].map((r, i) => ({...r, priority:i + 1}))});
+  ws.addConditionalFormatting({ref:`I6:${CL}${last}`, rules:[cf(`${on},$F6="Complete")`, 'FF70AD47'), cf(`${on},$F6="On Hold")`, 'FFFFC000'), cf(`${on},$F6="Cancelled")`, 'FFBFBFBF'), cf(`${on},$F6="In Progress")`, 'FF2E75B6'), cf(`${on})`, 'FF9DC3E6'), cf('WEEKDAY(I$5,2)>5', 'FFF2F2F2')].map((r, i) => ({...r, priority:10 + i}))});
+  ws.views = [{state:'frozen', xSplit:2, ySplit:5}]; return wb; }
+function itrBook45(X, blank){ const wb = new X.Workbook(), ws = wb.addWorksheet('Progress Tracker'), fx = ['Delivery', 'Council', 'No.', 'Address', 'Measures', 'Reference', 'Comments'], pf = FLD45.filter(f => f.xg !== 'Install Checks'), ps = blank ? [] : trk45();
+  const cols = [...fx.map(n => ({n})), ...pf.map(f => ({n:f.n, f}))]; let gi = fx.length + 1;
+  [...new Set(pf.map(f => f.xg))].forEach(g => { const n = pf.filter(f => f.xg === g).length; ws.mergeCells(1, gi, 1, gi + n - 1); const c = ws.getCell(1, gi); c.value = g; c.font = {name:'Arial', bold:true, size:10, color:{argb:'FF1F3864'}}; c.fill = fill45('FFDDE5F3'); c.alignment = {horizontal:'center'}; gi += n; });
+  cols.forEach((c, i) => { const h = ws.getCell(2, i + 1); h.value = c.n; HDR45(h); ws.getColumn(i + 1).width = i === 3 ? 34 : i === 6 ? 36 : c.f && c.f.kind === 'txt' ? 30 : 14; }); ws.getRow(2).height = 34;
+  let r = 3, no = 0; const stCols = [];
+  cols.forEach((c, i) => { if(c.f && ['st', 'yn', 'ch'].includes(c.f.kind)) stCols.push([col45(i + 1), c.f]); });
+  (blank ? BANDS45 : BANDS45.filter(b => ps.some(p => band45(p) === b))).forEach(b => { const br = ws.getRow(r++); br.getCell(1).value = b.toUpperCase(); br.getCell(1).font = {name:'Arial', bold:true, size:10}; for(let c = 1; c <= cols.length; c++) br.getCell(c).fill = fill45('FFF2F2F2');
+    ps.filter(p => band45(p) === b).forEach(p => { const row = ws.getRow(r++), it = IT45(p), nt = it.notes[it.notes.length - 1]; no++;
+      [delMon45(p), council45(p), no, `${p.ad} ${p.pc}`, p.ms.map(x => MEAS[x.m].s).join(', '), p.ref, [it.hold, nt && nt.t].filter(Boolean).join('. ') || null].forEach((v, i) => row.getCell(i + 1).value = v);
+      pf.forEach((f, j) => { const cell = row.getCell(fx.length + 1 + j); if(!app45(p, f)){ cell.value = 'N/A'; cell.font = {name:'Arial', size:10, color:{argb:'FF94A3B8'}}; return; } const v = val45(p, f);
+        if(f.kind === 'pow'){ cell.value = v.s ? xd45(v.s) : v.st === 'Not started' ? null : XST45[v.st]; if(v.s) cell.numFmt = 'dd/mm/yy'; if(f.k === 'spv' && v.by){ cell.note = `Installer: ${v.by}`; } }
+        else if(f.kind === 'date'){ cell.value = xd45(v); if(v) cell.numFmt = 'dd/mm/yy'; } else cell.value = v ? (XV45[v] || v) : null; cell.font = {name:'Arial', size:10}; });
+      row.eachCell(c => { if(!c.font || !c.font.name) c.font = {name:'Arial', size:10}; }); }); });
+  const last = Math.max(r + 40, 120); stCols.forEach(([L, f]) => ws.dataValidations.add(`${L}3:${L}${last}`, {type:'list', allowBlank:true, showErrorMessage:false, formulae:[`"${(f.kind === 'st' ? ['DONE', 'PENDING', 'MISSING', 'N/A'] : f.kind === 'yn' ? ['Y', 'N'] : f.o).join(',')}"`]}));
+  for(let i = 3; i <= last; i++) [1, 2, 3, 4, 5, 6, 7].forEach(c => { const cl = ws.getCell(i, c); if(cl.value == null && !cl.fill) cl.fill = fill45('FFFFF9E5'); });
+  ws.views = [{state:'frozen', xSplit:4, ySplit:2}];
+  const cw = wb.addWorksheet('Complaints Tracker'), ch = ['Date of complaint / issue', 'Stage', 'Type', 'Site / address', 'Owner', 'Issue', 'Action', 'Action Date', 'Resolve date', 'Status', 'Days open'];
+  ch.forEach((h, i) => { HDR45(cw.getCell(1, i + 1)); cw.getCell(1, i + 1).value = h; cw.getColumn(i + 1).width = [14, 13, 16, 30, 18, 40, 40, 12, 12, 10, 10][i]; }); cw.getRow(1).height = 30;
+  const cs = blank ? [] : DB.cmp45.slice().sort((a, b) => a.on < b.on ? -1 : 1), cl2 = Math.max(cs.length + 20, 40);
+  for(let i = 0; i < cl2; i++){ const rr = i + 2, row = cw.getRow(rr), c = cs[i]; if(c){ const p = prOf45(c.pr) || {}; [xd45(c.on), c.stage, c.ty, p.ad, (PEO[c.own] || {}).n || '', c.iss, c.act || null, xd45(c.aon), xd45(c.ron), c.st].forEach((v, j) => row.getCell(j + 1).value = v); }
+    row.getCell(11).value = {formula:`IF(A${rr}="","",IF(I${rr}<>"",I${rr}-A${rr},TODAY()-A${rr}))`}; [1, 8, 9].forEach(j => row.getCell(j).numFmt = 'dd/mm/yy'); row.eachCell({includeEmpty:true}, x => x.font = {name:'Arial', size:10}); }
+  cw.dataValidations.add(`B2:B${cl2 + 1}`, {type:'list', allowBlank:true, formulae:[`"${CSTG45.join(',')}"`]}); cw.dataValidations.add(`C2:C${cl2 + 1}`, {type:'list', allowBlank:true, formulae:[`"${CTY45.join(',')}"`]}); cw.dataValidations.add(`J2:J${cl2 + 1}`, {type:'list', allowBlank:true, formulae:['"Open,Closed"']});
+  cw.views = [{state:'frozen', ySplit:1}];
+  const iw = wb.addWorksheet('Install Checks'), icf = FLD45.filter(f => ['scl', 'pav', 'lift', 'sto', 'rear', 'base', 'roof', 'sat', 'qch'].includes(f.k)), ih = ['Address', 'Scaff Location', 'Pavement Licence', 'Extra lift', 'Storeys', 'Extra Rear Required', 'Basement', 'Roof Condition', 'Satellite', 'Quote changes'];
+  const ik = ['scl', 'pav', 'lift', 'sto', 'rear', 'base', 'roof', 'sat', 'qch']; ih.forEach((h, i) => { const c = iw.getCell(1, i + 1); c.value = h; HDR45(c); iw.getColumn(i + 1).width = i === 0 || i >= 7 ? 32 : 14; }); iw.getRow(1).height = 30;
+  (blank ? [] : trk45().filter(p => !['Cancelled', 'Submitted jobs'].includes(band45(p)))).forEach((p, i) => { const row = iw.getRow(i + 2); row.getCell(1).value = `${p.ad} ${p.pc}`; ik.forEach((k, j) => row.getCell(j + 2).value = IT45(p)[k] || null); row.eachCell(x => x.font = {name:'Arial', size:10}); });
+  ik.forEach((k, j) => { const f = FK45[k]; if(f.kind === 'ch') iw.dataValidations.add(`${col45(j + 2)}2:${col45(j + 2)}200`, {type:'list', allowBlank:true, showErrorMessage:false, formulae:[`"${f.o.join(',')}"`]}); });
+  const xw = wb.addWorksheet('Cancelled Tracker'), xh = ['Status Reason', 'Reference', 'Address', 'Post Code', 'Measures', 'Quoted', 'Cancellation reason', 'Customer Contacted', 'Comments'];
+  xh.forEach((h, i) => { const c = xw.getCell(1, i + 1); c.value = h; HDR45(c); xw.getColumn(i + 1).width = [18, 14, 30, 10, 18, 10, 40, 12, 34][i]; }); xw.getRow(1).height = 30;
+  (blank ? [] : DB.pr.filter(p => EON45(p) && p.ph === 'Cancelled')).forEach((p, i) => { const row = xw.getRow(i + 2); ['Property Unsuitable', p.ref, p.ad, p.pc, p.ms.map(x => MEAS[x.m].s).join(', '), p.cancel && pIdx(p.cancel.at) >= 2 ? 'yes' : 'no', (p.cancel || {}).why || '', 'yes', null].forEach((v, j) => row.getCell(j + 1).value = v); row.eachCell(x => x.font = {name:'Arial', size:10}); });
+  if(blank){ const hw = wb.addWorksheet('How to fill'); [['How to fill this template'], [''], ['One row per property, under its band (Pending approval, Pre installation, and so on).'], ['Yellow cells are the ones you type in. Status columns take DONE, PENDING, MISSING or N/A; approvals take Y or N.'], ['Dates as dd/mm/yy. Write N/A where a column does not apply to the job.'], ['Example row: Nov | Medway | 1 | 12 Example Street ME7 1AA | Solar PV | EON-00000 | Customer prefers mornings'], [''], ['Filling it in the REFYT app is faster: the bands, N/A and the dates of the Programme of works are filled for you.']].forEach((l, i) => { const c = hw.getCell(i + 1, 1); c.value = l[0]; c.font = {name:'Arial', size:i ? 10 : 13, bold:!i}; }); hw.getColumn(1).width = 110; }
+  return wb; }
+A.v45dl = async el => { const k = el.dataset.v, blank = /b$/.test(k), pw = /^pow/.test(k); if(el.disabled) return; el.disabled = true; const t0 = el.innerHTML; el.innerHTML = `${ico('clock', 15)}Preparing...`;
+  try { const X = await xl45(), wb = pw ? powBook45(X, blank) : itrBook45(X, blank), buf = await wb.xlsx.writeBuffer(), W = win45(), d = fromIso(TODAY);
+    const name = pw ? (blank ? 'PoW_template.xlsx' : `PoW_${d.getDate()}_${MON45[d.getMonth() + 1]}_${d.getFullYear()}_${MON45[W.mo]}.xlsx`) : (blank ? 'Install_Tracker_template.xlsx' : `Install_Tracker_${d.getDate()}_${MON45[d.getMonth() + 1]}_${d.getFullYear()}.xlsx`);
+    const ok = await saveFile4(name, new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})); if(ok) toast(`${name} is ready.`); }
+  catch(e){ toast('The Excel file could not be prepared. Check the connection and try again.'); }
+  finally { el.disabled = false; el.innerHTML = t0; } };
+
+/* ---------- After every render: popover, panel, refocus the search, the Tour button in the header ---------- */
+{ const r45 = render; render = (...x) => { r45(...x); draw45(); if(V45.refocus){ const i = document.getElementById(V45.refocus.id); if(i){ i.focus(); try { i.setSelectionRange(V45.refocus.pos, V45.refocus.pos); } catch(e) {} } V45.refocus = null; }
+  const tl = document.getElementById('tools'); if(tl && !tl.querySelector('.v45-tour')){ const nb = tl.querySelector('[data-act="popNt"]'), b = `<button class="rf-hb v45-tour" data-act="tour" title="Demo tour" aria-label="Demo tour">${ico('flag', 17)}</button>`; if(nb) nb.insertAdjacentHTML('beforebegin', b); else tl.insertAdjacentHTML('afterbegin', b); }
+  const tb = document.querySelector('.v45-tour'); if(tb) tb.classList.toggle('on', !!(S.tour && S.tour.open)); }; }
+
+/* ---------- Comment: the kit's Comment button, in place of the Tour button at the bottom ---------- */
+window.WTFB = {webhook:'https://n8n.whatever.tech/webhook/1069b789-418a-482c-8037-a6f2bbdc272f', adjuntos:{max:5, mb:10}, demo:'REFYT, demo', demo_id:'', cliente:'REFYT', version:'v5.45',
+  contexto:() => { const s = SEC5.find(x => x.k === S.sec5) || {}, pg = S.page[S.view] || '', h1 = document.querySelector('.view:not([hidden]) .op-h h1') || document.querySelector('.op-h h1'), dr = V45.dr && V45.dr.id ? prOf45(V45.dr.id) : null, fi = (S.fi || {})[S.view], pr = dr || (typeof fi === 'string' ? prOf45(fi) : null);
+    return {app:s.n || 'REFYT', pantalla:h1 ? h1.textContent.trim() : pg, pantalla_id:`${S.view}/${pg}`, registro:pr ? pr.id : '', registro_nombre:pr ? pr.ad : '', pestana:V45.dr && V45.dr.k === 'itr' ? ((BLK45.find(b => b[0] === V45.dr.b) || [])[1] || '') : ''}; }};
+
+/* ---------- Tour and version ---------- */
+TOUR.push({t:'Install tracker in the app', min:1, dolor:'Before, the install tracker was a spreadsheet outside the system, with rows moved by hand between bands.', show:['Bands set themselves from the job data.', 'Pick a group to fill its columns like a spreadsheet; select several jobs to set a column for all.', 'Download Excel gives the same file as before.'], say:'Fill it here, send the same Excel.', go:() => { S.role = 'dir'; S.trail = null; go('del', 'itr'); }},
+  {t:'Programme of works on a calendar', min:1, dolor:'Before, the programme was a second spreadsheet with the same install dates typed again.', show:['Drag a bar to move a measure; the tracker shows the new date.', 'Download Excel keeps the Gantt colours and the status lists.'], say:'One date, in both documents.', go:() => { S.role = 'dir'; S.trail = null; go('del', 'pow'); }});
+VERSIONS.forEach(v => { if(v.current){ v.current = false; if(v.v === 'v5.44') v.url = 'https://claude.ai/artifact/QncFMz3LHDHynMD5QVegwT'; } });
+VERSIONS.push({v:'v5.45', date:TODAY, major:false, current:true, url:null, title:'Install tracker, Programme of works and Complaints, with their Excel files', sum:'The install tracker and the programme of works that lived in spreadsheets are filled in Delivery and download as the same Excel files; complaints have their own list; a Comment button replaces the Tour button at the bottom.', steps:[
+  {t:'Install tracker', min:1, dolor:'Before, the install tracker was a spreadsheet outside the app, with bands kept by moving rows.', show:['Delivery › Install tracker: every E.ON job by band, with a progress bar per group.', 'Pick Enabling or Installation to fill the columns cell by cell.'], say:'The same columns, without moving rows.', go:() => { S.role = 'dir'; S.trail = null; S.f.v45k = 'sum'; go('del', 'itr'); }},
+  {t:'Fill several jobs at once', min:.5, dolor:'Before, the same value was typed row by row.', show:['Tick several jobs and use Set a field for all.', 'Arrow keys move between cells; Enter opens one.'], say:'One click for a whole batch.', go:() => { S.role = 'dir'; S.trail = null; S.f.v45k = 'en'; go('del', 'itr'); }},
+  {t:'Programme of works', min:1, dolor:'Before, the programme repeated the install dates in a second file.', show:['Drag a bar to move it, or its right edge to change the end.', 'The Install tracker reads the same dates.'], say:'One date, in both places.', go:() => { S.role = 'dir'; S.trail = null; go('del', 'pow'); }},
+  {t:'Download the Excel files', min:.5, dolor:'Before, the files were the source; now they come out of the app.', show:['Download Excel gives the PoW with its Gantt colours, or the tracker with its tabs.', 'Blank template, for anyone who still fills it outside.'], say:'Same file, no retyping.', go:() => { S.role = 'dir'; S.trail = null; go('del', 'pow'); }},
+  {t:'Complaints', min:.5, dolor:'Before, complaints were a tab of the tracker with days open typed by hand.', show:['Log a complaint on a property with owner and action.', 'Days open counts by itself.'], say:'Nothing open gets forgotten.', go:() => { S.role = 'dir'; S.trail = null; go('del', 'cmp'); }},
+  {t:'Comment on any screen', min:.5, dolor:'Before, feedback on the demo came by email or in the meeting.', show:['Comment, at the bottom right: say if it is an improvement, something that does not work or a question.', 'Point at something on the screen or send a file.'], say:'Tell us right where you see it.', go:() => { S.role = 'dir'; S.trail = null; go('del', 'itr'); }}]});
+
+/* =================== v5.46: bill of quantities in Quotes, subcontractor rates, cancelled jobs for Dynamics =================== */
+const fmP46 = v => v == null || v === '' ? '' : '£' + Number(v).toLocaleString('en-GB', {minimumFractionDigits:Number(v) % 1 ? 2 : 0, maximumFractionDigits:2});
+/* a generic editor in the same popover as the tracker: choices, a number, a text or a date */
+const gen46 = (el, spec) => { V45.ed = {gen:spec, at:rect45(el)}; draw45(); };
+{ const e0 = edHTML45; edHTML45 = () => { const e = V45.ed;
+    if(e.gen){ const g = e.gen, h = `<header><b>${esc(g.t)}</b><button class="ib" data-act="v45edx" aria-label="Close">${ico('x', 15)}</button></header>${g.sub ? `<p class="v45-sub">${esc(g.sub)}</p>` : ''}`;
+      if(g.kind === 'ch') return h + chips45(g.o, g.v) + (g.noClear ? '' : `<button class="v45-clr" data-act="v45set" data-v="">Clear</button>`);
+      if(g.kind === 'num') return h + `<div class="v45-2"><label><small>${esc(g.lbl || 'Quantity')}</small><input id="v46n" inputmode="decimal" value="${g.v ?? ''}" placeholder="0"></label>${g.unit ? `<span class="v46-u">${esc(g.unit)}</span>` : ''}</div><footer><button class="btn sec sm" data-act="v45set" data-v="">Clear</button><button class="btn pri sm" data-act="v45save">Save</button></footer>`;
+      if(g.kind === 'date') return h + `<div class="v45-2"><label><small>Date</small><input type="date" id="v45d1" value="${g.v || ''}"></label><button class="btn sec sm" data-act="v45today">Today</button></div><footer><button class="btn sec sm" data-act="v45set" data-v="">Clear</button><button class="btn pri sm" data-act="v45save">Save</button></footer>`;
+      return h + `<textarea id="v45tx" rows="3" placeholder="${esc(g.ph || 'Type here')}">${esc(g.v || '')}</textarea><footer><span class="v45-k">Ctrl + Enter saves</span><button class="btn pri sm" data-act="v45save">Save</button></footer>`; }
+    const h = e0(); if(e.task){ const t = DB.pow.find(x => x.id === e.task), c = t && est46(t); if(c) return h.replace('<footer>', `<p class="v46-est">${ico('wallet', 14)}Estimated cost <b>${fmP46(c.v)}</b><small>${esc(c.why)}</small></p><footer>`); } return h; }; }
+{ const s0 = A.v45set; A.v45set = el => { const e = V45.ed; if(e && e.gen){ const cb = e.gen.cb; V45.ed = null; cb(el.dataset.v); return; } s0(el); }; }
+{ const s0 = A.v45save; A.v45save = () => { const e = V45.ed; if(e && e.gen){ const g = e.gen, cb = g.cb, gv = id => (document.getElementById(id) || {}).value;
+      let v = g.kind === 'num' ? String(gv('v46n') || '').replace(/[£,\s]/g, '') : g.kind === 'date' ? gv('v45d1') || '' : (gv('v45tx') || '').trim();
+      if(g.kind === 'num' && v !== '' && !(+v >= 0)) return toast('Type a number, for example 12 or 12.5.'); if(g.kind === 'num' && v !== '') v = +v; V45.ed = null; cb(v); return; } s0(); }; }
+
+/* ---------- Bill of quantities: the items of the Quotes sheet, under each measure ---------- */
+const BOQG46 = [['lft', 'Loft and survey', 'LI'], ['cwi', 'Cavity', 'CWI'], ['ven', 'Ventilation', 'DMEV']];
+const BOQ46 = [
+  ['SUR', 'lft', '*', 'Technical survey, quote and design', 'Technical survey, quote and design', 'Property'],
+  ['LA1', 'lft', 'LI', 'Enlarge loft access', 'Increase the loft access from 300 x 300 mm to 600 x 600 mm, with timber work, casing, insulated cover, draught seals and catches', 'Item'],
+  ['LA2', 'lft', 'LI', 'Loft access ladder', 'Supply and install a loft ladder to British Standards, with fixings', 'Item'],
+  ['LC1', 'lft', 'LI', 'Loft clearance, 1 hour', 'Remove items from the attic, labour only, 1 hour', 'Hour'], ['LC2', 'lft', 'LI', 'Loft clearance, 2 hours', 'Remove items from the attic, labour only, 2 hours', 'Hour'], ['LC4', 'lft', 'LI', 'Loft clearance, 4 hours', 'Remove items from the attic, labour only, 4 hours', 'Hour'],
+  ['LSP', 'lft', 'LI', 'Loft storage platform', 'Supply and fit a 2 x 2 m storage platform', 'Item'], ['LLT', 'lft', 'LI', 'Loft light', 'Light in the attic on a pull cord switch, with minor works certificate', 'Item'],
+  ['VSO', 'lft', 'LI', 'Soffit vents, per vent', 'Loft ventilation through 50 mm soffit vents, with safe access', 'Item'], ['VRT', 'lft', 'LI', 'Roof vent tiles, per vent', 'Loft ventilation through roof vent tiles, with safe access', 'Item'],
+  ['LI3', 'lft', 'LI', 'Loft insulation 300 mm, virgin loft', '300 mm mineral wool to a virgin loft', 'm²'], ['LI1', 'lft', 'LI', 'Loft top up 100 mm', '100 mm mineral wool, top up existing', 'm²'], ['LI2', 'lft', 'LI', 'Loft top up 200 mm', '200 mm mineral wool, top up existing', 'm²'],
+  ['LHT', 'lft', 'LI', 'Insulate the loft hatch', 'Insulation and draught proofing to the existing loft hatch', 'Item'], ['TNK', 'lft', 'LI', 'Cold water tank jacket', '80 mm jacket to the cold water tank, with exposed pipework', 'Unit'], ['FEX', 'lft', 'LI', 'Feed and expansion tank jacket', '80 mm jacket to the feed and expansion tank, with pipework', 'Unit'],
+  ['BRF', 'lft', 'LI', 'Lift and refit boarding', 'Remove loft boarding and refit it with existing materials', 'm²'], ['BRN', 'lft', 'LI', 'Replace boarding', 'Remove loft boarding and install a new floor to match', 'm²'], ['BAT', 'lft', 'LI', 'Battens over joists', 'Timber battens over joists before the floor, for insulation depth', 'm²'], ['XV', 'lft', 'LI', 'Loft cross ventilation', 'Install loft cross ventilation', 'Item'],
+  ['EXT', 'cwi', 'CWI', 'Extract defective CWI', 'Extract defective cavity wall insulation and remove from site', 'm²'],
+  ['CW1', 'cwi', 'CWI', 'CWI 50 mm mineral wool', '50 mm cavity mineral wool, supply and install', 'm²'], ['CW2', 'cwi', 'CWI', 'CWI 50 mm EPS bead', '50 mm cavity EPS bead, supply and install', 'm²'], ['CW3', 'cwi', 'CWI', 'CWI 75 mm mineral wool', '75 mm cavity mineral wool, supply and install', 'm²'], ['CW4', 'cwi', 'CWI', 'CWI 75 mm EPS bead', '75 mm cavity EPS bead, supply and install', 'm²'],
+  ['FK1', 'ven', 'DMEV', 'New kitchen extract fan', 'New 230v kitchen fan with 4 inch core hole, grille and wiring, minor works certificate', 'Item'], ['FK2', 'ven', 'DMEV', 'Replace kitchen extract fan', 'Replace a kitchen fan using the existing core hole', 'Item'],
+  ['FB1', 'ven', 'DMEV', 'New bathroom fan, timed overrun', 'New bathroom fan with timed overrun outside zones 1 and 2, core hole and wiring', 'Item'], ['FB2', 'ven', 'DMEV', 'In line loft bathroom fan', 'In line bathroom fan in the attic, ducted to the soffit', 'Item'],
+  ['DT1', 'ven', 'DMEV', 'Trim doors up to 10 mm', 'Trim the underside of doors up to 10 mm, per door', 'Item'], ['DT2', 'ven', 'DMEV', 'Trim doors up to 20 mm', 'Trim the underside of doors up to 20 mm, per door', 'Item'],
+  ['TV', 'ven', 'DMEV', 'Trickle vent, per window or door', 'Trickle vent to Approved Doc F1 and BS EN 13141-1, per window or door', 'Item'], ['CD', 'ven', 'DMEV', 'Core drill ventilator', 'Core drill ventilator where trickle vents are not possible', 'Unit'],
+].map(([id, g, m, n, d, u]) => ({id, g, m, n, d, u}));
+const BQ46 = Object.fromEntries(BOQ46.map(x => [x.id, x]));
+DB.rate46 = DB.rate46 || {};
+DB.boq = DB.boq || {};
+const boqPs46 = () => DB.pr.filter(p => EON45(p) && p.ph !== 'Cancelled' && pIdx(p.ph) >= 1);
+const boqOf46 = p => DB.boq[p.id] || (DB.boq[p.id] = {q:{}, x:[]});
+const appI46 = (p, it) => it.m === '*' || p.ms.some(x => x.m === it.m);
+(() => { if(Object.keys(DB.boq).length) return; boqPs46().forEach((p, k) => { const b = boqOf46(p), h = m => p.ms.some(x => x.m === m); b.q.SUR = 1;
+    if(h('LI')){ b.q[k % 3 ? 'LI2' : 'LI3'] = 30 + k % 9; b.q.LHT = 1; if(k % 2) b.q.TNK = 1; if(k % 4 === 1) b.q.LC2 = 2; if(k % 5 === 0) b.q.VSO = 4 + k % 3; }
+    if(h('CWI')){ b.q[k % 2 ? 'CW1' : 'CW3'] = 62 + k % 15; if(k % 3 === 0) b.q.EXT = 18; }
+    if(h('DMEV')){ b.q.FB1 = 1; if(k % 2) b.q.FK1 = 1; b.q.DT1 = 3 + k % 4; b.q.TV = 4 + k % 4; }
+    if(h('SPV')) b.x.push({t:k % 3 === 1 ? 'DPI, existing one in place' : 'DPI', a:null}); if(k % 4 === 2) b.x.push({t:'Pavement licence', a:null}); if(k % 5 === 1) b.x.push({t:'Mould clean', a:null}); }); })();
+const lines46 = p => Object.entries(boqOf46(p).q).filter(([, q]) => q).map(([id, q]) => ({it:BQ46[id], q}));
+const priced46 = p => { const ls = lines46(p), pr = ls.filter(l => DB.rate46[l.it.id] != null), xs = boqOf46(p).x, xp = xs.filter(x => x.a != null && x.a !== '');
+  return {n:ls.length + xs.length, np:pr.length + xp.length, v:sum(pr, l => l.q * DB.rate46[l.it.id]) + sum(xp, x => +x.a)}; };
+const quoteM46 = p => sum(p.ms, x => x.q);
+const qOk46 = p => p.quoteOk === true ? '<span class="v45-st ok">' + CHK55 + 'Approved</span>' : p.quoteOk === false ? '<span class="v45-st bl">Rejected</span>' : '<span class="v45-st bk">Waiting</span>';
+const qCell46 = (p, it, r, c) => { if(!appI46(p, it)) return '<span class="v45-na">n/a</span>'; const q = boqOf46(p).q[it.id];
+  return `<button type="button" class="v45-c v46-q" data-act="v46q" data-p="${p.id}" data-i="${it.id}" data-r="${r}" data-c="${c}" aria-label="${esc(it.n)}, ${esc(p.ad)}">${q ? `<b>${q}</b><small>${esc(it.u)}</small>` : '<span class="v45-e">Add</span>'}</button>`; };
+A.v46q = el => { const p = prOf45(el.dataset.p), it = BQ46[el.dataset.i]; gen46(el, {t:it.n, sub:`${p.ad}. ${it.d}`, kind:'num', unit:it.u, v:boqOf46(p).q[it.id] || '', cb:v => { const b = boqOf46(p); if(v === '' || v === 0) delete b.q[it.id]; else b.q[it.id] = v; log45(p, it.n, v === '' ? 'cleared' : `${v} ${it.u}`); render(); toast(`${it.n} saved.`); }}); };
+function boqPage46(){ const g = S.f.q46g || 'sum', q = norm(S.f.v46q), ps = boqPs46().filter(p => !q || norm(`${p.ad} ${p.pc} ${p.ref}`).includes(q)), its = g === 'sum' ? [] : BOQ46.filter(i => i.g === g && ps.some(p => appI46(p, i)));
+  const nPr = Object.values(DB.rate46).filter(v => v != null).length, all = boqPs46();
+  const head = g === 'sum' ? '<tr><th>Property</th><th>Scheme</th><th>Measures</th><th>Lines</th><th>Extras</th><th>Priced lines</th><th>Quote by measure</th><th>Client</th></tr>' : `<tr><th>Property</th>${its.map(i => `<th title="${esc(i.d)}">${esc(i.n)}<small class="v46-hu">${esc(i.u)}</small></th>`).join('')}</tr>`;
+  let r = 0; const row = p => { r++; const pp = priced46(p), b = boqOf46(p);
+    return `<tr><td class="rd55-pr"><button class="rd55-pn" data-act="v46dr" data-v="${p.id}">${esc(p.ad)}</button><small>${esc(p.ref)}, ${esc(p.pc)}</small></td>` + (g === 'sum'
+      ? `<td>${scPill55(p.sc)}</td><td><span class="v45-ms">${mPills45(p)}</span></td><td><b>${lines46(p).length}</b></td><td class="v45-nt">${b.x.length ? `<span>${esc(b.x.map(x => x.t).join(', '))}</span>` : '<span class="v45-na">None</span>'}</td><td>${pp.np ? `<b>${fmP46(pp.v)}</b><small class="v46-s">${pp.np} of ${pp.n} priced</small>` : '<span class="v45-na">No prices yet</span>'}</td><td><b>${fm(quoteM46(p))}</b></td><td>${qOk46(p)}</td>`
+      : its.map((i, c) => `<td>${qCell46(p, i, r, c)}</td>`).join('')) + '</tr>'; };
+  return trBar() + oph('Quotes and budgets', 'The bill of quantities of each job: how much of each item goes in. Prices per item are optional; while an item has no price, the quote keeps the price per measure from Rates.', `<button class="btn pri" data-act="v45dl" data-v="itr">${ico('down', 15)}Download Excel</button>`)
+    + `<div class="v45-row">${seg('q46', 'boq', [['dash', 'Dashboard'], ['boq', 'Bill of quantities']])}</div>`
+    + `<div class="cstats">${stat('tb', 'Jobs with quantities', all.filter(p => lines46(p).length).length, `of ${all.length} E.ON jobs`)}${stat('tv', 'Lines entered', sum(all, p => lines46(p).length))}${stat('ta', 'Extras', sum(all, p => boqOf46(p).x.length), 'DPI, licences, cleaning')}${stat('tg', 'Items with a price', nPr, `of ${BOQ46.length}, in Rates`, 'v46rates', '')}</div>`
+    + `<div class="v45-row">${seg('q46g', g, [['sum', 'Summary'], ...BOQG46.map(([k, n]) => [k, n])])}</div>`
+    + `<div class="v45-fb"><label class="v45-q">${ico('search', 16)}<input id="v46q" data-v45in="v46q" value="${esc(S.f.v46q || '')}" placeholder="Search a property, postcode or reference"></label></div>`
+    + `<p class="v45-hint">${g === 'sum' ? 'Open a job to see its lines by measure, add items and extras. Pick a group to type quantities like in the spreadsheet.' : 'Click a cell to type the quantity. Arrow keys move between cells; n/a means the job does not have that measure.'}</p>`
+    + `<section class="rd55"><div class="rd55-w"><table class="rd55-t v45-t"><thead>${head}</thead><tbody>${ps.map(row).join('') || `<tr><td colspan="8">${empty('No jobs match.')}</td></tr>`}</tbody></table></div></section>`; }
+const closeDiv46 = (h, i) => { const re = /<\/?div\b[^>]*>/g; re.lastIndex = i; let d = 0, m; while((m = re.exec(h))){ d += m[0][1] === '/' ? -1 : 1; if(!d) return m.index + m[0].length; } return -1; };
+{ const q0 = VIEWS.com.pages.quo; VIEWS.com.pages.quo = (...x) => { if(S.f.q46 === 'boq') return boqPage46(); const h = q0(...x), i = h.indexOf('<div class="op-h">'), j = i < 0 ? -1 : closeDiv46(h, i);
+    const tg = `<div class="v45-row">${seg('q46', 'dash', [['dash', 'Dashboard'], ['boq', 'Bill of quantities']])}</div>`; return j < 0 ? tg + h : h.slice(0, j) + tg + h.slice(j); }; }
+A.q46 = el => { S.f.q46 = el.dataset.v; render(); };
+A.q46g = el => { S.f.q46g = el.dataset.v; render(); };
+A.v46rates = () => go('com', 'rate');
+A.v46dr = el => { V45.ed = null; V45.dr = {k:'boq', id:el.dataset.v}; draw45(); };
+const addOpts46 = (p, g) => BOQ46.filter(i => appI46(p, i) && !boqOf46(p).q[i.id] && (!g || i.m === g || (i.m === '*' && g === 'LI')));
+A.v46add = el => { const p = prOf45(el.dataset.v), opts = addOpts46(p, el.dataset.g);
+  gen46(el, {t:'Add an item', sub:p.ad, kind:'ch', o:opts.map(i => i.n), noClear:true, cb:n => { const it = opts.find(i => i.n === n); if(!it) return; boqOf46(p).q[it.id] = 1; log45(p, it.n, '1 ' + it.u); render(); toast(`${it.n} added with quantity 1. Click it to change the quantity.`); }}); };
+A.v46q2 = el => A.v46q(el);
+A.v46x = el => { const p = prOf45(el.dataset.v), b = boqOf46(p), i = el.dataset.i, x = i === '' || i == null ? null : b.x[+i];
+  gen46(el, {t:x ? 'Extra' : 'Add an extra', sub:'Things outside the price list: DPI, pavement licence, mould clean...', kind:'txt', v:x ? x.t : '', ph:'For example: DPI', cb:v => { if(!v){ if(x) b.x.splice(+i, 1); } else if(x) x.t = v; else b.x.push({t:v, a:null}); log45(p, 'Extra', v || 'removed'); render(); }}); };
+A.v46xa = el => { const p = prOf45(el.dataset.v), x = boqOf46(p).x[+el.dataset.i]; gen46(el, {t:'Amount', sub:x.t, kind:'num', lbl:'Amount', unit:'£', v:x.a ?? '', cb:v => { x.a = v === '' ? null : v; render(); }}); };
+const drBoq46 = p => { const b = boqOf46(p), pp = priced46(p);
+  const sec = (m, n) => { const its = BOQ46.filter(i => (i.m === m || (m === 'LI' && i.m === '*')) && b.q[i.id]); return `<section class="v45-sec"><h3><span class="oi2">${ico('layers', 16)}</span>${esc(n)}<em>${its.length} ${its.length === 1 ? 'line' : 'lines'}</em></h3>${its.map(i => { const pr = DB.rate46[i.id]; return `<div class="v45-fr"><span>${esc(i.n)}${pr != null ? `<small class="v46-s">${fmP46(pr)} per ${esc(i.u.toLowerCase())}</small>` : ''}</span><span class="v46-l"><button class="v45-c v46-q" data-act="v46q2" data-p="${p.id}" data-i="${i.id}"><b>${b.q[i.id]}</b><small>${esc(i.u)}</small></button>${pr != null ? `<b class="v46-t">${fmP46(pr * b.q[i.id])}</b>` : '<span class="v45-na">no price</span>'}</span></div>`; }).join('') || '<p class="v45-sub">No lines yet.</p>'}${addOpts46(p, m).length ? `<div class="v45-acts"><button class="v45-add" data-act="v46add" data-v="${p.id}" data-g="${m}">${ico('plus', 13)}Add an item</button></div>` : ''}</section>`; };
+  const ms = BOQG46.filter(([, , m]) => p.ms.some(x => x.m === m) || (m === 'LI' && b.q.SUR));
+  return `<header><div><small>${esc(p.ref)}, ${esc(p.pc)}</small><h2>${esc(p.ad)}</h2><span class="v45-hb">${scPill55(p.sc)}<span class="v45-ms">${mPills45(p)}</span>${qOk46(p)}</span></div><button class="ib" data-act="v45drx" aria-label="Close">${ico('x', 17)}</button></header><div class="v45-db">`
+    + `<div class="v46-tot"><span><small>Quote by measure</small><b>${fm(quoteM46(p))}</b><i>${esc(p.ms.map(x => `${MEAS[x.m].s} ${fm(x.q)}`).join(', '))}</i></span><span><small>Priced lines</small><b>${pp.np ? fmP46(pp.v) : '–'}</b><i>${pp.np} of ${pp.n} lines have a price</i></span></div>`
+    + `<p class="v45-sub">The quote stays by measure until every line has a price in Rates. Then both totals can be compared here.</p>`
+    + ms.map(([, n, m]) => sec(m, n)).join('')
+    + `<section class="v45-sec"><h3><span class="oi2">${ico('plus', 16)}</span>Extras<em>${b.x.length}</em></h3>${b.x.map((x, i) => `<div class="v45-fr"><button class="v45-c" data-act="v46x" data-v="${p.id}" data-i="${i}">${esc(x.t)}</button><button class="v45-c" data-act="v46xa" data-v="${p.id}" data-i="${i}">${x.a != null ? `<b>${fmP46(x.a)}</b>` : '<span class="v45-e">Amount</span>'}</button></div>`).join('') || '<p class="v45-sub">No extras.</p>'}<div class="v45-acts"><button class="v45-add" data-act="v46x" data-v="${p.id}" data-i="">${ico('plus', 13)}Add an extra</button></div></section></div>`; };
+
+/* Rates: the items with an optional price */
+{ const r0 = VIEWS.com.pages.rate; VIEWS.com.pages.rate = (...x) => { const h = r0(...x), n = Object.values(DB.rate46).filter(v => v != null).length;
+    const tb = `<section class="rsec v46-rs"><div class="rs-h"><h3>Bill of quantities items</h3><p>The items of the Quotes sheet, under each measure. A price is optional: ${n} of ${BOQ46.length} have one. While an item has no price, quotes keep the price per measure above.</p></div><section class="rd55"><div class="rd55-w"><table class="rd55-t v46-it"><thead><tr><th>Item</th><th>Group</th><th>Measure</th><th>Unit</th><th>Price</th></tr></thead><tbody>`
+      + BOQ46.map(i => `<tr><td class="rd55-pr"><b>${esc(i.n)}</b><small title="${esc(i.d)}">${esc(i.d)}</small></td><td>${esc(BOQG46.find(g => g[0] === i.g)[1])}</td><td>${i.m === '*' ? 'Every job' : esc(MEAS[i.m].s)}</td><td>${esc(i.u)}</td><td><button class="v45-c" data-act="v46rp" data-v="${i.id}">${DB.rate46[i.id] != null ? `<b>${fmP46(DB.rate46[i.id])}</b>` : '<span class="v45-e">Price</span>'}</button></td></tr>`).join('') + '</tbody></table></div></section></section>';
+    return h + tb; }; }
+A.v46rp = el => { const i = BQ46[el.dataset.v]; gen46(el, {t:i.n, sub:`Price per ${i.u.toLowerCase()}. Leave it empty if there is no agreed price.`, kind:'num', lbl:'Price', unit:'£ per ' + i.u.toLowerCase(), v:DB.rate46[i.id] ?? '', cb:v => { if(v === '') delete DB.rate46[i.id]; else DB.rate46[i.id] = v; render(); toast(v === '' ? `${i.n} has no price.` : `${i.n}: ${fmP46(v)} per ${i.u.toLowerCase()}.`); }}); };
+
+/* ---------- Quote approved in the tracker reads the client approval of Quotes and budgets ---------- */
+const qaOf46 = p => p.quoteOk === true ? 'Yes' : p.quoteOk === false ? 'No' : '';
+FK45.quo.n = 'Quote approved'; FK45.quo.app = null;
+/* keep the tracker in step: whenever a render happens, the stored value follows the approval */
+{ const r46 = render; render = (...x) => { trk45().forEach(p => { const it = DB.itr[p.id]; if(it) it.quo = qaOf46(p); }); r46(...x); }; }
+{ const s0 = set45; set45 = (ids, fk, v) => { if(fk === 'quo') ids.forEach(id => { const p = prOf45(id); if(p) p.quoteOk = v === 'Yes' ? true : v === 'No' ? false : null; }); s0(ids, fk, v); }; }
+
+/* ---------- Subcontractor rates (the Subbie Cost sheet) ---------- */
+DB.subs46 = DB.subs46 || [
+  {id:'SB-1', n:'Kent Solar Fitters', ct:'Ben Carter', ty:'Roof and electrics', r:[['Solar PV install', 'Solar PV', 'per job', 1450], ['Battery', '', 'per job', 380], ['Extra electrical materials', '', 'per job', null], ['Waste disposal', '', 'per job', 90]]},
+  {id:'SB-2', n:'Medway Electrical Ltd', ct:'Petra Novak', ty:'Roof and electrics', r:[['Solar PV install', 'Solar PV', 'per job', 1520], ['Battery', '', 'per job', null], ['Extra electrical materials', '', 'per job', null]]},
+  {id:'SB-3', n:'Brightline Electrical', ct:'Hal Imeri', ty:'Inverter and dMEV', r:[['Inverter and battery, day rate', 'Solar PV', 'per day', 320], ['dMEV install', 'Ventilation', 'per item', 210], ['Electric panel heater', '', 'per item', null]]},
+  {id:'SB-4', n:'Thames Ventilation', ct:'Mo Haddad', ty:'dMEV and certificates', r:[['dMEV core hole', 'Ventilation', 'per item', 180], ['dMEV new wiring', '', 'per item', 95], ['dMEV replacement', '', 'per item', 140], ['EIC and BR', '', 'per job', 85], ['Minor works certificate', '', 'per job', 45]]},
+  {id:'SB-5', n:'Weald Scaffolding', ct:'Sam Reid', ty:'Scaffold', r:[['Scaffold erect, two weeks hire', 'Scaffold erect', 'per job', 650], ['Extra lift', '', 'per item', 120]]},
+  {id:'SB-6', n:'Kent Loft Services', ct:'Leo Brandt', ty:'Loft and roof', r:[['Loft insulation', 'Loft insulation', 'per job', 420], ['Roof repair', 'Roof repair', 'per job', null]]},
+].map(s => ({...s, r:s.r.map(([job, m, u, p], i) => ({id:`${s.id}-${i}`, job, m, u, p, cm:''}))}));
+INST45.length = 0; DB.subs46.forEach(s => INST45.push(s.n));
+const est46 = t => { const s = DB.subs46.find(x => x.n === t.by); if(!s) return null; const r = s.r.find(x => x.m === t.m && x.p != null); if(!r) return null;
+  const d = r.u === 'per day' ? (nwd45(t.s, t.e) || 1) : 1; return {v:r.p * d, why:`${s.n}, ${r.job}, ${fmP46(r.p)} ${r.u}${r.u === 'per day' ? ` x ${d} days` : ''}`}; };
+VIEWS.del.pages.sbr = () => { const W = win45(), tm = DB.pow.filter(t => t.s && t.s <= W.b && (t.e || t.s) >= W.a && DB.subs46.some(s => s.n === t.by)), all = DB.subs46.flatMap(s => s.r), cost = sum(tm, t => (est46(t) || {}).v || 0);
+  const body = DB.subs46.map(s => { const jobs = tm.filter(t => t.by === s.n);
+    return `<tr class="v45-band"><td colspan="6"><span><b class="v46-sn">${esc(s.n)}</b><button class="v45-c" data-act="v46sct" data-v="${s.id}">${s.ct ? esc(s.ct) : '<span class="v45-e">Contact</span>'}</button><span class="v45-ch">${esc(s.ty)}</span><small>${jobs.length} ${jobs.length === 1 ? 'job' : 'jobs'} in ${MONTHS45[W.mo - 1]}</small><button class="v45-add" data-act="v46sr" data-v="${s.id}">${ico('plus', 13)}Add a rate</button></span></td></tr>`
+      + s.r.map(r => `<tr><td class="rd55-pr"><button class="v45-c" data-act="v46sj" data-v="${r.id}"><b>${esc(r.job)}</b></button></td><td><button class="v45-c" data-act="v46sm" data-v="${r.id}">${r.m ? esc(r.m) : '<span class="v45-na">Any</span>'}</button></td><td><button class="v45-c" data-act="v46su" data-v="${r.id}"><span class="v45-ch">${esc(r.u)}</span></button></td><td><button class="v45-c" data-act="v46sp" data-v="${r.id}">${r.p != null ? `<b>${fmP46(r.p)}</b>` : '<span class="v45-st bk">Not set</span>'}</button></td><td class="v45-nt"><button class="v45-c" data-act="v46sc" data-v="${r.id}">${r.cm ? `<span>${esc(r.cm)}</span>` : '<span class="v45-e">Comment</span>'}</button></td><td>${r.m ? tm.filter(t => t.by === s.n && t.m === r.m).length || '–' : '–'}</td></tr>`).join(''); }).join('');
+  return trBar() + oph('Subcontractor rates', 'What each subcontractor charges per job type. The Programme of works uses these names as installers and estimates the cost of each task from its rate.', `<button class="btn sec" data-act="v46sadd">${ico('plus', 15)}Add a subcontractor</button><button class="btn pri" data-act="v45dl" data-v="itr">${ico('down', 15)}Download Excel</button>`)
+    + `<div class="cstats">${stat('tb', 'Subcontractors', DB.subs46.length)}${stat('tg', 'Rates set', all.filter(r => r.p != null).length, `of ${all.length} job types`)}${stat('tv', `Tasks in ${MONTHS45[W.mo - 1]}`, tm.length, 'with a subcontractor')}${stat('ta', 'Estimated cost', fm(cost), 'from the rates')}</div>`
+    + `<section class="rd55"><div class="rd55-w"><table class="rd55-t"><thead><tr><th>Job type</th><th>Programme task</th><th>Unit</th><th>Price</th><th>Comments</th><th>Tasks this month</th></tr></thead><tbody>${body}</tbody></table></div></section>`; };
+const sr46 = id => { for(const s of DB.subs46){ const r = s.r.find(x => x.id === id); if(r) return [s, r]; } return []; };
+A.v46sp = el => { const [s, r] = sr46(el.dataset.v); gen46(el, {t:r.job, sub:s.n, kind:'num', lbl:'Price', unit:'£ ' + r.u, v:r.p ?? '', cb:v => { r.p = v === '' ? null : v; render(); toast(`${r.job}: ${v === '' ? 'no price' : fmP46(v) + ' ' + r.u}.`); }}); };
+A.v46su = el => { const [s, r] = sr46(el.dataset.v); gen46(el, {t:'Unit', sub:`${s.n}, ${r.job}`, kind:'ch', o:['per job', 'per day', 'per item', 'per m²'], v:r.u, noClear:true, cb:v => { r.u = v; render(); }}); };
+A.v46sm = el => { const [s, r] = sr46(el.dataset.v); gen46(el, {t:'Programme task', sub:'The cost of this task in the Programme of works is estimated from this rate.', kind:'ch', o:PMEAS45, v:r.m, cb:v => { r.m = v; render(); }}); };
+A.v46sj = el => { const [s, r] = sr46(el.dataset.v); gen46(el, {t:'Job type', sub:s.n, kind:'txt', v:r.job, cb:v => { if(!v){ s.r.splice(s.r.indexOf(r), 1); toast(`Rate removed from ${s.n}.`); } else r.job = v; render(); }}); };
+A.v46sc = el => { const [s, r] = sr46(el.dataset.v); gen46(el, {t:'Comments', sub:`${s.n}, ${r.job}`, kind:'txt', v:r.cm, cb:v => { r.cm = v; render(); }}); };
+A.v46sct = el => { const s = DB.subs46.find(x => x.id === el.dataset.v); gen46(el, {t:'Contact', sub:s.n, kind:'txt', v:s.ct, cb:v => { s.ct = v; render(); }}); };
+A.v46sr = el => { const s = DB.subs46.find(x => x.id === el.dataset.v); gen46(el, {t:'Add a rate', sub:s.n, kind:'txt', ph:'Job type, for example: Battery install', cb:v => { if(!v) return; s.r.push({id:`${s.id}-${s.r.length + Date.now() % 1000}`, job:v, m:'', u:'per job', p:null, cm:''}); render(); toast('Rate added. Set its price and unit in the row.'); }}); };
+A.v46sadd = el => gen46(el, {t:'Add a subcontractor', kind:'txt', ph:'Company name', cb:v => { if(!v) return; DB.subs46.push({id:'SB-' + (DB.subs46.length + 1), n:v, ct:'', ty:'Subcontract labour', r:[]}); INST45.push(v); render(); toast(`${v} added. Add its rates.`); }});
+
+/* ---------- Cancelled jobs, in the format Dynamics exports and imports ---------- */
+const SR46 = ['Property Unsuitable', 'Customer Withdrew', 'No Response', 'Not Eligible', 'Duplicate'];
+(() => { if(DB.pr.some(p => p.id === 'PR-2113')) return; const b = DB.pr.find(p => p.id === 'PR-2012'); if(!b) return;
+  [['27 Saxon Way', 'ME7 2RT', 'SC-01', ['SPV'], 'Colin Marsh', 'Roof faces north, only 4 panels fit', 'B. Assess and design', 'Property Unsuitable'], ['6 Albion Place', 'CT11 8HQ', 'SC-02', ['LI', 'DMEV'], 'Amy Fowler', 'Customer withdrew after the survey', 'C. Client approval', 'Customer Withdrew'], ['130 Canterbury Road', 'CT9 5JL', 'SC-02', ['SPV', 'LI'], 'Raj Patel', 'Slate tiles look like they contain asbestos', 'D. Prepare to install', 'Property Unsuitable']].forEach(([ad, pc, sc, ms, res, why, at, sr], i) => {
+    const p = JSON.parse(JSON.stringify(b)), r = RATE['E.ON'] || {}; Object.assign(p, {id:'PR-' + (2113 + i), ad, pc, sc, res, ref:'EON-' + (49230 + i * 11), ph:'Cancelled', phOn:addDays(TODAY, -(8 + i * 5)), ms:ms.map(m => ({m, q:r[m] || 1500, b:Math.round((r[m] || 1500) * .74), dsg:false, dap:false, ip:0})), cancel:{why, at, abort:true}, his:[[addDays(TODAY, -60), `Job received from ${scOf(sc).cl}`, 'sar']]});
+    DB.pr.push(p); }); })();
+const cxl46 = () => DB.pr.filter(p => EON45(p) && p.ph === 'Cancelled');
+const hx46 = (s, n) => { let h = 2166136261; for(const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0; let o = ''; for(let i = 0; i < n; i++){ h = Math.imul(h ^ i, 16777619) >>> 0; o += (h % 16).toString(16); } return o; };
+const dynOf46 = p => p.dyn46 || (p.dyn46 = {rid:`${hx46(p.id, 8)}-${hx46(p.id + 'a', 4)}-f111-88b4-${hx46(p.id + 'b', 12)}`, ck:btoa(hx46(p.ref, 48)).slice(0, 64), mod:p.phOn || TODAY, sr:p.id === 'PR-2114' ? 'Customer Withdrew' : 'Property Unsuitable', quoted:p.cancel && pIdx(p.cancel.at) >= 2 ? 'yes' : 'no', cc:p.id === 'PR-2115' ? 'no' : 'yes', cm:'', imp:false});
+const CXF46 = [['sr', 'Status reason', 'ch', SR46], ['quoted', 'Quoted', 'ch', ['yes', 'no']], ['why', 'Cancellation reason', 'txt'], ['cc', 'Customer contacted', 'ch', ['yes', 'no']], ['cm', 'Comments', 'txt']];
+const cxv46 = (p, k) => k === 'why' ? (p.cancel || {}).why || '' : dynOf46(p)[k] || '';
+A.v46cx = el => { const p = prOf45(el.dataset.v), f = CXF46.find(x => x[0] === el.dataset.f); gen46(el, {t:f[1], sub:p.ad, kind:f[2], o:f[3], v:cxv46(p, f[0]), cb:v => { if(f[0] === 'why') (p.cancel || (p.cancel = {at:'', abort:true})).why = v; else dynOf46(p)[f[0]] = v; dynOf46(p).mod = TODAY; log45(p, f[1], v || 'cleared'); render(); toast(`${f[1]} saved.`); }}); };
+VIEWS.del.pages.cxl = () => { const xs = cxl46(), c = (p, k) => { const v = cxv46(p, k), f = CXF46.find(x => x[0] === k);
+    const inn = !v ? '<span class="v45-e">Add</span>' : k === 'sr' ? `<span class="v45-ch">${esc(v)}</span>` : f[2] === 'ch' ? `<span class="v45-st ${v === 'yes' ? 'ok' : 'bk'}">${v === 'yes' ? CHK55 : ''}${esc(v)}</span>` : `<span class="v45-tx" title="${esc(v)}">${esc(v)}</span>`;
+    return `<button type="button" class="v45-c" data-act="v46cx" data-v="${p.id}" data-f="${k}">${inn}</button>`; };
+  const row = p => { const d = dynOf46(p); return `<tr><td class="rd55-pr"><button class="rd55-pn" data-act="v45op" data-v="${p.id}">${esc(p.ad)}</button><small>${esc(p.ref)}, ${esc(p.pc)}</small></td><td>${c(p, 'sr')}</td><td><span class="v45-ms">${mPills45(p)}</span></td><td><span class="v45-ch">${esc(((p.cancel || {}).at || '').replace(/^[A-F]\. /, '') || '–')}</span></td><td>${c(p, 'quoted')}</td><td>${c(p, 'why')}</td><td>${c(p, 'cc')}</td><td>${c(p, 'cm')}</td><td>${sh45(d.mod)}${d.imp ? '<small class="v46-s">from Dynamics</small>' : ''}</td></tr>`; };
+  return trBar() + oph('Cancelled jobs', 'E.ON jobs that will not go ahead, with the columns Dynamics uses. Import the Dynamics export to bring its IDs in, fill the reason and contact here, and download it back for Dynamics.', `<label class="btn sec v46-up">${ico('upload', 15)}Import from Dynamics<input type="file" accept=".xlsx,.csv" data-v46imp="1" hidden></label><button class="btn pri" data-act="v45dl" data-v="cxl">${ico('down', 15)}Download for Dynamics</button>`)
+    + `<div class="cstats">${stat('tb', 'Cancelled jobs', xs.length)}${stat('tg', 'Customer contacted', xs.filter(p => dynOf46(p).cc === 'yes').length)}${stat('tred', 'Not contacted yet', xs.filter(p => dynOf46(p).cc !== 'yes').length)}${stat('tv', 'Quoted before cancelling', xs.filter(p => dynOf46(p).quoted === 'yes').length)}</div>`
+    + `<p class="v45-hint">The Dynamics file keeps its three "Do Not Modify" columns, so Dynamics can import it back. Click a cell to change it.</p>`
+    + `<section class="rd55"><div class="rd55-w"><table class="rd55-t"><thead><tr><th>Property</th><th>Status reason</th><th>Measures</th><th>Cancelled at</th><th>Quoted</th><th>Cancellation reason</th><th>Customer contacted</th><th>Comments</th><th>Modified on</th></tr></thead><tbody>${xs.map(row).join('') || `<tr><td colspan="9">${empty('No cancelled jobs.')}</td></tr>`}</tbody></table></div></section>`; };
+const DYNH46 = ['(Do Not Modify) Retrofit', '(Do Not Modify) Row Checksum', '(Do Not Modify) Modified On', 'Status Reason', 'Business Transaction (Opportunity) (Opportunity)', 'Building Name (Address 1) (Contact) (Contact)', 'Post Code (Address 1) (Contact) (Contact)', 'Contact Name', 'Email (Contact) (Contact)', 'Mobile Phone (Contact) (Contact)', 'Home Phone (Contact) (Contact)', 'Measures', 'Quoted', 'Cancellation reason', 'Customer Contacted', 'comments'];
+function dynSheet46(wb, blank){ const ws = wb.addWorksheet('Cancelled Tracker'); DYNH46.forEach((h, i) => { const c = ws.getCell(1, i + 1); c.value = h; HDR45(c); ws.getColumn(i + 1).width = [38, 30, 18, 20, 16, 30, 12, 20, 24, 16, 16, 18, 10, 44, 12, 34][i]; }); ws.getRow(1).height = 42;
+  [1, 2, 3].forEach(i => ws.getColumn(i).hidden = true);
+  (blank ? [] : cxl46()).forEach((p, i) => { const d = dynOf46(p), row = ws.getRow(i + 2); [d.rid, d.ck, xd45(d.mod), d.sr, p.ref, p.ad, p.pc, null, null, null, null, p.ms.map(x => MEAS[x.m].s).join(', '), d.quoted, (p.cancel || {}).why || '', d.cc, d.cm || null].forEach((v, j) => row.getCell(j + 1).value = v); row.getCell(3).numFmt = 'dd/mm/yyyy hh:mm'; row.eachCell({includeEmpty:true}, x => x.font = {name:'Arial', size:10}); });
+  ws.dataValidations.add('D2:D300', {type:'list', allowBlank:true, formulae:[`"${SR46.join(',')}"`]}); ['M', 'O'].forEach(L => ws.dataValidations.add(`${L}2:${L}300`, {type:'list', allowBlank:true, formulae:['"yes,no"']})); ws.views = [{state:'frozen', ySplit:1}]; return ws; }
+/* import: read the Dynamics export and match each row by its Business Transaction */
+const csv46 = t => { const rows = []; let r = [], f = '', q = false; for(let i = 0; i < t.length; i++){ const ch = t[i]; if(q){ if(ch === '"' && t[i + 1] === '"'){ f += '"'; i++; } else if(ch === '"') q = false; else f += ch; } else if(ch === '"') q = true; else if(ch === ','){ r.push(f); f = ''; } else if(ch === '\n' || ch === '\r'){ if(ch === '\r' && t[i + 1] === '\n') i++; r.push(f); rows.push(r); r = []; f = ''; } else f += ch; } if(f || r.length){ r.push(f); rows.push(r); } return rows; };
+document.addEventListener('change', async e => { if(!e.target.dataset || !e.target.dataset.v46imp) return; const fl = e.target.files && e.target.files[0]; e.target.value = ''; if(!fl) return;
+  try { let rows; if(/\.csv$/i.test(fl.name)) rows = csv46(await fl.text()); else { const X = await xl45(), wb = new X.Workbook(); await wb.xlsx.load(await fl.arrayBuffer()); const ws = wb.worksheets.find(w => /cancel/i.test(w.name)) || wb.worksheets[0]; rows = []; ws.eachRow({includeEmpty:false}, r => rows.push(r.values.slice(1).map(v => v && v.text ? v.text : v && v.result != null ? v.result : v instanceof Date ? iso(new Date(v.getTime() + v.getTimezoneOffset() * 6e4)) : v == null ? '' : String(v)))); }
+    const hi = rows.findIndex(r => r.some(c => /Business Transaction/i.test(c))); if(hi < 0) return toast('That file has no Business Transaction column. Use the Dynamics export of cancelled jobs.');
+    const H = rows[hi], ix = re => H.findIndex(c => re.test(String(c))), I = {rid:ix(/Retrofit/), ck:ix(/Checksum/), mod:ix(/Modified On/), sr:ix(/Status Reason/), bt:ix(/Business Transaction/), why:ix(/Cancellation reason/i), cc:ix(/Customer Contacted/i), cm:ix(/^comments$/i), q:ix(/^Quoted$/i)};
+    const res = {up:[], open:[], miss:[]}; rows.slice(hi + 1).filter(r => r[I.bt]).forEach(r => { const ref = String(r[I.bt]).trim(), p = DB.pr.find(x => x.ref === ref);
+      if(!p) return res.miss.push(ref); if(p.ph !== 'Cancelled') return res.open.push(p.id); const d = dynOf46(p), g = k => I[k] >= 0 ? String(r[I[k]] || '').trim() : '';
+      Object.assign(d, {rid:g('rid') || d.rid, ck:g('ck') || d.ck, mod:(g('mod') || '').slice(0, 10) || d.mod, sr:g('sr') || d.sr, quoted:g('q') || d.quoted, cc:g('cc') || d.cc, cm:g('cm') || d.cm, imp:true}); if(g('why') && !(p.cancel || {}).why) (p.cancel || (p.cancel = {at:'', abort:true})).why = g('why'); res.up.push(p.id); });
+    V45.dr = {k:'cmp', id:'imp' + Date.now(), imp:{res, f:fl.name}}; render(); }
+  catch(err){ toast('The file could not be read. Try the .xlsx export from Dynamics.'); } });
+const drImp46 = () => { const {res, f} = V45.dr.imp, li = (ids, t) => ids.map(id => { const p = prOf45(id); return `<div class="v45-fr"><span>${esc(p.ad)}<small class="v46-s">${esc(p.ref)}</small></span>${t}</div>`; }).join('');
+  return `<header><div><small>${esc(f)}</small><h2>Dynamics import</h2></div><button class="ib" data-act="v45drx" aria-label="Close">${ico('x', 17)}</button></header><div class="v45-db">`
+    + `<section class="v45-sec"><h3><span class="oi2">${ico('check', 16)}</span>Updated<em>${res.up.length}</em></h3>${li(res.up, '<span class="v45-st ok">' + CHK55 + 'IDs and status brought in</span>') || '<p class="v45-sub">None.</p>'}</section>`
+    + `<section class="v45-sec"><h3><span class="oi2">${ico('alert', 16)}</span>Cancelled in Dynamics, open here<em>${res.open.length}</em></h3>${res.open.map(id => { const p = prOf45(id); return `<div class="v45-fr"><span>${esc(p.ad)}<small class="v46-s">${esc(p.ref)}, ${esc(p.ph)}</small></span><button class="btn sec sm" data-act="v45op" data-v="${p.id}">Open the property</button></div>`; }).join('') || '<p class="v45-sub">None.</p>'}</section>`
+    + `<section class="v45-sec"><h3><span class="oi2">${ico('search', 16)}</span>Not found in the app<em>${res.miss.length}</em></h3>${res.miss.map(r => `<div class="v45-fr"><span>${esc(r)}</span><span class="v45-na">no property with this reference</span></div>`).join('') || '<p class="v45-sub">None.</p>'}</section></div><footer><span></span><button class="btn pri" data-act="v45drx">Done</button></footer>`; };
+{ const d0 = drHTML45; drHTML45 = () => V45.dr.k === 'boq' ? drBoq46(prOf45(V45.dr.id)) : V45.dr.imp ? drImp46() : d0(); }
+
+
+/* ---------- Excel: Quotes and Subbie Cost tabs, Cancelled Tracker in the Dynamics format ---------- */
+function quotesSheet46(wb, blank){ const ws = wb.addWorksheet('Quotes'), C0 = 4, ps = blank ? [] : boqPs46().filter(p => lines46(p).length || boqOf46(p).x.length);
+  let c = C0; BOQG46.forEach(([g, n]) => { const its = BOQ46.filter(i => i.g === g); ws.mergeCells(1, c, 1, c + its.length - 1); const h = ws.getCell(1, c); h.value = n; h.font = {name:'Arial', bold:true, size:10, color:{argb:'FF1F3864'}}; h.fill = fill45('FFDDE5F3'); h.alignment = {horizontal:'center'}; c += its.length; });
+  ws.getCell(1, c).value = 'POA'; ws.getCell(1, c).font = {name:'Arial', bold:true, size:10};
+  BOQ46.forEach((i, j) => { const h = ws.getCell(2, C0 + j); h.value = i.d; h.font = {name:'Arial', size:8}; h.alignment = {wrapText:true, vertical:'top'}; ws.getCell(3, C0 + j).value = i.u; ws.getCell(3, C0 + j).font = {name:'Arial', size:9, italic:true}; ws.getCell(3, C0 + j).alignment = {horizontal:'center'};
+    const pr = DB.rate46[i.id]; if(pr != null){ ws.getCell(4, C0 + j).value = pr; ws.getCell(4, C0 + j).numFmt = '£#,##0.00'; } ws.getColumn(C0 + j).width = 11; });
+  ws.getRow(2).height = 96; ['ID', 'Address', 'Postcode'].forEach((h, i) => { const x = ws.getCell(5, i + 1); x.value = h; HDR45(x); }); ws.getCell(4, 3).value = 'Price (optional)'; ws.getCell(4, 3).font = {name:'Arial', size:9, italic:true};
+  [14, 30, 11].forEach((w, i) => ws.getColumn(i + 1).width = w); ws.getColumn(c).width = 34;
+  ps.forEach((p, k) => { const row = ws.getRow(6 + k), b = boqOf46(p); [p.ref, p.ad, p.pc].forEach((v, i) => row.getCell(i + 1).value = v); BOQ46.forEach((i, j) => { if(b.q[i.id]) row.getCell(C0 + j).value = b.q[i.id]; }); row.getCell(c).value = b.x.map(x => x.t + (x.a != null ? ` (${fmP46(x.a)})` : '')).join(', ') || null; row.eachCell({includeEmpty:false}, x => x.font = {name:'Arial', size:10}); });
+  ws.views = [{state:'frozen', xSplit:3, ySplit:5}]; }
+function subbieSheet46(wb){ const ws = wb.addWorksheet('Subbie Cost'), H = ['Subcontractor', 'Contact', 'Type', 'Unit', 'Price', 'Comments', 'Programme task'];
+  H.forEach((h, i) => { const c = ws.getCell(2, i + 2); c.value = h; HDR45(c); ws.getColumn(i + 2).width = [28, 16, 32, 10, 10, 30, 20][i]; }); ws.getColumn(1).width = 3; let r = 3;
+  DB.subs46.forEach(s => { const a = ws.getRow(r); a.getCell(2).value = s.n; a.getCell(3).value = s.ct || null; a.getCell(4).value = s.ty; [2, 3, 4].forEach(j => a.getCell(j).font = {name:'Arial', bold:true, size:10}); r++;
+    s.r.forEach(x => { const w = ws.getRow(r++); w.getCell(4).value = x.job; w.getCell(5).value = x.u; if(x.p != null){ w.getCell(6).value = x.p; w.getCell(6).numFmt = '£#,##0.00'; } w.getCell(7).value = x.cm || null; w.getCell(8).value = x.m || null; w.eachCell(z => { if(!z.font || !z.font.bold) z.font = {name:'Arial', size:10}; }); }); r++; }); }
+{ const b0 = itrBook45; itrBook45 = (X, blank) => { const wb = b0(X, blank), old = wb.getWorksheet('Cancelled Tracker'); if(old) wb.removeWorksheet(old.id); quotesSheet46(wb, blank); subbieSheet46(wb); dynSheet46(wb, blank);
+    const hw = wb.getWorksheet('How to fill'); if(hw){ wb.removeWorksheet(hw.id); const n = wb.addWorksheet('How to fill'); hw.eachRow((row, i) => { n.getCell(i, 1).value = row.getCell(1).value; n.getCell(i, 1).font = row.getCell(1).font; }); n.getColumn(1).width = 110; } return wb; }; }
+{ const d0 = A.v45dl; A.v45dl = async el => { if(el.dataset.v !== 'cxl') return d0(el); if(el.disabled) return; el.disabled = true;
+    try { const X = await xl45(), wb = new X.Workbook(); dynSheet46(wb, false); const buf = await wb.xlsx.writeBuffer(), d = fromIso(TODAY), name = `Cancelled_Tracker_for_Dynamics_${d.getDate()}_${MON45[d.getMonth() + 1]}_${d.getFullYear()}.xlsx`;
+      if(await saveFile4(name, new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}))) toast(`${name} is ready.`); } catch(e){ toast('The Excel file could not be prepared. Check the connection and try again.'); } finally { el.disabled = false; } }; }
+
+/* ---------- Menu, help, version ---------- */
+{ const dl = SEC5.find(s => s.k === 'del'), r = [...DEL4, 'dir'], cx = mk('cxl', 'Cancelled jobs', 'x', () => 'del:cxl', r), sb = mk('sbr', 'Subcontractor rates', 'wallet', () => 'del:sbr', [...r, ...MON4]);
+  const w = dl.groups[0][1]; w.splice(w.findIndex(x => x.k === 'cmp') + 1, 0, cx); const pg = dl.groups.find(g => g[0] === 'Purchasing'); if(pg) pg[1].push(sb); [cx, sb].forEach(x => ITEMS4.push({...x, sec:'Delivery'})); }
+if(HELP.del && HELP.del.views) HELP.del.views.push(HV('cxl', 'Cancelled jobs', 'x', 'The cancelled tracker, with the Dynamics columns.', ['As install coordinator I import the Dynamics export, fill the reason and whether we contacted the customer, and download the file back for Dynamics.']), HV('sbr', 'Subcontractor rates', 'wallet', 'The subbie cost sheet.', ['As install coordinator I keep what each subcontractor charges, pick them as installers in the programme and see the estimated cost of each task.']));
+if(HELP.com && HELP.com.views) HELP.com.views.push(HV('quo', 'Bill of quantities', 'layers', 'The Quotes sheet, inside Quotes and budgets.', ['As designer or commercial I type how much of each item goes into a job, like in the Quotes sheet; prices per item are optional.']));
+VERSIONS.forEach(v => { if(v.current){ v.current = false; if(v.v === 'v5.45') v.url = 'https://claude.ai/artifact/NjrJq8aQwycbjgeTqMSCMr'; } });
+VERSIONS.push({v:'v5.46', date:TODAY, major:false, current:true, url:null, title:'Bill of quantities, subcontractor rates and cancelled jobs for Dynamics', sum:'Quotes and budgets has the bill of quantities of the Quotes sheet, with optional prices per item in Rates; Delivery has Subcontractor rates and Cancelled jobs, which imports and downloads the Dynamics file; the tracker Excel adds Quotes and Subbie Cost.', steps:[
+  {t:'Bill of quantities', min:1, dolor:'Before, quantities per item lived in the Quotes sheet, apart from the quote.', show:['Quotes and budgets › Bill of quantities: type quantities by group, like the sheet.', 'Open a job to see its lines by measure and its extras, such as DPI.'], say:'The scope of each quote, item by item.', go:() => { S.role = 'dir'; S.trail = null; S.f.q46 = 'boq'; S.f.q46g = 'lft'; go('com', 'quo'); }},
+  {t:'Prices per item are optional', min:.5, dolor:'There is no price list per item yet.', show:['Rates › Bill of quantities items: a price can be added to any item.', 'Until then, the quote keeps the price per measure.'], say:'Ready for prices, without needing them today.', go:() => { S.role = 'dir'; S.trail = null; go('com', 'rate'); }},
+  {t:'Subcontractor rates', min:.5, dolor:'Before, the Subbie Cost sheet had names and almost no prices.', show:['Each subcontractor with its job types, unit and price.', 'In the Programme of works, the installer comes from this list and each task shows its estimated cost.'], say:'Know what a job costs before it starts.', go:() => { S.role = 'dir'; S.trail = null; go('del', 'sbr'); }},
+  {t:'Cancelled jobs for Dynamics', min:.5, dolor:'Before, the Dynamics export was filled by hand and uploaded again.', show:['Import from Dynamics matches each row by its reference.', 'Download for Dynamics keeps the Do Not Modify columns so it can be imported back.'], say:'One place for the reasons, Dynamics stays in step.', go:() => { S.role = 'dir'; S.trail = null; go('del', 'cxl'); }}]});
+{ const t0 = window.WTFB; if(t0) t0.version = 'v5.46'; }
+
 /* =================== STARTUP =================== */
 { const t = store.get('rft-demo-theme'); if(t) document.documentElement.dataset.theme = t; document.documentElement.dataset.theme = 'light'; }
 (() => { const H = new URLSearchParams(location.hash.slice(1)), V = {home:'home', director:'dir', dir:'dir', commercial:'com', com:'com', accounts:'acc', acc:'acc', retrofit:'ret', ret:'ret', delivery:'del', del:'del', tasks:'tsk', tsk:'tsk', data:'db', db:'db'};
@@ -11918,5 +12510,295 @@ VERSIONS.push({v:'v5.44', date:TODAY, major:false, current:true, url:null, title
 render(true);
 
 })();
+</script>
+<style id="wt-v545">
+#v5-fab{display:none!important}
+.v45-tour.on{background:rgba(255,255,255,.22)}
+.v45-row{margin:0 0 12px;overflow-x:auto;scrollbar-width:thin}.v45-row .seg2{flex-wrap:nowrap;width:max-content}
+.v45-fb{display:flex;gap:10px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+.v45-q{flex:1 1 320px;display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;border:1px solid #E2E8F0;border-radius:14px;background:#fff;color:#64748B}
+.v45-q input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:15px;color:#0F172A;min-width:0}
+.v45-q:focus-within{border-color:#2F5BD3;box-shadow:0 0 0 3px rgba(47,91,211,.14)}
+.v45-fb select{height:46px;padding:0 12px;border:1px solid #E2E8F0;border-radius:14px;background:#fff;font:inherit;font-size:14px;color:#0F172A}
+.v45-hint{margin:0 0 10px;font-size:13px;color:#64748B}
+.v45-bulk{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#16306E;color:#fff}
+.v45-bulk small{color:#C7D2FE;font-size:12.5px}.v45-bulk .btn.sec{background:rgba(255,255,255,.12);color:#fff;border-color:transparent}
+.v45-t{min-width:1000px}.v45-t td{vertical-align:middle}
+.v45-pr{display:flex;align-items:flex-start;gap:10px}.v45-pr input{margin-top:4px;width:16px;height:16px;accent-color:#2F5BD3;flex:none}.v45-pr>span{display:flex;flex-direction:column}
+tr.v45-on>td{background:#F5F8FF!important}
+tr.v45-band>td{background:#F7F8FA!important;padding:8px 14px!important;position:static!important;box-shadow:none!important}
+tr.v45-band>td>span{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;left:14px;width:max-content}tr.v45-band small{font-weight:700;color:#64748B}
+.v45-c{display:inline-flex;align-items:center;min-height:30px;max-width:220px;padding:3px 6px;border:1px solid transparent;border-radius:10px;background:transparent;font:inherit;cursor:pointer;text-align:left;color:inherit}
+.v45-c:hover{border-color:#CBD5E1;background:#fff}.v45-c:focus-visible{outline:2px solid #2F5BD3;outline-offset:1px}
+.v45-na{font-size:12px;color:#94A3B8}.v45-e{font-size:12.5px;font-weight:600;color:#2F5BD3;opacity:.0;transition:opacity .15s}.v45-c:hover .v45-e,.v45-c:focus .v45-e{opacity:1}
+tr:hover .v45-e{opacity:.55}.v45-e::before{content:"+ "}
+.v45-tx{display:block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:#334155}
+.v45-ch{display:inline-block;padding:3px 9px;border-radius:8px;background:#EEF2F7;font-size:12.5px;font-weight:600;color:#334155;white-space:nowrap}
+.v45-dt{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:#0F172A;white-space:nowrap}
+.v45-pw{display:flex;flex-direction:column;gap:3px}.v45-pw b{font-size:12.5px;white-space:nowrap}.v45-pw b i{font-style:normal;font-weight:500;color:#64748B;margin-left:4px}
+.v45-m{display:inline-block;padding:2px 7px;border-radius:6px;background:#E8EEF8;color:#1E3A8A;font-size:11.5px;font-weight:700;white-space:nowrap}.v45-ms{display:inline-flex;gap:4px;flex-wrap:wrap}
+.v45-pb{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;padding:4px;border-radius:8px;cursor:pointer;font:inherit}
+.v45-pb span{display:block;width:72px;height:8px;border-radius:99px;background:#E8EEF4;overflow:hidden}.v45-pb span i{display:block;height:100%;border-radius:99px}.v45-pb b{font-size:12.5px;min-width:34px;text-align:right}
+.v45-pb:hover{background:#F1F5F9}
+.v45-nt span{display:block;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.v45-nt small{font-size:11.5px;color:#64748B}
+.v45-red{color:#B91C1C}
+.v45-meta{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin:0 0 14px}.v45-meta>span{display:flex;flex-direction:column}.v45-meta small{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.04em}
+.v45-meta b{font-size:15px}.v45-mn{flex-direction:row!important;align-items:center;gap:6px}.v45-mn b{font-size:20px;min-width:150px;text-align:center}
+.v45-leg{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;font-size:12.5px;color:#475569}.v45-leg span{display:inline-flex;align-items:center;gap:6px}.v45-leg i{width:14px;height:10px;border-radius:3px;display:inline-block}
+.v45-leg i.we{background:#F1F5F9;border:1px solid #E2E8F0}
+.s-nb{background:#9DC3E6}.s-bc{background:#9DC3E6}.s-ap{background:#2E75B6}.s-bk{background:#FFC000}.s-ok{background:#70AD47}.s-na{background:#BFBFBF}
+.v45-g{min-width:0;width:max-content}.v45-g th,.v45-g td{white-space:nowrap}.v45-g td.v45-tl,.v45-g th.v45-tl{padding:0!important}
+.v45-g .v45-gm{min-width:190px}.v45-gl{border:0;background:transparent;font:inherit;font-weight:700;color:#0F172A;cursor:pointer;padding:0}.v45-gl:hover{color:#2F5BD3}.v45-g .v45-gm small{display:block;font-size:11.5px;color:#64748B}
+.v45-days{display:flex}.v45-days span{width:30px;flex:none;text-align:center;font-size:12px;font-weight:700;padding:6px 0;display:flex;flex-direction:column;line-height:1.2}.v45-days span small{font-size:10px;font-weight:600;color:#94A3B8}
+.v45-days span.we{background:#F1F5F9;color:#94A3B8}.v45-days span.td{background:#2F5BD3;color:#fff;border-radius:8px}.v45-days span.td small{color:#DBEAFE}
+.v45-tr{position:relative;height:44px;background-image:repeating-linear-gradient(90deg,transparent 0 29px,#EEF2F6 29px 30px)}
+.v45-wk i{position:absolute;top:0;bottom:0;width:30px;background:#F5F7FA}.v45-now{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#2F5BD3;opacity:.5}
+.v45-bar{position:absolute;top:9px;height:26px;border-radius:8px;display:flex;align-items:center;padding:0 10px;font-size:11.5px;font-weight:700;color:#0F172A;cursor:grab;user-select:none;touch-action:none;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.18)}
+.v45-bar.s-ap,.v45-bar.s-ok{color:#fff}.v45-bar.drag{cursor:grabbing;opacity:.85;box-shadow:0 8px 18px -6px rgba(15,23,42,.45);z-index:3}
+.v45-bar i{position:absolute;right:0;top:0;bottom:0;width:9px;cursor:ew-resize}.v45-bar i:hover{background:rgba(0,0,0,.15)}
+.v45-ns{position:absolute;left:10px;top:13px;font-size:12px;color:#94A3B8;font-style:italic}
+.v45-gw{max-height:calc(100vh - 220px);overflow:auto}.v45-g thead th{position:sticky;top:0;z-index:4}.v45-g thead th:first-child{z-index:5}
+.v45-add{display:inline-flex;align-items:center;gap:5px;border:1px dashed #CBD5E1;background:#fff;border-radius:9px;padding:4px 10px;font:inherit;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer}.v45-add:hover{border-color:#2F5BD3;color:#2F5BD3}
+#v45pop .v45-pop{position:fixed;z-index:95;width:340px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;padding:14px;border-radius:18px;background:#fff;border:1px solid #E2E8F0;box-shadow:0 30px 70px -24px rgba(15,23,42,.45),0 10px 24px -14px rgba(15,23,42,.3);animation:v45in .16s ease-out}
+@keyframes v45in{from{opacity:0;transform:translateY(4px)}}
+.v45-pop header,.v45-pan header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.v45-pop header b{font-size:15px}
+.v45-sub{margin:2px 0 10px;font-size:12.5px;color:#64748B}
+.v45-pg{display:block;margin:10px 0 6px;font-size:11.5px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.04em}
+.v45-chips{display:flex;flex-wrap:wrap;gap:6px}.v45-chips button{border:1px solid #E2E8F0;background:#fff;border-radius:10px;padding:7px 11px;font:inherit;font-size:13px;font-weight:600;color:#0F172A;cursor:pointer}
+.v45-chips button:hover{border-color:#2F5BD3}.v45-chips button[aria-pressed="true"]{background:#16306E;border-color:#16306E;color:#fff}
+.v45-clr{margin-top:10px;border:0;background:transparent;color:#64748B;font:inherit;font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline}
+.v45-2{display:flex;gap:8px;align-items:flex-end;margin-top:10px}.v45-2 label{flex:1;display:flex;flex-direction:column;gap:4px}.v45-2 small,.v45-f small{font-size:12px;font-weight:700;color:#64748B}
+.v45-pop input,.v45-pop textarea,.v45-pan input,.v45-pan textarea,.v45-pan select{width:100%;box-sizing:border-box;border:1px solid #E2E8F0;border-radius:11px;padding:9px 11px;font:inherit;font-size:14px;color:#0F172A;background:#F8FAFC}
+.v45-pop textarea{margin-top:4px;resize:vertical}
+.v45-f{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.v45-pop footer,.v45-pan footer{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px}.v45-k{font-size:12px;color:#94A3B8}.v45-del{color:#B91C1C!important}
+#v45dr .v45-scrim{position:fixed;inset:0;z-index:90;background:rgba(15,23,42,.28)}
+#v45dr .v45-pan{position:fixed;z-index:91;top:0;right:0;bottom:0;width:min(540px,100vw);display:flex;flex-direction:column;background:#fff;box-shadow:-30px 0 60px -30px rgba(15,23,42,.5);animation:v45sl .2s ease-out;padding-top:env(safe-area-inset-top,0px)}
+@keyframes v45sl{from{transform:translateX(30px);opacity:.4}}
+.v45-pan header{padding:18px 20px 12px;border-bottom:1px solid #EEF2F6}.v45-pan header small{font-size:12px;color:#64748B}.v45-pan h2{margin:2px 0 8px;font-size:22px}
+.v45-hb{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.v45-db{flex:1;overflow:auto;padding:14px 20px 24px}.v45-pan footer{padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid #EEF2F6;margin:0}
+.v45-acts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.v45-sec{margin:14px 0 0;padding:12px 14px;border:1px solid #EEF2F6;border-radius:16px}.v45-sec.hl{border-color:#2F5BD3;box-shadow:0 0 0 3px rgba(47,91,211,.12)}
+.v45-sec h3{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:15px;flex-wrap:wrap}.v45-sec h3 em{font-style:normal;font-size:12.5px;color:#64748B;margin-left:auto}
+.v45-sb{display:block;flex-basis:100%;height:6px;border-radius:99px;background:#E8EEF4;overflow:hidden}.v45-sb i{display:block;height:100%;background:#2F5BD3}
+.v45-fr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid #F1F5F9}.v45-fr>span{font-size:13.5px;color:#334155}
+.v45-fr .v45-e{opacity:.7}
+.v45-hold{display:flex;align-items:center;gap:10px;margin:10px 0;padding:10px 12px;border-radius:12px;background:#FEF3C7;color:#78350F}.v45-hold span{flex:1;display:flex;flex-direction:column;font-size:13px}
+.v45-n{padding:8px 0;border-top:1px solid #F1F5F9}.v45-n b{font-size:13px}.v45-n small{margin-left:8px;font-size:12px;color:#64748B}.v45-n p{margin:3px 0 0;font-size:13.5px}
+.v45-sec textarea,.v45-sec>input{margin-top:8px}
+.v45-hi{padding:6px 0;border-top:1px solid #F1F5F9;font-size:13px}.v45-hi small{display:block;font-size:11.5px;color:#64748B}
+html #wtfb{--fc:#16306E;--fa:#2F5BD3;--fs:#fff;--fi:#0F172A;--fm:#64748B;--fl:rgba(15,23,42,.14);--fw:#F4F6FA}
+html .wtfb-fab:hover{background:#2F5BD3}
+@media (max-width:760px){.v45-t{min-width:760px}.v45-mn b{min-width:120px;font-size:17px}.v45-meta{gap:14px}#v45pop .v45-pop{left:8px!important;right:8px;width:auto}.v45-gw{max-height:none}}
+@media (prefers-reduced-motion:reduce){#v45pop .v45-pop,#v45dr .v45-pan{animation:none}}
+.v45-st{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}.v45-st.ok{background:#E7F6EC;color:#166534}.v45-st.rq{background:#FFEDD5;color:#9A3412}.v45-st.bk{background:#FEF3C7;color:#92400E}.v45-st.ap{background:#E0E7FF;color:#3730A3}.v45-st.nb{background:#E8EEF8;color:#334155}.v45-st.na{background:#EEF0F3;color:#64748B}.v45-st.bc{background:#DBEAFE;color:#1E40AF}.v45-st.bl{background:#FEE2E2;color:#B91C1C}.v45-st svg{flex:none}
+.v45-t td:nth-child(4) .v45-na{white-space:nowrap}
+.v45-cmt{min-width:1180px}.v45-cmt td{white-space:nowrap}.v45-cmt .rd55-pn{white-space:nowrap}
+.v46-u{align-self:center;font-size:13px;font-weight:600;color:#64748B;padding-bottom:8px}
+.v46-q b{font-size:13.5px}.v46-q small,.v46-hu{margin-left:4px;font-size:11px;font-weight:600;color:#64748B}.v46-hu{display:block;margin:2px 0 0}
+.v46-s{display:block;font-size:11.5px;font-weight:500;color:#64748B}
+.v46-l{display:inline-flex;align-items:center;gap:10px}.v46-t{min-width:70px;text-align:right;font-size:13px}
+.v46-tot{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 8px}.v46-tot>span{display:flex;flex-direction:column;padding:12px 14px;border-radius:14px;background:#F5F8FF;border:1px solid #E0E7FF}
+.v46-tot small{font-size:11.5px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.04em}.v46-tot b{font-size:22px;margin:2px 0}.v46-tot i{font-style:normal;font-size:12px;color:#475569}
+.v46-est{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#F0FDF4;color:#14532D;font-size:13px}.v46-est small{flex-basis:100%;color:#166534;font-size:11.5px}
+.v46-sn{font-size:14.5px}.v46-up{cursor:pointer}.v46-rs{margin-top:22px}.v46-it td .v45-c{max-width:none}.v46-it .rd55-pr small{max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+</style>
+<script>
+/* @@comp comentar v3.1 (English text for REFYT; same logic as the kit) */
+/* =====================================================================
+   COMENTAR: comentarios del cliente sobre la demo (regla "Toda maqueta lleva el botón Comentar").
+   Pieza independiente: funciona en el kit, en demos viejas y en el sistema propio.
+   Se configura con window.WTFB = {webhook, demo, demo_id, cliente, version, usuario(), contexto()}.
+   usuario() y contexto() son opcionales: sin ellos lee la pantalla (app activa, título, ficha y pestaña).
+   Envía un formulario al webhook; con CORS confirma la llegada, y cada comentario lleva cid para que
+   n8n no lo duplique si se reenvía. Lo que no se confirma queda en cola y se reintenta solo.
+   ===================================================================== */
+(() => {
+  const C = () => window.WTFB || {};
+  const $q = (s, r = document) => r.querySelector(s);
+  const T = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+  const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
+  const KEY = () => 'wtfb-' + clean(C().demo || location.host).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const ls = {get:k => { try { return localStorage.getItem(k); } catch(e) { return null; } }, set:(k, v) => { try { localStorage.setItem(k, v); } catch(e) {} }};
+  const TIPOS = [['Mejora', 'Improvement or idea', 'E.g. here I also need to see the resident’s phone number'], ['Algo no funciona', 'Something isn’t working', 'E.g. when I save the order it does not appear in the list'], ['Duda', 'Question', 'E.g. where does this amount come from?']];
+  const IC = {clip:'<path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/>', msg:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>', pin:'<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>', check:'<path d="M20 6 9 17l-5-5"/>', send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>'};
+  const ico = (n, s = 16) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
+  const st = {open:false, view:'form', tipo:'', txt:'', que:'', el:null, sending:false, sent:null, err:'', files:[]};
+  /* v3: archivos adjuntos, solo si la app lo activa con WTFB.adjuntos (true o {max, mb}); viajan como multipart al mismo webhook */
+  const ADJ = () => { const a = C().adjuntos; return a ? {max:(a.max || 5), mb:(a.mb || 10)} : null; };
+  const FILES = {};
+  const okF = () => { const u = who(); return !!st.tipo && clean(st.txt).length > 2 && !st.sending && (st.tipo !== 'Archivo' || (st.files.length > 0 && clean(st.que).length > 2)); };
+  const kb = n => n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+  let Q = []; try { Q = JSON.parse(ls.get(KEY()) || '[]'); } catch(e) { Q = []; }
+  const save = () => ls.set(KEY(), JSON.stringify(Q.slice(-40)));
+
+  /* ---------- Quién comenta y dónde está ---------- */
+  const who = () => { const u = C().usuario && C().usuario(); if(u && u.nombre) return {nombre:u.nombre, correo:u.correo || '', rol:u.rol || '', fijo:true};
+    return {nombre:ls.get('wtfb-nombre') || '', correo:ls.get('wtfb-correo') || '', rol:'', fijo:false}; };
+  const where = () => { if(C().contexto){ try { const x = C().contexto(); if(x) return x; } catch(e) {} }
+    const view = $q('.view:not([hidden])') || document, ov = $q('.wt-ovp', view), home = $q('#wthome');
+    const app = home ? 'Inicio' : clean(($q('#appsw [aria-current="true"] .swn') || {}).textContent) || clean(document.title);
+    const h1 = clean(((home && $q('h1', home)) || (ov && $q('h1', ov)) || $q('.op h1', view) || $q('h1') || {}).textContent);
+    const nav = clean(($q('aside.sb [aria-current="true"]', view) || {}).textContent).replace(/\d+$/, '').trim();
+    const tab = ov ? clean(($q('.ds-tabs [aria-pressed="true"]', ov) || {}).textContent).replace(/\d+$/, '').trim() : '';
+    return {app, pantalla:ov ? nav || h1 : h1, pantalla_id:`${app}/${nav || h1}`.toLowerCase(), registro:ov ? clean(($q('.op-h p', ov) || {}).textContent).split(',')[0] : '', registro_nombre:ov ? h1 : '', pestana:tab}; };
+  const device = () => `${innerWidth < 700 ? 'teléfono' : innerWidth < 1100 ? 'tableta' : 'escritorio'}, ${innerWidth} px`;
+  const cid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+
+  /* ---------- Envío: confirma con CORS; si no puede confirmar, queda en cola con el mismo cid ---------- */
+  async function post(x, files){ const url = C().webhook; if(!url) return 'pend';
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), files && files.length ? 60000 : 9000);
+    let body = new URLSearchParams(x); if(files && files.length){ body = new FormData(); Object.entries(x).forEach(([k, v]) => body.append(k, v == null ? '' : v)); files.forEach((f, i) => body.append('archivo_' + (i + 1), f, f.name)); }
+    try { const r = await fetch(url, {method:'POST', body, signal:ctl.signal}); clearTimeout(t); return r.ok ? 'ok' : 'pend'; }
+    catch(e) { clearTimeout(t); return navigator.onLine === false || e.name === 'AbortError' ? 'pend' : 'env'; } }
+  /* 'env': salió pero el webhook no permite confirmarlo (sin CORS); no se reenvía para no duplicar */
+  async function flush(){ let n = 0; for(const q of Q.filter(z => z.st === 'pend')){ const r = await post(q.d, FILES[q.d.cid]); if(r !== 'pend'){ q.st = r; n++; if(q.d.archivos && !FILES[q.d.cid] && r === 'ok') q.d.adj_perdidos = 'si'; } } if(n){ save(); draw(); } }
+
+  /* ---------- Señalar un elemento de la pantalla ---------- */
+  const PICK = '.wt-kc, .mbr, .stat, .hcard, .uy-kv > div, .ds-exc, .rb-next, .kt-ce, .wt-hwd, tr, li, button, a, input, textarea, h1, h2, h3, section, article, [data-v]';
+  let pick = null;
+  const target = el => { if(!el || el.closest('#wtfb')) return null; const t = el.closest(PICK) || el; return t === document.body ? null : t; };
+  const label = el => { const a = el.getAttribute('aria-label') || el.value || el.placeholder || el.title;
+    const lines = String(el.innerText || '').split('\n').map(clean).filter(x => x.length > 3);
+    const t = clean(lines.length ? lines.slice(0, 2).join(', ') : a); return t.length > 90 ? t.slice(0, 88) + '...' : t; };
+  function pickStart(){ st.open = false; draw(); pick = {box:document.createElement('div'), bar:document.createElement('div'), cur:null};
+    pick.box.className = 'wtfb-hl'; pick.bar.className = 'wtfb-bar'; pick.bar.setAttribute('role', 'status');
+    pick.bar.innerHTML = `${ico('pin', 16)}<span>Click what you want to comment on. With the keyboard: Tab and Enter.</span><button type="button" data-wtfb="pickx">Cancel</button>`;
+    document.body.append(pick.box, pick.bar); document.documentElement.classList.add('wtfb-picking'); }
+  const pickShow = el => { pick.cur = el; if(!el){ pick.box.style.display = 'none'; return; } const r = el.getBoundingClientRect(); Object.assign(pick.box.style, {display:'block', left:r.left - 4 + 'px', top:r.top - 4 + 'px', width:r.width + 8 + 'px', height:r.height + 8 + 'px'}); };
+  function pickEnd(el){ const p = pick; pick = null; p.box.remove(); p.bar.remove(); document.documentElement.classList.remove('wtfb-picking');
+    if(el){ st.el = {txt:label(el) || el.tagName.toLowerCase(), node:el}; } st.open = true; draw(); setTimeout(() => { const t = $q('#wtfb textarea'); if(t) t.focus(); }, 30); }
+  addEventListener('pointermove', e => { if(pick && !e.target.closest('.wtfb-bar')) pickShow(target(e.target)); }, true);
+  addEventListener('click', e => { if(!pick) return; if(e.target.closest('.wtfb-bar')){ if(e.target.closest('[data-wtfb="pickx"]')){ e.preventDefault(); pickEnd(null); } return; }
+    e.preventDefault(); e.stopImmediatePropagation(); pickEnd(target(e.target)); }, true);
+  addEventListener('focusin', e => { if(pick && !e.target.closest('.wtfb-bar')) pickShow(target(e.target)); }, true);
+
+  /* ---------- Pantalla ---------- */
+  const pinDraw = () => { let p = $q('.wtfb-pin'); const n = st.open && st.el && st.el.node && document.contains(st.el.node) ? st.el.node : null;
+    if(!n){ if(p) p.remove(); return; } if(!p){ p = document.createElement('div'); p.className = 'wtfb-pin'; p.innerHTML = ico('pin', 14); document.body.appendChild(p); }
+    const r = n.getBoundingClientRect(); Object.assign(p.style, {left:r.left - 10 + 'px', top:r.top - 10 + 'px'}); n.classList.add('wtfb-marked'); };
+  function draw(){
+    let w = $q('#wtfb'); if(!w){ w = document.createElement('div'); w.id = 'wtfb'; document.body.appendChild(w); }
+    $q('.wtfb-marked') && !(st.open && st.el) && document.querySelectorAll('.wtfb-marked').forEach(x => x.classList.remove('wtfb-marked'));
+    const pend = Q.filter(q => q.st === 'pend').length, u = who();
+    const fab = `<button type="button" class="wtfb-fab" data-wtfb="toggle" aria-expanded="${st.open}" aria-controls="wtfb-p">${ico('msg', 16)}<span>Comment</span>${pend ? `<em title="To send">${pend}</em>` : ''}</button>`;
+    if(!st.open || pick){ w.innerHTML = pick ? '' : fab; pinDraw(); return; }
+    const x = where(), tp = TIPOS.find(t => t[0] === st.tipo);
+    let body;
+    if(st.view === 'done'){ const s = st.sent;
+      body = `<div class="wtfb-done" role="status"><span class="wtfb-ok">${ico('check', 26)}</span><b>${s.st === 'ok' ? 'It reached the team' : 'Received'}</b><p>${s.st === 'ok' ? `Thank you${u.nombre ? ', ' + T(u.nombre.split(' ')[0]) : ''}. We will review it for the next version of your system.` : 'Thank you. If the connection fails, we resend it automatically; you don’t need to do anything.'}</p>
+        <blockquote>${T(s.d.tipo)}: ${T(s.d.comentario)}</blockquote><div class="wtfb-act"><button type="button" class="wtfb-b2" data-wtfb="otro">Comment on something else</button><button type="button" class="wtfb-b1" data-wtfb="close">Done</button></div></div>`;
+    } else if(st.view === 'mios'){
+      body = `<div class="wtfb-list">${Q.length ? Q.slice().reverse().map(q => `<div><b>${T(q.d.tipo)}</b><span>${T(q.d.comentario)}</span>${q.d.archivos ? `<small class="wtfb-fl">${ico('clip', 12)}${T(q.d.archivos)}</small>` : ''}<small>${T(q.d.pantalla)}${q.d.elemento ? ', ' + T(q.d.elemento) : ''}. ${q.st === 'pend' ? '<i class="p">To send</i>' : '<i>Sent</i>'}</small></div>`).join('') : '<p>You have not commented yet.</p>'}</div><div class="wtfb-act"><button type="button" class="wtfb-b2" data-wtfb="form">Back</button></div>`;
+    } else {
+      const ok = okF(), arc = st.tipo === 'Archivo';
+      body = `<div class="wtfb-where">${T(x.app)}${x.pantalla && x.pantalla !== x.app ? ', ' + T(x.pantalla) : ''}${x.registro_nombre && x.registro_nombre !== x.pantalla ? ', ' + T(x.registro_nombre) : ''}${x.pestana ? ', ' + T(x.pestana) : ''}</div>
+        <fieldset class="wtfb-tipos"><legend>What is it</legend>${TIPOS.map(([k, n]) => `<button type="button" data-wtfb="tipo" data-v="${k}" aria-pressed="${st.tipo === k}">${n}</button>`).join('')}${ADJ() ? `<button type="button" class="wtfb-tarc" data-wtfb="tipo" data-v="Archivo" aria-pressed="${arc}">${ico('clip', 13)}Send a file</button>` : ''}</fieldset>
+        ${arc ? `<div class="wtfb-adj">${st.files.length ? `<div class="wtfb-files">${st.files.map((f, i) => `<span>${ico('clip', 13)}<b>${T(f.name)}</b><small>${kb(f.size)}</small><button type="button" data-wtfb="adjx" data-v="${i}" aria-label="Remove ${T(f.name)}">${ico('x', 12)}</button></span>`).join('')}</div>` : ''}${st.files.length < ADJ().max ? `<button type="button" class="wtfb-drop" data-wtfb="adj">${ico('clip', 18)}<b>${st.files.length ? 'Add another file' : 'Choose files'}</b><small>Up to ${ADJ().max}, ${ADJ().mb} MB each. You can also drag them here.</small></button>` : ''}<input type="file" multiple hidden data-wtfb-file="1"></div>
+        <label class="wtfb-f"><span>What is this file?</span><input data-wtfb-in="que" value="${T(st.que || '')}" placeholder="E.g. the 2027 price list from a supplier"></label>` : ''}
+        <label class="wtfb-f"><span>${arc ? 'What should we do with it?' : 'Your comment'}</span><textarea rows="4" data-wtfb-in="txt" placeholder="${T(arc ? 'E.g. load it into Rates and mark the prices as checked' : tp ? tp[2] : 'Tell us what you would change, what is missing or what is unclear')}">${T(st.txt)}</textarea></label>
+        ${arc ? '' : st.el ? `<div class="wtfb-chip">${ico('pin', 14)}<span>You pointed at: ${T(st.el.txt)}</span><button type="button" data-wtfb="unpick" aria-label="Remove what you pointed at">${ico('x', 13)}</button></div>` : `<button type="button" class="wtfb-pk" data-wtfb="pick">${ico('pin', 15)}Point at something on the screen <small>optional</small></button>`}
+        ${u.fijo ? `<p class="wtfb-me">Commenting as <b>${T(u.nombre)}</b>${u.rol ? `, ${T(u.rol)}` : ''}</p>` : `<div class="wtfb-2"><label class="wtfb-f"><span>Your name <small>optional</small></span><input data-wtfb-in="nombre" value="${T(u.nombre)}" autocomplete="name"></label><label class="wtfb-f"><span>Email <small>optional</small></span><input type="email" data-wtfb-in="correo" value="${T(u.correo)}" autocomplete="email"></label></div>`}
+        ${st.err ? `<p class="wtfb-err" role="alert">${T(st.err)}</p>` : ''}
+        <div class="wtfb-act">${Q.length ? `<button type="button" class="wtfb-lnk" data-wtfb="mios">Your comments (${Q.length})</button>` : '<span></span>'}<button type="button" class="wtfb-b1" data-wtfb="send"${ok ? '' : ' disabled'}>${st.sending ? '<i class="wtfb-spin"></i>Sending...' : `${ico('send', 14)}Send`}</button></div>`;
+    }
+    w.innerHTML = `<section class="wtfb-p" id="wtfb-p" role="dialog" aria-modal="false" aria-labelledby="wtfb-t"><header><b id="wtfb-t">${st.view === 'mios' ? 'Your comments' : 'Comment on this screen'}</b><button type="button" data-wtfb="close" aria-label="Close">${ico('x', 16)}</button></header>${body}</section>` + fab;
+    pinDraw();
+  }
+  const open = () => { st.open = true; st.view = 'form'; st.err = ''; draw(); setTimeout(() => { const f = $q('#wtfb [data-wtfb="tipo"]'); if(f) f.focus(); }, 30); };
+  const close = () => { st.open = false; st.view = 'form'; draw(); const b = $q('.wtfb-fab'); if(b) b.focus(); };
+  async function send(){ const u = who(), x = where(); if(!u.fijo){ ls.set('wtfb-nombre', clean(u.nombre)); ls.set('wtfb-correo', clean(u.correo)); }
+    const d = {cid:cid(), demo:C().demo || document.title, demo_id:C().demo_id || '', cliente:C().cliente || '', version:C().version || '', tipo:st.tipo, comentario:st.tipo === 'Archivo' ? `${clean(st.que)}. Qué hacer: ${clean(st.txt)}` : clean(st.txt), archivo_que:st.tipo === 'Archivo' ? clean(st.que) : '', archivo_para:st.tipo === 'Archivo' ? clean(st.txt) : '',
+      nombre:clean(u.nombre), correo:clean(u.correo), rol:u.rol, app:x.app || '', pantalla:x.pantalla || '', pantalla_id:x.pantalla_id || '', registro:x.registro || '', registro_nombre:x.registro_nombre || '',
+      pestana:x.pestana || '', elemento:st.el ? st.el.txt : '', archivos:st.tipo === 'Archivo' ? st.files.map(f => f.name).join(', ') : '', n_archivos:String(st.tipo === 'Archivo' ? st.files.length : 0), dispositivo:device(), url:location.href, fecha:new Date().toISOString()};
+    const fs = st.tipo === 'Archivo' ? st.files.slice() : []; if(fs.length) FILES[d.cid] = fs; st.sending = true; draw(); const r = await post(d, fs); st.sending = false;
+    const q = {d, st:r === 'ok' ? 'ok' : r === 'env' ? 'env' : 'pend'}; Q.push(q); save();
+    st.sent = q; st.view = 'done'; st.txt = ''; st.tipo = ''; st.que = ''; st.el = null; st.files = []; draw(); setTimeout(() => { const b = $q('#wtfb .wtfb-b1'); if(b) b.focus(); }, 30); }
+
+  /* ---------- Eventos ---------- */
+  document.addEventListener('click', e => { const b = e.target.closest('[data-wtfb]'); if(!b || !b.closest('#wtfb')) return; e.preventDefault(); e.stopPropagation(); const a = b.dataset.wtfb;
+    if(a === 'toggle') return st.open ? close() : open(); if(a === 'close') return close(); if(a === 'otro' || a === 'form'){ st.view = 'form'; return draw(); } if(a === 'mios'){ st.view = 'mios'; return draw(); }
+    if(a === 'tipo'){ st.tipo = b.dataset.v; draw(); const t = $q('#wtfb textarea'); if(t){ t.focus(); t.setSelectionRange(t.value.length, t.value.length); } return; }
+    if(a === 'adj'){ const i = $q('#wtfb [data-wtfb-file]'); if(i) i.click(); return; } if(a === 'adjx'){ st.files.splice(+b.dataset.v, 1); return draw(); }
+    if(a === 'pick') return pickStart(); if(a === 'unpick'){ st.el = null; return draw(); } if(a === 'send') return send(); });
+  document.addEventListener('change', e => { if(!e.target.dataset || !e.target.dataset.wtfbFile || !e.target.closest('#wtfb')) return; const L = ADJ(); if(!L) return; st.err = '';
+    [...e.target.files].forEach(f => { if(st.files.length >= L.max) st.err = `Up to ${L.max} files per comment.`; else if(f.size > L.mb * 1048576) st.err = `${f.name} is ${kb(f.size)}; the maximum is ${L.mb} MB.`; else if(!st.files.some(x => x.name === f.name && x.size === f.size)) st.files.push(f); });
+    draw(); });
+  document.addEventListener('input', e => { const k = e.target.dataset && e.target.dataset.wtfbIn; if(!k || !e.target.closest('#wtfb')) return;
+    if(k === 'txt') st.txt = e.target.value; else if(k === 'que') st.que = e.target.value; else ls.set('wtfb-' + k, e.target.value);
+    const b = $q('#wtfb [data-wtfb="send"]'); if(b) b.disabled = !okF(); });
+  document.addEventListener('dragover', e => { const z = e.target.closest && e.target.closest('#wtfb .wtfb-drop'); if(!z) return; e.preventDefault(); z.classList.add('on'); });
+  document.addEventListener('dragleave', e => { const z = e.target.closest && e.target.closest('#wtfb .wtfb-drop'); if(z) z.classList.remove('on'); });
+  document.addEventListener('drop', e => { const z = e.target.closest && e.target.closest('#wtfb .wtfb-drop'); if(!z) return; e.preventDefault(); const i = $q('#wtfb [data-wtfb-file]'); if(i && e.dataTransfer.files.length){ const L = ADJ(); st.err = ''; [...e.dataTransfer.files].forEach(f => { if(st.files.length >= L.max) st.err = `Up to ${L.max} files per comment.`; else if(f.size > L.mb * 1048576) st.err = `${f.name} is ${kb(f.size)}; the maximum is ${L.mb} MB.`; else if(!st.files.some(x => x.name === f.name && x.size === f.size)) st.files.push(f); }); draw(); } });
+  addEventListener('keydown', e => {
+    if(pick){ if(e.key === 'Escape'){ e.preventDefault(); e.stopImmediatePropagation(); pickEnd(null); } else if(e.key === 'Enter' && !e.target.closest('.wtfb-bar')){ e.preventDefault(); e.stopImmediatePropagation(); pickEnd(target(document.activeElement)); } return; }
+    const inP = e.target.closest && e.target.closest('#wtfb');
+    if(st.open && e.key === 'Escape' && (inP || !document.querySelector('[aria-modal="true"]:not(#wtfb-p)'))){ e.preventDefault(); e.stopImmediatePropagation(); close(); return; }
+    if(inP && e.key === 'Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); const b = $q('#wtfb [data-wtfb="send"]'); if(b && !b.disabled) send(); }
+    if(inP && e.key === 'Tab'){ e.stopImmediatePropagation(); const f = [...document.querySelectorAll('#wtfb-p button:not([disabled]), #wtfb-p textarea, #wtfb-p input')]; if(!f.length) return;
+      if(e.shiftKey && document.activeElement === f[0]){ e.preventDefault(); f[f.length - 1].focus(); } else if(!e.shiftKey && document.activeElement === f[f.length - 1]){ e.preventDefault(); f[0].focus(); } }
+  }, true);
+  addEventListener('resize', pinDraw); addEventListener('scroll', pinDraw, true);
+  addEventListener('online', flush);
+
+  /* ---------- Estilos: toman los tokens de la página si existen ---------- */
+  const css = `
+#wtfb{--fa:var(--ac,#0F6E8C); --fc:var(--char,#16202A); --fs:var(--glass3,#fff); --fl:var(--line2,rgba(0,0,0,.14)); --fi:var(--ink,#16202A); --fm:var(--muted,#585B70); --fw:var(--well,rgba(0,0,0,.05)); font-family:var(--f,inherit)}
+.wtfb-fab{position:fixed; z-index:77; right:22px; bottom:22px; display:inline-flex; align-items:center; gap:8px; height:46px; padding:0 16px; border:0; border-radius:16px; font:700 14px var(--f,inherit); color:#fff; background:var(--fc); box-shadow:0 14px 30px -12px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.14); cursor:pointer}
+.wtfb-fab:hover{background:var(--brand,var(--fa))} .wtfb-fab em{font-style:normal; font-size:11px; font-weight:800; padding:0px 8px; border-radius:8px; background:#E39400; color:#fff}
+.wtfb-fab[aria-expanded="true"]{background:var(--fa)}
+.wtfb-p{position:fixed; z-index:78; right:22px; bottom:80px; width:min(390px, calc(100vw - 24px)); max-height:calc(100vh - 110px); overflow:auto; padding:16px; border-radius:22px; background:var(--fs); color:var(--fi); border:1px solid var(--fl); box-shadow:0 40px 90px -30px rgba(0,0,0,.5), 0 12px 28px -14px rgba(0,0,0,.35); animation:wtfbIn .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes wtfbIn{from{opacity:0; transform:translateY(10px) scale(.98)}}
+.wtfb-p header{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px} .wtfb-p header b{font-size:16px; font-weight:800} .wtfb-p header button{border:0; background:var(--fw); width:30px; height:30px; border-radius:10px; display:grid; place-items:center; color:var(--fm); cursor:pointer}
+.wtfb-where{font-size:12.5px; color:var(--fm); margin-bottom:12px}
+.wtfb-tipos{border:0; padding:0; margin:0 0 12px; display:flex; flex-wrap:wrap; gap:8px} .wtfb-tipos legend{font-size:12px; font-weight:700; color:var(--fm); margin-bottom:8px; padding:0}
+.wtfb-tipos button{border:1px solid var(--fl); background:transparent; color:var(--fi); border-radius:11px; padding:8px 12px; font:600 13px var(--f,inherit); cursor:pointer}
+.wtfb-tipos button[aria-pressed="true"]{background:var(--fc); color:#fff; border-color:var(--fc)}
+.wtfb-f{display:block; margin-bottom:12px} .wtfb-f > span{display:block; font-size:12px; font-weight:700; color:var(--fm); margin-bottom:4px} .wtfb-f small{font-weight:500}
+.wtfb-f textarea,.wtfb-f input{width:100%; box-sizing:border-box; border:1px solid var(--fl); border-radius:12px; padding:12px 12px; font:400 14px var(--f,inherit); color:var(--fi); background:var(--fw); resize:vertical}
+.wtfb-f textarea:focus,.wtfb-f input:focus{outline:2px solid var(--fa); outline-offset:0; background:transparent}
+.wtfb-2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.wtfb-pk{display:flex; align-items:center; gap:8px; width:100%; margin-bottom:12px; padding:8px 12px; border:1px dashed var(--fl); border-radius:12px; background:transparent; color:var(--fi); font:600 13px var(--f,inherit); cursor:pointer} .wtfb-pk small{color:var(--fm); font-weight:500; margin-left:auto}
+.wtfb-pk:hover{border-color:var(--fa); color:var(--fa)}
+.wtfb-chip{display:flex; align-items:center; gap:8px; margin-bottom:12px; padding:8px 12px; border-radius:12px; background:color-mix(in srgb, var(--fa) 10%, transparent); color:var(--fi); font-size:13px} .wtfb-chip span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap} .wtfb-chip svg{color:var(--fa); flex:none}
+.wtfb-chip button{border:0; background:transparent; color:var(--fm); cursor:pointer; display:grid; place-items:center}
+.wtfb-adj{display:grid; gap:8px; margin-top:8px}
+.wtfb-files{display:grid; gap:6px}
+.wtfb-files span{display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--fl); border-radius:12px; font-size:13px; color:var(--fi)}
+.wtfb-files b{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600} .wtfb-files small{color:var(--fm)}
+.wtfb-files button{border:0; background:transparent; color:var(--fm); cursor:pointer; display:grid; place-items:center}
+.wtfb-fl{display:flex; align-items:center; gap:4px}
+.wtfb-tarc{display:inline-flex; align-items:center; gap:6px}
+.wtfb-drop{display:grid; justify-items:center; gap:4px; width:100%; padding:18px 12px; border:1.5px dashed var(--fl); border-radius:14px; background:transparent; color:var(--fi); font:inherit; cursor:pointer; text-align:center}
+.wtfb-drop b{font-size:14px} .wtfb-drop small{font-size:12px; color:var(--fm)} .wtfb-drop:hover, .wtfb-drop.on{border-color:var(--fc); background:var(--fw)}
+.wtfb-me{font-size:13px; color:var(--fm); margin:4px 0 12px} .wtfb-me b{color:var(--fi)}
+.wtfb-err{color:#B4232F; font-size:13px; font-weight:600}
+.wtfb-act{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px}
+.wtfb-b1,.wtfb-b2{display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border-radius:12px; font:700 14px var(--f,inherit); cursor:pointer}
+.wtfb-b1{border:0; background:var(--fc); color:#fff} .wtfb-b1:disabled{opacity:.45; cursor:not-allowed} .wtfb-b2{border:1px solid var(--fl); background:transparent; color:var(--fi)}
+.wtfb-lnk{border:0; background:transparent; color:var(--fa); font:600 13px var(--f,inherit); cursor:pointer; padding:0}
+.wtfb-spin{width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; animation:wtfbSp .7s linear infinite} @keyframes wtfbSp{to{transform:rotate(360deg)}}
+.wtfb-done{text-align:center; padding:8px 4px 4px} .wtfb-done b{display:block; font-size:19px; font-weight:800; margin:12px 0 4px} .wtfb-done p{color:var(--fm); font-size:14px; margin:0 0 12px}
+.wtfb-ok{display:inline-grid; place-items:center; width:58px; height:58px; border-radius:50%; background:#11A37F; color:#fff; animation:wtfbOk .45s cubic-bezier(.2,1.4,.4,1)} @keyframes wtfbOk{from{transform:scale(.3); opacity:0}}
+.wtfb-done blockquote{margin:0 0 12px; padding:12px 12px; border-radius:12px; background:var(--fw); text-align:left; font-size:13px; color:var(--fi)}
+.wtfb-list > div{padding:12px 0; border-bottom:1px solid var(--fl)} .wtfb-list b{font-size:12px; color:var(--fa); display:block} .wtfb-list span{display:block; font-size:14px} .wtfb-list small{font-size:12px; color:var(--fm)} .wtfb-list i{font-style:normal; color:#11A37F; font-weight:700} .wtfb-list i.p{color:#E39400}
+.wtfb-hl{position:fixed; z-index:9998; pointer-events:none; border:2px solid var(--ac,#0F6E8C); border-radius:12px; background:color-mix(in srgb, var(--ac,#0F6E8C) 10%, transparent); box-shadow:0 0 0 4000px rgba(0,0,0,.18); transition:all .08s; display:none}
+.wtfb-bar{position:fixed; z-index:9999; left:50%; bottom:24px; transform:translateX(-50%); display:flex; align-items:center; gap:12px; padding:12px 12px 12px 16px; border-radius:16px; background:var(--char,#16202A); color:#fff; font:600 14px var(--f,inherit); box-shadow:0 20px 40px -14px rgba(0,0,0,.6); max-width:calc(100vw - 24px)}
+.wtfb-bar button{border:0; border-radius:10px; padding:8px 12px; background:rgba(255,255,255,.14); color:#fff; font:700 13px var(--f,inherit); cursor:pointer}
+.wtfb-picking, .wtfb-picking *{cursor:crosshair!important}
+.wtfb-pin{position:fixed; z-index:76; width:26px; height:26px; border-radius:50% 50% 50% 4px; display:grid; place-items:center; background:var(--ac,#0F6E8C); color:#fff; box-shadow:0 6px 14px -4px rgba(0,0,0,.4); pointer-events:none}
+.wtfb-marked{outline:2px solid var(--ac,#0F6E8C)!important; outline-offset:3px}
+.kt-modal #wtfb,.kt-loginon #wtfb{display:none}
+@media (max-width:640px){ .wtfb-fab{right:12px; bottom:12px; height:44px; padding:0 16px} .wtfb-p{right:8px; left:8px; bottom:66px; width:auto; max-height:calc(100vh - 84px)} .wtfb-2{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){ .wtfb-p,.wtfb-ok{animation:none} }`;
+  const s = document.createElement('style'); s.id = 'wtfb-css'; s.textContent = css; document.head.appendChild(s);
+  const boot = () => { draw(); setTimeout(flush, 1200); };
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', boot) : boot();
+  window.WTFB_API = {open, flush, queue:() => Q};
+})();
+
+
+/* @@fin comentar */
 </script>
 </body>

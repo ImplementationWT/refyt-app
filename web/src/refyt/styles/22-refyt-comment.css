@@ -1,0 +1,49 @@
+/* Refyt · botón Comment: los estilos del kit ("@@comp comentar v3.1", L12747-L12794 del original), tal cual. */
+#wtfb{--fa:var(--ac,#0F6E8C); --fc:var(--char,#16202A); --fs:var(--glass3,#fff); --fl:var(--line2,rgba(0,0,0,.14)); --fi:var(--ink,#16202A); --fm:var(--muted,#585B70); --fw:var(--well,rgba(0,0,0,.05)); font-family:var(--f,inherit)}
+.wtfb-fab{position:fixed; z-index:77; right:22px; bottom:22px; display:inline-flex; align-items:center; gap:8px; height:46px; padding:0 16px; border:0; border-radius:16px; font:700 14px var(--f,inherit); color:#fff; background:var(--fc); box-shadow:0 14px 30px -12px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.14); cursor:pointer}
+.wtfb-fab:hover{background:var(--brand,var(--fa))} .wtfb-fab em{font-style:normal; font-size:11px; font-weight:800; padding:0px 8px; border-radius:8px; background:#E39400; color:#fff}
+.wtfb-fab[aria-expanded="true"]{background:var(--fa)}
+.wtfb-p{position:fixed; z-index:78; right:22px; bottom:80px; width:min(390px, calc(100vw - 24px)); max-height:calc(100vh - 110px); overflow:auto; padding:16px; border-radius:22px; background:var(--fs); color:var(--fi); border:1px solid var(--fl); box-shadow:0 40px 90px -30px rgba(0,0,0,.5), 0 12px 28px -14px rgba(0,0,0,.35); animation:wtfbIn .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes wtfbIn{from{opacity:0; transform:translateY(10px) scale(.98)}}
+.wtfb-p header{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px} .wtfb-p header b{font-size:16px; font-weight:800} .wtfb-p header button{border:0; background:var(--fw); width:30px; height:30px; border-radius:10px; display:grid; place-items:center; color:var(--fm); cursor:pointer}
+.wtfb-where{font-size:12.5px; color:var(--fm); margin-bottom:12px}
+.wtfb-tipos{border:0; padding:0; margin:0 0 12px; display:flex; flex-wrap:wrap; gap:8px} .wtfb-tipos legend{font-size:12px; font-weight:700; color:var(--fm); margin-bottom:8px; padding:0}
+.wtfb-tipos button{border:1px solid var(--fl); background:transparent; color:var(--fi); border-radius:11px; padding:8px 12px; font:600 13px var(--f,inherit); cursor:pointer}
+.wtfb-tipos button[aria-pressed="true"]{background:var(--fc); color:#fff; border-color:var(--fc)}
+.wtfb-f{display:block; margin-bottom:12px} .wtfb-f > span{display:block; font-size:12px; font-weight:700; color:var(--fm); margin-bottom:4px} .wtfb-f small{font-weight:500}
+.wtfb-f textarea,.wtfb-f input{width:100%; box-sizing:border-box; border:1px solid var(--fl); border-radius:12px; padding:12px 12px; font:400 14px var(--f,inherit); color:var(--fi); background:var(--fw); resize:vertical}
+.wtfb-f textarea:focus,.wtfb-f input:focus{outline:2px solid var(--fa); outline-offset:0; background:transparent}
+.wtfb-2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.wtfb-pk{display:flex; align-items:center; gap:8px; width:100%; margin-bottom:12px; padding:8px 12px; border:1px dashed var(--fl); border-radius:12px; background:transparent; color:var(--fi); font:600 13px var(--f,inherit); cursor:pointer} .wtfb-pk small{color:var(--fm); font-weight:500; margin-left:auto}
+.wtfb-pk:hover{border-color:var(--fa); color:var(--fa)}
+.wtfb-chip{display:flex; align-items:center; gap:8px; margin-bottom:12px; padding:8px 12px; border-radius:12px; background:color-mix(in srgb, var(--fa) 10%, transparent); color:var(--fi); font-size:13px} .wtfb-chip span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap} .wtfb-chip svg{color:var(--fa); flex:none}
+.wtfb-chip button{border:0; background:transparent; color:var(--fm); cursor:pointer; display:grid; place-items:center}
+.wtfb-adj{display:grid; gap:8px; margin-top:8px}
+.wtfb-files{display:grid; gap:6px}
+.wtfb-files span{display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--fl); border-radius:12px; font-size:13px; color:var(--fi)}
+.wtfb-files b{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600} .wtfb-files small{color:var(--fm)}
+.wtfb-files button{border:0; background:transparent; color:var(--fm); cursor:pointer; display:grid; place-items:center}
+.wtfb-fl{display:flex; align-items:center; gap:4px}
+.wtfb-tarc{display:inline-flex; align-items:center; gap:6px}
+.wtfb-drop{display:grid; justify-items:center; gap:4px; width:100%; padding:18px 12px; border:1.5px dashed var(--fl); border-radius:14px; background:transparent; color:var(--fi); font:inherit; cursor:pointer; text-align:center}
+.wtfb-drop b{font-size:14px} .wtfb-drop small{font-size:12px; color:var(--fm)} .wtfb-drop:hover, .wtfb-drop.on{border-color:var(--fc); background:var(--fw)}
+.wtfb-me{font-size:13px; color:var(--fm); margin:4px 0 12px} .wtfb-me b{color:var(--fi)}
+.wtfb-err{color:#B4232F; font-size:13px; font-weight:600}
+.wtfb-act{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px}
+.wtfb-b1,.wtfb-b2{display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border-radius:12px; font:700 14px var(--f,inherit); cursor:pointer}
+.wtfb-b1{border:0; background:var(--fc); color:#fff} .wtfb-b1:disabled{opacity:.45; cursor:not-allowed} .wtfb-b2{border:1px solid var(--fl); background:transparent; color:var(--fi)}
+.wtfb-lnk{border:0; background:transparent; color:var(--fa); font:600 13px var(--f,inherit); cursor:pointer; padding:0}
+.wtfb-spin{width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; animation:wtfbSp .7s linear infinite} @keyframes wtfbSp{to{transform:rotate(360deg)}}
+.wtfb-done{text-align:center; padding:8px 4px 4px} .wtfb-done b{display:block; font-size:19px; font-weight:800; margin:12px 0 4px} .wtfb-done p{color:var(--fm); font-size:14px; margin:0 0 12px}
+.wtfb-ok{display:inline-grid; place-items:center; width:58px; height:58px; border-radius:50%; background:#11A37F; color:#fff; animation:wtfbOk .45s cubic-bezier(.2,1.4,.4,1)} @keyframes wtfbOk{from{transform:scale(.3); opacity:0}}
+.wtfb-done blockquote{margin:0 0 12px; padding:12px 12px; border-radius:12px; background:var(--fw); text-align:left; font-size:13px; color:var(--fi)}
+.wtfb-list > div{padding:12px 0; border-bottom:1px solid var(--fl)} .wtfb-list b{font-size:12px; color:var(--fa); display:block} .wtfb-list span{display:block; font-size:14px} .wtfb-list small{font-size:12px; color:var(--fm)} .wtfb-list i{font-style:normal; color:#11A37F; font-weight:700} .wtfb-list i.p{color:#E39400}
+.wtfb-hl{position:fixed; z-index:9998; pointer-events:none; border:2px solid var(--ac,#0F6E8C); border-radius:12px; background:color-mix(in srgb, var(--ac,#0F6E8C) 10%, transparent); box-shadow:0 0 0 4000px rgba(0,0,0,.18); transition:all .08s; display:none}
+.wtfb-bar{position:fixed; z-index:9999; left:50%; bottom:24px; transform:translateX(-50%); display:flex; align-items:center; gap:12px; padding:12px 12px 12px 16px; border-radius:16px; background:var(--char,#16202A); color:#fff; font:600 14px var(--f,inherit); box-shadow:0 20px 40px -14px rgba(0,0,0,.6); max-width:calc(100vw - 24px)}
+.wtfb-bar button{border:0; border-radius:10px; padding:8px 12px; background:rgba(255,255,255,.14); color:#fff; font:700 13px var(--f,inherit); cursor:pointer}
+.wtfb-picking, .wtfb-picking *{cursor:crosshair!important}
+.wtfb-pin{position:fixed; z-index:76; width:26px; height:26px; border-radius:50% 50% 50% 4px; display:grid; place-items:center; background:var(--ac,#0F6E8C); color:#fff; box-shadow:0 6px 14px -4px rgba(0,0,0,.4); pointer-events:none}
+.wtfb-marked{outline:2px solid var(--ac,#0F6E8C)!important; outline-offset:3px}
+.kt-modal #wtfb,.kt-loginon #wtfb{display:none}
+@media (max-width:640px){ .wtfb-fab{right:12px; bottom:12px; height:44px; padding:0 16px} .wtfb-p{right:8px; left:8px; bottom:66px; width:auto; max-height:calc(100vh - 84px)} .wtfb-2{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){ .wtfb-p,.wtfb-ok{animation:none} }

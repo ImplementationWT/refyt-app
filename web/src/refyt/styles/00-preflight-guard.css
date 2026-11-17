@@ -6,11 +6,11 @@
  * de lo que dibuja Refyt se devuelven los valores del navegador en las propiedades que toca ese
  * reset, y solo en esas (así los atributos de los SVG, como stroke o width, siguen funcionando).
  * Va primero y sin especificidad (:where), así que cualquier regla de Refyt lo sobrescribe.
- * .rfx marca lo que dibuja Refyt; el resto son los paneles que el motor añade al <body>.
+ * .rfx marca lo que dibuja Refyt; el resto son los paneles que el motor y el botón Comment añaden al <body>.
  */
-:where(.rfx, .rfx *, #tourp, #tourp *, #vsel, #vsel *, #rfpop, #rfpop *, #setpop, #setpop *, #rftt),
-:where(.rfx *, #tourp *, #vsel *, #rfpop *, #setpop *)::before,
-:where(.rfx *, #tourp *, #vsel *, #rfpop *, #setpop *)::after {
+:where(.rfx, .rfx *, #tourp, #tourp *, #vsel, #vsel *, #rfpop, #rfpop *, #setpop, #setpop *, #rftt, #v45dr, #v45dr *, #v45pop, #v45pop *, #wtfb, #wtfb *, .wtfb-bar, .wtfb-bar *),
+:where(.rfx *, #tourp *, #vsel *, #rfpop *, #setpop *, #v45dr *, #v45pop *, #wtfb *, .wtfb-bar *)::before,
+:where(.rfx *, #tourp *, #vsel *, #rfpop *, #setpop *, #v45dr *, #v45pop *, #wtfb *, .wtfb-bar *)::after {
   margin: revert;
   padding: revert;
   border: revert;

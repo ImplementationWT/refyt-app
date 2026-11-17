@@ -1,7 +1,8 @@
 // Refyt · arranque. Sustituye al final del original («STARTUP»): el componente React
 // RefytWorkspace pone el marcado (encabezado, vistas, capas) y llama a mount() al mostrarse y a
 // unmount() al salir, para que el motor dibuje en esos contenedores y no deje paneles abiertos.
-import { S, VIEWS, canOpen, drawPop, drawSetPop, drawTour, drawVs, render, setAuth } from "./index.js";
+import { setCommentContext } from "../comment/comment.js";
+import { S, VIEWS, canOpen, commentContext, drawPop, drawSetPop, drawTour, drawVs, render, setAuth } from "./index.js";
 
 let started = false;
 let lastUser = null;
@@ -36,16 +37,19 @@ export function mount(auth) {
     else if(firstTime) S.role = auth.roles[0] ?? 'dir';
   }
   if(!started){ readHash(); started = true; }
+  // The Comment button (../comment) reads from the engine where the user is: section, screen, property, tab.
+  setCommentContext(commentContext);
   // render() itself moves to the role's Overview when it may not open the current screen (access.js).
   render(true);
 }
 
-/** Closes the floating panels the engine appends to <body> (tour, versions, menus, tooltips, the v5 tour button). */
+/** Closes the floating panels the engine appends to <body> (tour, versions, menus, tooltips, the v5 tour button, the v5.45 panel and editor). */
 export function unmount() {
+  setCommentContext(null);
   S.tour.open = false; S.vs.open = false; S.pop = null; S.modal = null; S.f.fs = false; S.setPop = false;
   drawTour(); drawVs(); drawPop(); drawSetPop();
   document.body.classList.remove('rf-fsb');
   document.querySelectorAll('.oapp.sbopen').forEach(o => o.classList.remove('sbopen'));
   document.body.classList.remove('dnd70-on');
-  for (const id of ['tourp', 'vsel', 'rfpop', 'rftt', 'setpop', 'tip54', 'v5-fab']) document.getElementById(id)?.remove();
+  for (const id of ['tourp', 'vsel', 'rfpop', 'rftt', 'setpop', 'tip54', 'v5-fab', 'v45dr', 'v45pop']) document.getElementById(id)?.remove();
 }

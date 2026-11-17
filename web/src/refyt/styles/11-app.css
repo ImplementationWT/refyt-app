@@ -69,3 +69,7 @@ a.rf-hb{text-decoration:none}
 .rf-noacc .rf-ai{width:44px; height:44px; margin:0 auto 12px}
 .rf-noacc h1{font-size:22px; margin:0 0 8px}
 .rf-noacc p{font-size:14.5px; color:#334155; line-height:1.5; margin:0}
+
+/* ---------- Botón Comment junto a Will Doo: en la administración, Will Doo ocupa la esquina; Comment sube encima ---------- */
+body:has(button[aria-label="Open Will Doo"]) .wtfb-fab{bottom:96px}
+body:has(button[aria-label="Open Will Doo"]) .wtfb-p{bottom:154px; max-height:calc(100vh - 180px)}

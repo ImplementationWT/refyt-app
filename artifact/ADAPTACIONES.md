@@ -5,12 +5,12 @@ Este archivo lo lee la skill `artifact-a-repo` antes de llevar una versión nuev
 ## Estructura
 
 - **Artifact de referencia:** `artifact/app.html` (la versión del artifact que corresponde a `main`).
-- **Barril de módulos:** `web/src/refyt/engine/index.js`. El orden de los `export * from` es el orden de evaluación del artifact. Las capas nuevas van antes de `./mount.js`.
-- **Índice de CSS:** `web/src/refyt/styles/index.css`. Los CSS nuevos van numerados (`NN-refyt-<id>.css`, hoy hasta `20-refyt-wt-v7.css`) y siempre antes de `11-app.css`, que va al final.
+- **Barril de módulos:** `web/src/refyt/engine/index.js`. El orden de los `export * from` es el orden de evaluación del artifact. Las capas nuevas van antes de `./access.js` (el guardián debe registrar el último `wrapRender`, para correr primero) y de `./mount.js`.
+- **Índice de CSS:** `web/src/refyt/styles/index.css`. Los CSS nuevos van numerados (`NN-refyt-<id>.css`, hoy hasta `22-refyt-comment.css`) y siempre antes de `11-app.css`, que va al final.
 - **Arranque:** `web/src/refyt/engine/mount.js` sustituye al bloque `STARTUP` (lee `#view=…&page=…` y `#embed=1`, fuerza tema claro, limpia paneles al salir).
 - **Marcado:** `web/src/refyt/RefytWorkspace.tsx` y `web/src/refyt/RefytHeader.tsx` contienen el `<body>` del artifact. La marca es el botón de texto «REFYT» de la v5 (`v5home`); en la administración es un enlace a Refyt.
 - **Módulos nuevos:** por tema, en la carpeta de la sección que tocan (`apps/`, `apps/<sección>/`, `property/`, `shell/`, `ui/`, `meetings/`), con cabecera `// Refyt · …`.
-- **Scripts:** `scripts/refyt-pack.mjs` reconstruye el HTML desde el repo para verificar; `scripts/refyt-migrate.mjs` es el script de la migración a v5.44 (no corre en CI).
+- **Scripts:** `scripts/refyt-pack.mjs` reconstruye el HTML desde el repo para verificar; `scripts/refyt-migrate.mjs` es el script de la migración a v5.44 y `scripts/refyt-migrate-v5.46.mjs` el de la v5.46 (no corren en CI).
 - **Tests del motor:** `web/src/test/refyt-engine/` (proyecto de vitest aparte con import nativo y `loader.mjs`).
 
 ## Adaptaciones que no se tocan
@@ -22,6 +22,12 @@ Este archivo lo lee la skill `artifact-a-repo` antes de llevar una versión nuev
 - **Setters por imports de solo lectura:** `setEmp` (state.js), `setLastKey` (render.js).
 - **Recursos:** el logo se importa como archivo (`LOGO = logoUrl`), no en base64. jsPDF se importa del paquete (`jspdf@3.0.4`), no de `window.jspdf`. La vista previa de PDF usa `pdfjs-dist@6.4.299` con el worker local (sin CDN), cargado con `import()` al abrir un PDF.
 - **Título:** la pestaña dice «Refyt», no `${EMP}, demo …`.
+- **ExcelJS** (Install tracker, Programme of works, Cancelled jobs…) se importa del paquete (`exceljs@4.4.0`) con `import()` al descargar, no de cdnjs como `window.ExcelJS`.
+- **Comentar:** el artifact trae el botón Comment del kit (`@@comp comentar`), que manda a un webhook de n8n configurado en `window.WTFB`. En el repo:
+  - El botón vive en `web/src/refyt/comment/` (`comment.js`, la pieza del kit; `CommentButton.tsx`, en `App.tsx`) y guarda en el módulo Feedback (`POST /api/feedback`), con el usuario de la sesión; sin adjuntos («Send a file»), porque Feedback guarda texto. Se ve con sesión, sin cambio de contraseña pendiente y con el módulo encendido.
+  - `window.WTFB = {webhook…, contexto}` se convierte en `commentContext` (en `apps/delivery/install-tracker.js`), que `mount.js` pasa al botón con `setCommentContext`; toma el título de la pantalla visible (el artifact caía en el de una vista oculta). La línea `window.WTFB.version` de la v5.46 se omite.
+  - «Send feedback» ya no está en el menú de usuario. Lo que se señala en pantalla se guarda en el campo `element` del feedback.
+  - Sus estilos son `22-refyt-comment.css`; con Will Doo en la administración, `11-app.css` sube el botón por encima.
 - **Estilos inyectados:** los `<style>` que las capas inyectan con `insertAdjacentHTML` se pasan a CSS numerados, para que queden en la capa `refyt` y no pisen Tailwind en la administración.
 - **`11-app.css`:** estilos propios del repo (menú de usuario, acceso, separación de controles del encabezado). No existe en el artifact.
 - **`00-preflight-guard.css`:** protección frente al reset de Tailwind. No existe en el artifact.
@@ -52,6 +58,7 @@ Donde el artifact reasigna una función (`X = …` o `{ const o = X; X = … }`)
 | `chkTab`, `quoPage3`, `updTab` | `setChkTab`, `setQuoPage3`, `setUpdTab` |
 | `drawPop` | `wrapDrawPop` |
 | `mBar53`, `mProps53` | `setMBar53`, `setMProps53` |
+| `set45`, `edHTML45`, `drHTML45`, `itrBook45` | `wrapSet45`, `wrapEdHTML45`, `wrapDrHTML45`, `wrapItrBook45` (en `apps/delivery/install-tracker.js`) |
 | `qcNext60`, `bkSide70` | `wrapQcNext60`, `wrapBkSide70` |
 
 Para ubicar dónde se declara cada uno, usa la acción `search` del workflow con `function <nombre>` o `wrap<Nombre>`.
@@ -82,3 +89,4 @@ Para ubicar dónde se declara cada uno, usa la acción `search` del workflow con
 |---|---|---|---|
 | v3.29 | — | — | Modularización inicial (antes de esta skill). |
 | v5.44 | 2026-11-14 | #4 | Ruta grande con Claude Code desde la v3.29: 38 capas nuevas, guardián de navegación, jsPDF 3.0.4, pdfjs-dist local, administración de la demo oculta. Primera versión con `artifact/app.html`. |
+| v5.46 | 2026-11-17 | — | v5.45 y v5.46 en `apps/delivery/install-tracker.js` y `apps/delivery/quantities-rates-cancelled.js` (con `scripts/refyt-migrate-v5.46.mjs`), ExcelJS del paquete, botón Comment conectado a Feedback en lugar del webhook. |
