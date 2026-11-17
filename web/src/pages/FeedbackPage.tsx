@@ -25,7 +25,7 @@ function StatusPill({ status }: { status: FeedbackStatus }) {
   return <Pill tone={FEEDBACK_STATUSES[status].tone}>{FEEDBACK_STATUSES[status].label}</Pill>;
 }
 
-/** Inbox of what users send from "Send feedback", and the switch that turns the module on or off. */
+/** Inbox of what users send with the Comment button, and the switch that turns the module on or off. */
 export function FeedbackPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -124,7 +124,7 @@ export function FeedbackPage() {
       />
       {settings.data && !enabled ? (
         <Alert className="mb-4">
-          The module is off: users do not see “Send feedback” in their menu. What was already sent stays here.
+          The module is off: users do not see the Comment button. What was already sent stays here.
         </Alert>
       ) : null}
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -228,6 +228,7 @@ function FeedbackSheet({ item, onClose, onSaved }: { item: Feedback; onClose: ()
             {item.userName} · @{item.username}
           </DetailRow>
           <DetailRow label="Screen">{item.screen ?? "—"}</DetailRow>
+          {item.element ? <DetailRow label="Pointed at">{item.element}</DetailRow> : null}
           <DetailRow label="Page">
             <span className="font-mono text-[13px]">{item.page}</span>
           </DetailRow>

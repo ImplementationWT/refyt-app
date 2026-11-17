@@ -23,7 +23,7 @@ Commercial, Accounts, Retrofit y Delivery) en `/`. El menú de usuario del encab
 la administración: Users (`/users`), Roles (`/roles`), Integrations (`/integrations`) y Feedback (`/feedback`), según los
 permisos de cada persona. La migración 6 pasa a inglés los textos que ya estaban guardados en la base.
 
-El diseño aprobado por el cliente manda en toda la app. La versión vigente es la v5.44, guardada
+El diseño aprobado por el cliente manda en toda la app. La versión vigente es la v5.46, guardada
 tal cual en `artifact/app.html`:
 
 ```text
@@ -32,10 +32,11 @@ web/src/refyt/
                  (00 protege del reset de Tailwind; 11-app.css son las piezas propias del
                  repo: login, menú de usuario, administración, y va siempre al final)
   engine/        La lógica de Refyt en módulos (datos, cálculos, apps, reuniones, tour…),
-                 con una capa por versión del original (v3.30 a v5.44) en su módulo.
+                 con una capa por versión del original (v3.30 a v5.46) en su módulo.
                  index.js es el barril: fija el orden de evaluación, no lo reordenes.
   assets/        Logotipo REFYT
   fonts.ts       Sora, Manrope, Figtree y Fraunces servidas desde la app
+  comment/       El botón Comment (abajo a la derecha), que guarda en Feedback
   RefytHeader.tsx, UserMenu.tsx    Encabezado y menú de usuario
   RefytWorkspace.tsx               Monta el motor de Refyt en "/"
   AdminLayout.tsx                  Usuarios, Roles, Integraciones… con el mismo shell
@@ -53,12 +54,13 @@ web/src/refyt/
   `refyt.retrofit` y `refyt.delivery`. `refyt.view_as` (Director y Administrador) permite usar el
   selector «Viewing as» con cualquier rol; sin él, solo aparecen los roles propios. El vínculo
   entre clave de rol y rol de Refyt está en `web/src/refyt/roles.ts`.
-- **Feedback.** Cualquier persona con sesión envía feedback (Something is wrong, Idea o Question)
-  desde «Send feedback» en su menú de usuario; se guarda con la página y la pantalla de Refyt en
-  que estaba. Quien tiene `feedback.manage` (el rol Administrador, migración 7) lo revisa en
+- **Feedback.** Cualquier persona con sesión comenta con el botón **Comment** de abajo a la derecha
+  (Improvement or idea, Something isn’t working o Question), en cualquier pantalla, y puede señalar
+  algo de la pantalla. Se guarda con la página, la pantalla de Refyt (sección, pantalla, propiedad,
+  pestaña) y lo señalado; sin conexión queda en cola y se reenvía solo. Quien tiene `feedback.manage` (el rol Administrador, migración 7) lo revisa en
   `/feedback`, le pone estado (New, In progress, Fixed, Won't fix) y una nota interna, y puede
-  apagar o encender el módulo con el interruptor de esa pantalla: apagado, la opción desaparece
-  del menú y la API rechaza los envíos (`409 feedback_disabled`); lo ya recibido se conserva.
+  apagar o encender el módulo con el interruptor de esa pantalla: apagado, el botón Comment
+  desaparece y la API rechaza los envíos (`409 feedback_disabled`); lo ya recibido se conserva.
 - **Un solo espacio de trabajo (v4.0 en adelante).** El menú y las secciones del encabezado
   muestran lo que puede abrir el rol con el que se ve Refyt; ese rol es siempre uno de los del
   usuario (salvo `refyt.view_as`). Por eso `allowed()` ya no filtra por app.

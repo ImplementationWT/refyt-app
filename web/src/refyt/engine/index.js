@@ -110,5 +110,7 @@ export * from "./apps/director/finance-overview.js";
 export * from "./apps/delivery/site-forms-design.js";
 export * from "./ui/sales-visuals.js";
 export * from "./apps/director/financial-health.js";
+export * from "./apps/delivery/install-tracker.js";
+export * from "./apps/delivery/quantities-rates-cancelled.js";
 export * from "./access.js";
 export * from "./mount.js";
