@@ -127,6 +127,8 @@ export interface Feedback {
   message: string;
   page: string;
   screen: string | null;
+  /** What the person pointed at with the Comment button. */
+  element: string | null;
   status: FeedbackStatus;
   note: string;
   createdAt: string;

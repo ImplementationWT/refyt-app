@@ -185,7 +185,7 @@ describe("Refyt", () => {
     renderApp("/");
 
     expect(await screen.findByTestId("refyt-workspace")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "REFYT" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "REFYT, go to Overview" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "User menu" })).toHaveTextContent("Ana");
     expect(screen.queryByRole("complementary", { name: "Main navigation" })).not.toBeInTheDocument();
   });

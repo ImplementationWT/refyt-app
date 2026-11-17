@@ -6,3 +6,6 @@ allowBuilds:
   # The mongod binary is downloaded lazily the first time the tests run,
   # so installs (including the Docker build stage) stay fast and offline-safe.
   mongodb-memory-server: false
+  # Only used by pdfjs-dist under Node (optional) and by a polyfill of exceljs: the browser needs neither build.
+  canvas: false
+  core-js: false

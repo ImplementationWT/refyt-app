@@ -18,20 +18,23 @@ workflows, endpoints, colecciones) está en
 
 ## Refyt
 
-La app es Refyt, toda en inglés: primero el login y, una vez dentro, las apps de los equipos (Director,
-Commercial, Accounts, Retrofit y Delivery) en `/`. El menú de usuario del encabezado lleva a
+La app es Refyt, toda en inglés: primero el login y, una vez dentro, un solo espacio en `/` con las
+secciones Overview y Properties para todos y las de cada equipo (Director, Commercial, Accounts,
+Retrofit y Delivery) en el encabezado. El menú de usuario del encabezado lleva a
 la administración: Users (`/users`), Roles (`/roles`), Integrations (`/integrations`) y Feedback (`/feedback`), según los
 permisos de cada persona. La migración 6 pasa a inglés los textos que ya estaban guardados en la base.
 
-El diseño aprobado por el cliente (`Refyt, demo v3.20.html`) manda en toda la app:
+El diseño aprobado por el cliente (`REFYT, demo` v5.46) manda en toda la app:
 
 ```text
 web/src/refyt/
   styles/        CSS de Refyt partido por áreas, en el mismo orden que el original
-                 (00 protege del reset de Tailwind; 10 son las piezas nuevas: login,
-                 menú de usuario, administración)
-  engine/        La lógica de Refyt en módulos (datos, cálculos, apps, reuniones, tour…).
-                 index.js es el barril: fija el orden de evaluación, no lo reordenes.
+                 (00 protege del reset de Tailwind; 11 son las piezas propias de la app:
+                 login, menú de usuario, administración; 15 es el botón Comment)
+  engine/        refyt.js es el código del original en un solo módulo (sus versiones se
+                 envuelven unas a otras); arriba lista lo que cambia respecto a la demo.
+                 mount.js lo arranca con la sesión real; auth.js guarda esa sesión.
+  comment/       El botón Comment (abajo a la derecha), que guarda en Feedback
   assets/        Logotipo REFYT
   fonts.ts       Sora, Manrope, Figtree y Fraunces servidas desde la app
   RefytHeader.tsx, UserMenu.tsx    Encabezado y menú de usuario
@@ -51,12 +54,13 @@ web/src/refyt/
   `refyt.retrofit` y `refyt.delivery`. `refyt.view_as` (Director y Administrador) permite usar el
   selector «Viewing as» con cualquier rol; sin él, solo aparecen los roles propios. El vínculo
   entre clave de rol y rol de Refyt está en `web/src/refyt/roles.ts`.
-- **Feedback.** Cualquier persona con sesión envía feedback (Something is wrong, Idea o Question)
-  desde «Send feedback» en su menú de usuario; se guarda con la página y la pantalla de Refyt en
-  que estaba. Quien tiene `feedback.manage` (el rol Administrador, migración 7) lo revisa en
+- **Feedback.** Cualquier persona con sesión comenta con el botón **Comment** de abajo a la derecha
+  (Improvement or idea, Something isn’t working o Question), en cualquier pantalla; puede señalar
+  algo de la pantalla. Se guarda con la página, la pantalla de Refyt (sección, pantalla, propiedad,
+  pestaña) y lo señalado. Sin conexión queda en cola y se reenvía solo. Quien tiene `feedback.manage` (el rol Administrador, migración 7) lo revisa en
   `/feedback`, le pone estado (New, In progress, Fixed, Won't fix) y una nota interna, y puede
-  apagar o encender el módulo con el interruptor de esa pantalla: apagado, la opción desaparece
-  del menú y la API rechaza los envíos (`409 feedback_disabled`); lo ya recibido se conserva.
+  apagar o encender el módulo con el interruptor de esa pantalla: apagado, el botón Comment
+  desaparece y la API rechaza los envíos (`409 feedback_disabled`); lo ya recibido se conserva.
 - El CSS de Refyt va en la capa `refyt`, entre la base y las utilidades de Tailwind.
 - La CSP permite atributos `style` en línea (Refyt los usa al dibujar); los scripts siguen
   limitados a la propia app.

@@ -131,6 +131,8 @@ export interface FeedbackDoc {
   /** Where it was sent from: route and the title of the screen. */
   page: string;
   screen: string | null;
+  /** What the person pointed at on the screen with the Comment button (optional; older items lack it). */
+  element?: string | null;
   status: FeedbackStatus;
   /** Internal note of the team (never shown to the sender). */
   note: string;

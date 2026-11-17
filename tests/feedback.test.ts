@@ -26,10 +26,23 @@ describe.skipIf(skipDb)("feedback", () => {
     expect((await api.request("GET", "/api/feedback/settings", { cookie })).json()).toEqual({ enabled: true });
     const sent = await api.request("POST", "/api/feedback", {
       cookie,
-      body: { type: "bug", message: "The booking calendar does not save the time", page: "/", screen: "Assessment bookings" }
+      body: {
+        type: "bug",
+        message: "The booking calendar does not save the time",
+        page: "/",
+        screen: "Assessment bookings",
+        element: "Book, 7 Dane Road"
+      }
     });
     expect(sent.statusCode).toBe(201);
-    expect(sent.json().feedback).toMatchObject({ type: "bug", status: "new", username: "afaq", page: "/", screen: "Assessment bookings" });
+    expect(sent.json().feedback).toMatchObject({
+      type: "bug",
+      status: "new",
+      username: "afaq",
+      page: "/",
+      screen: "Assessment bookings",
+      element: "Book, 7 Dane Road"
+    });
 
     // The sender cannot read the inbox.
     expect((await api.request("GET", "/api/feedback", { cookie })).statusCode).toBe(403);

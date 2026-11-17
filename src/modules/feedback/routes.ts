@@ -24,7 +24,8 @@ const createSchema = z.object({
   type: z.enum(FEEDBACK_TYPES),
   message: z.string().trim().min(3, { error: "Write at least a few words" }).max(4000),
   page: z.string().trim().max(300).default("/"),
-  screen: z.string().trim().max(200).optional()
+  screen: z.string().trim().max(200).optional(),
+  element: z.string().trim().max(300).optional()
 });
 
 const listSchema = paginationSchema(["createdAt", "status", "type"], "-createdAt").extend({
@@ -50,6 +51,7 @@ export function toPublicFeedback(doc: FeedbackDoc) {
     message: doc.message,
     page: doc.page,
     screen: doc.screen,
+    element: doc.element ?? null,
     status: doc.status,
     note: doc.note,
     createdAt: doc.createdAt.toISOString(),
@@ -108,6 +110,7 @@ export async function feedbackRoutes(app: FastifyInstance, deps: Deps) {
       message: input.message,
       page: input.page,
       screen: input.screen ?? null,
+      element: input.element || null,
       status: "new" as const,
       note: "",
       createdAt: now,
@@ -131,7 +134,7 @@ export async function feedbackRoutes(app: FastifyInstance, deps: Deps) {
     if (status) filter.status = status;
     if (q) {
       const regex = containsRegex(q);
-      filter.$or = [{ message: regex }, { userName: regex }, { username: regex }, { page: regex }, { screen: regex }];
+      filter.$or = [{ message: regex }, { userName: regex }, { username: regex }, { page: regex }, { screen: regex }, { element: regex }];
     }
     const [items, total] = await Promise.all([
       c.feedback

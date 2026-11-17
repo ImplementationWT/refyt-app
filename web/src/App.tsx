@@ -14,6 +14,7 @@ import { MondayPage } from "./pages/MondayPage";
 import { RolesPage } from "./pages/RolesPage";
 import { UsersPage } from "./pages/UsersPage";
 import { AdminLayout } from "./refyt/AdminLayout";
+import { CommentButton } from "./refyt/comment/CommentButton";
 import { RefytWorkspace } from "./refyt/RefytWorkspace";
 
 export function createQueryClient(): QueryClient {
@@ -100,6 +101,8 @@ export function App({ queryClient }: { queryClient?: QueryClient }) {
       <ToastProvider>
         <SessionProvider>
           <AppRoutes />
+          {/* Comment, at the bottom right of every screen once signed in: it goes to Feedback. */}
+          <CommentButton />
         </SessionProvider>
       </ToastProvider>
     </QueryClientProvider>

@@ -1,22 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, KeyRound, LogOut, MessageSquarePlus, type LucideIcon } from "lucide-react";
+import { ChevronDown, KeyRound, LogOut, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { CHANGE_PASSWORD_PATH } from "../auth/guards";
 import { useSession } from "../auth/session";
-import { FeedbackDialog } from "../components/feedback/FeedbackDialog";
-import { api } from "../lib/api";
-import { FEEDBACK_SETTINGS_KEY } from "../lib/feedback";
-import type { FeedbackSettings } from "../lib/types";
 import { ADMIN_GROUP_ID, visibleNavGroups } from "../navigation";
 import { initials } from "./utils";
 
-/** User section of the Refyt header: who is signed in and, in a dropdown, the admin screens. */
+/**
+ * User section of the Refyt header: who is signed in and, in a dropdown, the admin screens.
+ * Feedback is sent with the Comment button at the bottom right (CommentButton), not from here.
+ */
 export function UserMenu() {
   const { session, can, hasFeature, logout } = useSession();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,14 +31,6 @@ export function UserMenu() {
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
-
-  // The feedback module can be switched off by an administrator (Feedback screen).
-  const feedback = useQuery({
-    queryKey: FEEDBACK_SETTINGS_KEY,
-    queryFn: () => api<FeedbackSettings>("/api/feedback/settings"),
-    enabled: Boolean(session?.user),
-    staleTime: 60_000
-  });
 
   const user = session?.user;
   if (!user) return null;
@@ -89,22 +78,6 @@ export function UserMenu() {
               <div className="rf-psep" />
             </>
           ) : null}
-          {feedback.data?.enabled ? (
-            <button
-              type="button"
-              role="menuitem"
-              className="rf-pi"
-              onClick={() => {
-                close();
-                setFeedbackOpen(true);
-              }}
-            >
-              <span className="rf-ai">
-                <MessageSquarePlus size={15} aria-hidden />
-              </span>
-              <b>Send feedback</b>
-            </button>
-          ) : null}
           <MenuLink to={CHANGE_PASSWORD_PATH} icon={KeyRound} label="Change password" onSelect={close} />
           <button
             type="button"
@@ -123,7 +96,6 @@ export function UserMenu() {
           </button>
         </div>
       ) : null}
-      <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </div>
   );
 }
